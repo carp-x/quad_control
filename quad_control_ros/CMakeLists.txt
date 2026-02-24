@@ -33,7 +33,7 @@ find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(Boost REQUIRED COMPONENTS system filesystem log_setup log)
 
 add_library(${PROJECT_NAME}
-  src/gait/GaitKeyboardPublisher.cpp
+  src/gait/GaitCommandPublisher.cpp
   src/gait/GaitReceiver.cpp
   src/visualization/LeggedRobotVisualizer.cpp
 )

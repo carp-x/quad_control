@@ -27,7 +27,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
-#include "quad_control_ros/gait/GaitKeyboardPublisher.h"
+#include "quad_control_ros/gait/GaitCommandPublisher.h"
 #include "rclcpp/rclcpp.hpp"
 
 #include <stdexcept>
@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
   }
   std::cerr << "Loading gait file: " << gaitCommandFile << std::endl;
 
-  GaitKeyboardPublisher gaitCommand(node, gaitCommandFile, robotName, true);
+  GaitCommandPublisher gaitCommand(node, gaitCommandFile, robotName, true);
 
   rclcpp::spin(node);
   rclcpp::shutdown();

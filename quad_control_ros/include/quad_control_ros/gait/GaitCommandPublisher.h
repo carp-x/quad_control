@@ -43,9 +43,9 @@ namespace ocs2 {
 namespace legged_robot {
 
 /** This class implements mode_sequence communication using ROS. */
-class GaitKeyboardPublisher {
+class GaitCommandPublisher {
  public:
-  GaitKeyboardPublisher(const rclcpp::Node::SharedPtr& node,
+  GaitCommandPublisher(const rclcpp::Node::SharedPtr& node,
                         const std::string& gaitFile,
                         const std::string& robotName, bool verbose = false);
 

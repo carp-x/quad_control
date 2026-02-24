@@ -27,9 +27,8 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
-#include "quad_control_ros/gait/GaitKeyboardPublisher.h"
+#include "quad_control_ros/gait/GaitCommandPublisher.h"
 
-#include <ocs2_core/misc/CommandLine.h>
 #include <ocs2_core/misc/LoadData.h>
 
 #include <algorithm>
@@ -43,7 +42,7 @@ namespace legged_robot {
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-GaitKeyboardPublisher::GaitKeyboardPublisher(
+GaitCommandPublisher::GaitCommandPublisher(
     const rclcpp::Node::SharedPtr& node, const std::string& gaitFile,
     const std::string& robotName, bool verbose) {
   RCLCPP_INFO_STREAM(node->get_logger(),
@@ -55,7 +54,7 @@ GaitKeyboardPublisher::GaitKeyboardPublisher(
           robotName + "_mpc_mode_schedule", 1);
   
   gaitSubscriber_ = node->create_subscription<std_msgs::msg::String>(
-      robotName + "_gait_command", 10, std::bind(&GaitKeyboardPublisher::gaitCallback, this, std::placeholders::_1));
+      robotName + "_gait_command", 10, std::bind(&GaitCommandPublisher::gaitCallback, this, std::placeholders::_1));
 
   gaitMap_.clear();
   for (const auto& gaitName : gaitList_) {
@@ -69,7 +68,7 @@ GaitKeyboardPublisher::GaitKeyboardPublisher(
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void GaitKeyboardPublisher::gaitCallback(const std_msgs::msg::String::SharedPtr msg) {
+void GaitCommandPublisher::gaitCallback(const std_msgs::msg::String::SharedPtr msg) {
   // lower case transform
   auto gaitCommand = msg->data;
   std::transform(gaitCommand.begin(), gaitCommand.end(), gaitCommand.begin(),
@@ -91,7 +90,7 @@ void GaitKeyboardPublisher::gaitCallback(const std_msgs::msg::String::SharedPtr 
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void GaitKeyboardPublisher::printGaitList(
+void GaitCommandPublisher::printGaitList(
     const std::vector<std::string>& gaitList) const {
   std::cout << "List of available gaits:\n";
   size_t itr = 0;
