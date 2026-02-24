@@ -53,6 +53,9 @@ GaitKeyboardPublisher::GaitKeyboardPublisher(
   modeSequenceTemplatePublisher_ =
       node->create_publisher<ocs2_msgs::msg::ModeSchedule>(
           robotName + "_mpc_mode_schedule", 1);
+  
+  gaitSubscriber_ = node->create_subscription<std_msgs::msg::String>(
+      robotName + "_gait_command", 10, std::bind(&GaitKeyboardPublisher::gaitCallback, this, std::placeholders::_1));
 
   gaitMap_.clear();
   for (const auto& gaitName : gaitList_) {
@@ -66,25 +69,9 @@ GaitKeyboardPublisher::GaitKeyboardPublisher(
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void GaitKeyboardPublisher::getKeyboardCommand() {
-  const std::string commadMsg =
-      "Enter the desired gait, for the list of available gait enter \"list\"";
-  std::cout << commadMsg << ": ";
-
-  auto shouldTerminate = []() { return !rclcpp::ok(); };
-  const auto commandLine = stringToWords(getCommandLineString(shouldTerminate));
-
-  if (commandLine.empty()) {
-    return;
-  }
-
-  if (commandLine.size() > 1) {
-    std::cout << "WARNING: The command should be a single word." << std::endl;
-    return;
-  }
-
+void GaitKeyboardPublisher::gaitCallback(const std_msgs::msg::String::SharedPtr msg) {
   // lower case transform
-  auto gaitCommand = commandLine.front();
+  auto gaitCommand = msg->data;
   std::transform(gaitCommand.begin(), gaitCommand.end(), gaitCommand.begin(),
                  ::tolower);
   if (gaitCommand == "list") {

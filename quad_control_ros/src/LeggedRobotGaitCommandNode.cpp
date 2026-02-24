@@ -38,7 +38,6 @@ using namespace legged_robot;
 int main(int argc, char* argv[]) {
   const std::string robotName = "legged_robot";
 
-  // Initialize ros node
   rclcpp::init(argc, argv);
   rclcpp::Node::SharedPtr node =
       rclcpp::Node::make_shared(robotName + "_mpc_mode_schedule");
@@ -53,10 +52,7 @@ int main(int argc, char* argv[]) {
 
   GaitKeyboardPublisher gaitCommand(node, gaitCommandFile, robotName, true);
 
-  while (rclcpp::ok()) {
-    gaitCommand.getKeyboardCommand();
-  }
-
-  // Successful exit
+  rclcpp::spin(node);
+  rclcpp::shutdown();
   return 0;
 }

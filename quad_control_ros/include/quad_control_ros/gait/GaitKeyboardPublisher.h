@@ -32,6 +32,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <quad_control_mpc/gait/ModeSequenceTemplate.h>
 
 #include <ocs2_msgs/msg/mode_schedule.hpp>
+#include <std_msgs/msg/string.hpp>
 #include <std_msgs/msg/bool.hpp>
 #include <string>
 #include <vector>
@@ -50,7 +51,7 @@ class GaitKeyboardPublisher {
 
   /** Prints the command line interface and responds to user input. Function
    * returns after one user input. */
-  void getKeyboardCommand();
+  void gaitCallback(const std_msgs::msg::String::SharedPtr msg);
 
  private:
   /** Prints the list of available gaits. */
@@ -61,6 +62,7 @@ class GaitKeyboardPublisher {
 
   rclcpp::Publisher<ocs2_msgs::msg::ModeSchedule>::SharedPtr
       modeSequenceTemplatePublisher_;
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr gaitSubscriber_;
 };
 
 }  // namespace legged_robot
