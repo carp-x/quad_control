@@ -29,7 +29,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ocs2_core/Types.h>
 #include <ocs2_core/misc/LoadData.h>
-#include <ocs2_ros_interfaces/command/TargetTrajectoriesKeyboardPublisher.h>
+#include <ocs2_ros_interfaces/command/TargetTrajectoriesRosPublisher.h>
+#include <ocs2_ros_interfaces/common/RosMsgConversions.h>
+
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Matrix3x3.h>
 
 #include <string>
 #include <stdexcept>
@@ -55,55 +60,73 @@ scalar_t estimateTimeToTarget(const vector_t& desiredBaseDisplacement) {
   return std::max(rotationTime, displacementTime);
 }
 
-/**
- * Converts command line to TargetTrajectories.
- * @param [in] commadLineTarget : [deltaX, deltaY, deltaZ, deltaYaw]
- * @param [in] observation : the current observation
- */
-TargetTrajectories commandLineToTargetTrajectories(
-    const vector_t& commadLineTarget, const SystemObservation& observation) {
-  const vector_t currentPose = observation.state.segment<6>(6);
-  const vector_t targetPose = [&]() {
-    vector_t target(6);
-    // base p_x, p_y are relative to current state
-    target(0) = currentPose(0) + commadLineTarget(0);
-    target(1) = currentPose(1) + commadLineTarget(1);
-    // base z relative to the default height
-    target(2) = comHeight + commadLineTarget(2);
-    // theta_z relative to current
-    target(3) = currentPose(3) + commadLineTarget(3) * M_PI / 180.0;
-    // theta_y, theta_x
-    target(4) = currentPose(4);
-    target(5) = currentPose(5);
-    return target;
-  }();
+class LeggedRobotGoalPublisher {
+ public:
+  LeggedRobotGoalPublisher(rclcpp::Node::SharedPtr node, const std::string& robotName)
+      : node_(node) {
 
-  // target reaching duration
-  const scalar_t targetReachingTime =
-      observation.time + estimateTimeToTarget(targetPose - currentPose);
+    rosReferencePublisherPtr_.reset(new TargetTrajectoriesRosPublisher(node, robotName));
 
-  // desired time trajectory
-  const scalar_array_t timeTrajectory{observation.time, targetReachingTime};
+    goalSubscriber_ = node->create_subscription<geometry_msgs::msg::PoseStamped>(
+        "/move_base_simple/goal", 10, std::bind(&LeggedRobotGoalPublisher::goalCallback, this, std::placeholders::_1));
 
-  // desired state trajectory
-  vector_array_t stateTrajectory(2, vector_t::Zero(observation.state.size()));
-  stateTrajectory[0] << vector_t::Zero(6), currentPose, defaultJointState;
-  stateTrajectory[1] << vector_t::Zero(6), targetPose, defaultJointState;
+    observationSubscriber_ = node->create_subscription<ocs2_msgs::msg::MpcObservation>(
+        robotName + "_mpc_observation", 1, [&](const ocs2_msgs::msg::MpcObservation::SharedPtr msg) {
+          latestObservation_ = ros_msg_conversions::readObservationMsg(*msg);
+        });
+    
+    latestObservation_.time = -1.0;
+  }
 
-  // desired input trajectory (just right dimensions, they are not used)
-  const vector_array_t inputTrajectory(
-      2, vector_t::Zero(observation.input.size()));
+ private:
+  void goalCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
+    if (latestObservation_.time < 0) {
+        RCLCPP_WARN(node_->get_logger(), "Waiting for observation...");
+        return;
+    }
 
-  return {timeTrajectory, stateTrajectory, inputTrajectory};
-}
+    const vector_t currentPose = latestObservation_.state.segment<6>(6);
+
+    vector_t targetPose = currentPose;
+    targetPose(0) = msg->pose.position.x;
+    targetPose(1) = msg->pose.position.y;
+    targetPose(2) = comHeight;
+
+    tf2::Quaternion q(msg->pose.orientation.x, msg->pose.orientation.y,
+                      msg->pose.orientation.z, msg->pose.orientation.w);
+    tf2::Matrix3x3 m(q);
+    double roll, pitch, yaw;
+    m.getRPY(roll, pitch, yaw);
+    targetPose(3) = yaw;
+
+    const scalar_t reachingTime = latestObservation_.time + estimateTimeToTarget(targetPose - currentPose);
+    
+    TargetTrajectories targetTrajectories;
+    targetTrajectories.timeTrajectory = {latestObservation_.time, reachingTime};
+    
+    vector_t targetState(latestObservation_.state.size());
+    targetState << vector_t::Zero(6), targetPose, defaultJointState;
+    
+    targetTrajectories.stateTrajectory = {latestObservation_.state, targetState};
+    targetTrajectories.inputTrajectory = {vector_t::Zero(latestObservation_.input.size()), 
+                                          vector_t::Zero(latestObservation_.input.size())};
+
+    rosReferencePublisherPtr_->publishTargetTrajectories(targetTrajectories);
+    RCLCPP_INFO(node_->get_logger(), "New goal published from RViz.");
+  }
+
+  rclcpp::Node::SharedPtr node_;
+  std::unique_ptr<TargetTrajectoriesRosPublisher> rosReferencePublisherPtr_;
+  rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr goalSubscriber_;
+  rclcpp::Subscription<ocs2_msgs::msg::MpcObservation>::SharedPtr observationSubscriber_;
+  SystemObservation latestObservation_;
+};
 
 int main(int argc, char* argv[]) {
   const std::string robotName = "legged_robot";
 
-  // Initialize ros node
   rclcpp::init(argc, argv);
-  rclcpp::Node::SharedPtr node =
-      rclcpp::Node::make_shared(robotName + "_target");
+  auto node = rclcpp::Node::make_shared(robotName + "_rviz_target");
 
   const std::string referenceFile =
       node->declare_parameter<std::string>("referenceFile", "");
@@ -120,16 +143,9 @@ int main(int argc, char* argv[]) {
   loadData::loadCppDataType(referenceFile, "targetDisplacementVelocity",
                             targetDisplacementVelocity);
 
-  // goalPose: [deltaX, deltaY, deltaZ, deltaYaw]
-  const scalar_array_t relativeBaseLimit{10.0, 10.0, 0.2, 360.0};
-  TargetTrajectoriesKeyboardPublisher targetPoseCommand(
-      node, robotName, relativeBaseLimit, &commandLineToTargetTrajectories);
+  LeggedRobotGoalPublisher goalPublisher(node, robotName);
 
-  const std::string commandMsg =
-      "Enter XYZ and Yaw (deg) displacements for the TORSO, separated by "
-      "spaces";
-  targetPoseCommand.publishKeyboardCommand(commandMsg);
-
-  // Successful exit
+  rclcpp::spin(node);
+  rclcpp::shutdown();
   return 0;
 }
