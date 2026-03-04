@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gz_ros2_control_demos/gz_custom_system.hpp"
+#include "quad_control_gz/QuadGaSimSystem.hpp"
 
 #include <array>
 #include <cstddef>
@@ -71,12 +71,12 @@ struct jointData
   std::unique_ptr<control_toolbox::LowPassFilter<double>> lpf;
 };
 
-class gz_ros2_control_demos::GazeboSimSystemPrivate
+class quad_robot::QuadGaSimSystemPrivate
 {
 public:
-  GazeboSimSystemPrivate() = default;
+  QuadGaSimSystemPrivate() = default;
 
-  ~GazeboSimSystemPrivate() = default;
+  ~QuadGaSimSystemPrivate() = default;
   /// \brief Degrees od freedom.
   size_t n_dof_;
 
@@ -100,17 +100,17 @@ public:
   unsigned int update_rate;
 };
 
-namespace gz_ros2_control_demos
+namespace quad_robot
 {
 
-bool GazeboCustomSimSystem::initSim(
+bool QuadGaSimSystem::initSim(
   rclcpp::Node::SharedPtr & model_nh,
   std::map<std::string, sim::Entity> & enableJoints,
   const hardware_interface::HardwareInfo & hardware_info,
   sim::EntityComponentManager & _ecm,
   unsigned int update_rate)
 {
-  this->dataPtr = std::make_unique<GazeboSimSystemPrivate>();
+  this->dataPtr = std::make_unique<QuadGaSimSystemPrivate>();
   this->dataPtr->last_update_sim_time_ros_ = rclcpp::Time();
 
   this->nh_ = model_nh;
@@ -285,7 +285,7 @@ bool GazeboCustomSimSystem::initSim(
 }
 
 CallbackReturn
-GazeboCustomSimSystem::on_init(const hardware_interface::HardwareComponentInterfaceParams & params)
+QuadGaSimSystem::on_init(const hardware_interface::HardwareComponentInterfaceParams & params)
 {
   if (hardware_interface::SystemInterface::on_init(params) !=
     CallbackReturn::SUCCESS)
@@ -295,7 +295,7 @@ GazeboCustomSimSystem::on_init(const hardware_interface::HardwareComponentInterf
   return CallbackReturn::SUCCESS;
 }
 
-CallbackReturn GazeboCustomSimSystem::on_configure(
+CallbackReturn QuadGaSimSystem::on_configure(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
   RCLCPP_INFO(
@@ -305,30 +305,30 @@ CallbackReturn GazeboCustomSimSystem::on_configure(
 }
 
 std::vector<hardware_interface::StateInterface>
-GazeboCustomSimSystem::export_state_interfaces()
+QuadGaSimSystem::export_state_interfaces()
 {
   return std::move(this->dataPtr->state_interfaces_);
 }
 
 std::vector<hardware_interface::CommandInterface>
-GazeboCustomSimSystem::export_command_interfaces()
+QuadGaSimSystem::export_command_interfaces()
 {
   return std::move(this->dataPtr->command_interfaces_);
 }
 
-CallbackReturn GazeboCustomSimSystem::on_activate(const rclcpp_lifecycle::State & previous_state)
+CallbackReturn QuadGaSimSystem::on_activate(const rclcpp_lifecycle::State & previous_state)
 {
   return CallbackReturn::SUCCESS;
   return hardware_interface::SystemInterface::on_activate(previous_state);
 }
 
-CallbackReturn GazeboCustomSimSystem::on_deactivate(const rclcpp_lifecycle::State & previous_state)
+CallbackReturn QuadGaSimSystem::on_deactivate(const rclcpp_lifecycle::State & previous_state)
 {
   return CallbackReturn::SUCCESS;
   return hardware_interface::SystemInterface::on_deactivate(previous_state);
 }
 
-hardware_interface::return_type GazeboCustomSimSystem::read(
+hardware_interface::return_type QuadGaSimSystem::read(
   const rclcpp::Time & /*time*/,
   const rclcpp::Duration & /*period*/)
 {
@@ -372,7 +372,7 @@ hardware_interface::return_type GazeboCustomSimSystem::read(
   return hardware_interface::return_type::OK;
 }
 
-hardware_interface::return_type GazeboCustomSimSystem::write(
+hardware_interface::return_type QuadGaSimSystem::write(
   const rclcpp::Time & /*time*/,
   const rclcpp::Duration & /*period*/)
 {
@@ -393,8 +393,8 @@ hardware_interface::return_type GazeboCustomSimSystem::write(
 
   return hardware_interface::return_type::OK;
 }
-}  // namespace gz_ros2_control_demos
+}  // namespace quad_robot
 
 #include "pluginlib/class_list_macros.hpp"  // NOLINT
 PLUGINLIB_EXPORT_CLASS(
-  gz_ros2_control_demos::GazeboCustomSimSystem, gz_ros2_control::GazeboSimSystemInterface)
+  quad_robot::QuadGaSimSystem, gz_ros2_control::GazeboSimSystemInterface)
