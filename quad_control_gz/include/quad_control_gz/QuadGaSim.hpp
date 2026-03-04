@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-#ifndef GZ_ROS2_CONTROL_DEMOS__GZ_CUSTOM_SYSTEM_HPP_
-#define GZ_ROS2_CONTROL_DEMOS__GZ_CUSTOM_SYSTEM_HPP_
+#pragma once
 
 #include <map>
 #include <memory>
@@ -25,17 +23,17 @@
 #include "rclcpp_lifecycle/state.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 
-namespace gz_ros2_control_demos
+namespace quad_robot
 {
 using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
 // Forward declaration
-class GazeboSimSystemPrivate;
+class QuadGaSimSystemPrivate;
 
 // These class must inherit `gz_ros2_control::GazeboSimSystemInterface` which implements a
 // simulated `ros2_control` `hardware_interface::SystemInterface`.
 
-class GazeboCustomSimSystem : public gz_ros2_control::GazeboSimSystemInterface
+class QuadGaSimSystem : public gz_ros2_control::GazeboSimSystemInterface
 {
 public:
   // Documentation Inherited
@@ -76,7 +74,7 @@ public:
 
 private:
   /// \brief Private data class
-  std::unique_ptr<GazeboSimSystemPrivate> dataPtr;
+  std::unique_ptr<QuadGaSimSystemPrivate> dataPtr;
 };
 
 }  // namespace gz_ros2_control_demos
