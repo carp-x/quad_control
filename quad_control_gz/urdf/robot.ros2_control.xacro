@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org">
+
+    <ros2_control name="AnymalCGzSimHardware" type="system">
+        <hardware>
+            <plugin>quad_robot/QuadGaSimSystem</plugin>
+        </hardware>
+
+        <xacro:macro name="hybrid_joint_interface" params="name">
+            <joint name="${name}">
+                <state_interface name="position"/>
+                <state_interface name="velocity"/>
+                <state_interface name="effort"/>
+
+                <command_interface name="posDes"/>
+                <command_interface name="velDes"/>
+                <command_interface name="ff"/>
+                <command_interface name="kp"/>
+                <command_interface name="kd"/>
+            </joint>
+        </xacro:macro>
+
+        <xacro:hybrid_joint_interface name="LF_HAA"/>
+        <xacro:hybrid_joint_interface name="LF_HFE"/>
+        <xacro:hybrid_joint_interface name="LF_KFE"/>
+        <xacro:hybrid_joint_interface name="RF_HAA"/>
+        <xacro:hybrid_joint_interface name="RF_HFE"/>
+        <xacro:hybrid_joint_interface name="RF_KFE"/>
+        <xacro:hybrid_joint_interface name="LH_HAA"/>
+        <xacro:hybrid_joint_interface name="LH_HFE"/>
+        <xacro:hybrid_joint_interface name="LH_KFE"/>
+        <xacro:hybrid_joint_interface name="RH_HAA"/>
+        <xacro:hybrid_joint_interface name="RH_HFE"/>
+        <xacro:hybrid_joint_interface name="RH_KFE"/>
+
+        <sensor name="base_imu">
+            <state_interface name="orientation.x"/>
+            <state_interface name="orientation.y"/>
+            <state_interface name="orientation.z"/>
+            <state_interface name="orientation.w"/>
+            <state_interface name="angular_velocity.x"/>
+            <state_interface name="angular_velocity.y"/>
+            <state_interface name="angular_velocity.z"/>
+            <state_interface name="linear_acceleration.x"/>
+            <state_interface name="linear_acceleration.y"/>
+            <state_interface name="linear_acceleration.z"/>
+        </sensor>
+
+        <sensor name="LF_FOOT_sensor"><state_interface name="contact"/></sensor>
+        <sensor name="RF_FOOT_sensor"><state_interface name="contact"/></sensor>
+        <sensor name="LH_FOOT_sensor"><state_interface name="contact"/></sensor>
+        <sensor name="RH_FOOT_sensor"><state_interface name="contact"/></sensor>
+
+    </ros2_control>
+
+</robot>

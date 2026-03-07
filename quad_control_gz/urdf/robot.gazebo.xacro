@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org">
+
+    <gazebo>
+        <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlSystem">
+        <parameters>$(find quad_control_gz)/config/quad_gz_sim_config.yaml</parameters>
+        </plugin>
+    </gazebo>
+
+    <xacro:macro name="preserve_fixed_joint" params="joint_name">
+        <gazebo reference="${joint_name}">
+        <preserveFixedJoint>true</preserveFixedJoint>
+        </gazebo>
+    </xacro:macro>
+
+    <xacro:preserve_fixed_joint joint_name="imu_joint"/>
+
+    <xacro:preserve_fixed_joint joint_name="LF_shank_fixed_LF_FOOT"/>
+    <xacro:preserve_fixed_joint joint_name="RF_shank_fixed_RF_FOOT"/>
+    <xacro:preserve_fixed_joint joint_name="LH_shank_fixed_LH_FOOT"/>
+    <xacro:preserve_fixed_joint joint_name="RH_shank_fixed_RH_FOOT"/>
+
+</robot>

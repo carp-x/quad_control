@@ -77,6 +77,4 @@ private:
   std::unique_ptr<QuadGaSimSystemPrivate> dataPtr;
 };
 
-}  // namespace gz_ros2_control_demos
-
-#endif  // GZ_ROS2_CONTROL_DEMOS__GZ_CUSTOM_SYSTEM_HPP_
+}  // namespace quad_robot
