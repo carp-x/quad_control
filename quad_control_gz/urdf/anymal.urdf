@@ -620,7 +620,7 @@
         </inertial>
     </link>
     <!-- joint Drive output -->
-    <joint name="LF_HAA" type="revolute">
+    <joint name="LF_HAA_LF_HIP" type="revolute">
         <parent link="LF_HAA"/>
         <child link="LF_HIP"/>
         <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -683,7 +683,7 @@
         </inertial>
     </link>
     <!-- joint Drive output -->
-    <joint name="LF_HFE" type="revolute">
+    <joint name="LF_HFE_LF_THIGH" type="revolute">
         <parent link="LF_HFE"/>
         <child link="LF_THIGH"/>
         <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -759,7 +759,7 @@
         </inertial>
     </link>
     <!-- joint Drive output -->
-    <joint name="LF_KFE" type="revolute">
+    <joint name="LF_KFE_LF_SHANK" type="revolute">
         <parent link="LF_KFE"/>
         <child link="LF_SHANK"/>
         <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -864,7 +864,7 @@
         </inertial>
     </link>
     <!-- joint Drive output -->
-    <joint name="RF_HAA" type="revolute">
+    <joint name="RF_HAA_RF_HIP" type="revolute">
         <parent link="RF_HAA"/>
         <child link="RF_HIP"/>
         <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -927,7 +927,7 @@
         </inertial>
     </link>
     <!-- joint Drive output -->
-    <joint name="RF_HFE" type="revolute">
+    <joint name="RF_HFE_RF_THIGH" type="revolute">
         <parent link="RF_HFE"/>
         <child link="RF_THIGH"/>
         <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -1003,7 +1003,7 @@
         </inertial>
     </link>
     <!-- joint Drive output -->
-    <joint name="RF_KFE" type="revolute">
+    <joint name="RF_KFE_RF_SHANK" type="revolute">
         <parent link="RF_KFE"/>
         <child link="RF_SHANK"/>
         <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -1108,7 +1108,7 @@
         </inertial>
     </link>
     <!-- joint Drive output -->
-    <joint name="LH_HAA" type="revolute">
+    <joint name="LH_HAA_LH_HIP" type="revolute">
         <parent link="LH_HAA"/>
         <child link="LH_HIP"/>
         <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -1171,7 +1171,7 @@
         </inertial>
     </link>
     <!-- joint Drive output -->
-    <joint name="LH_HFE" type="revolute">
+    <joint name="LH_HFE_LH_THIGH" type="revolute">
         <parent link="LH_HFE"/>
         <child link="LH_THIGH"/>
         <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -1247,7 +1247,7 @@
         </inertial>
     </link>
     <!-- joint Drive output -->
-    <joint name="LH_KFE" type="revolute">
+    <joint name="LH_KFE_LH_SHANK" type="revolute">
         <parent link="LH_KFE"/>
         <child link="LH_SHANK"/>
         <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -1352,7 +1352,7 @@
         </inertial>
     </link>
     <!-- joint Drive output -->
-    <joint name="RH_HAA" type="revolute">
+    <joint name="RH_HAA_RH_HIP" type="revolute">
         <parent link="RH_HAA"/>
         <child link="RH_HIP"/>
         <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -1415,7 +1415,7 @@
         </inertial>
     </link>
     <!-- joint Drive output -->
-    <joint name="RH_HFE" type="revolute">
+    <joint name="RH_HFE_RH_THIGH" type="revolute">
         <parent link="RH_HFE"/>
         <child link="RH_THIGH"/>
         <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -1491,7 +1491,7 @@
         </inertial>
     </link>
     <!-- joint Drive output -->
-    <joint name="RH_KFE" type="revolute">
+    <joint name="RH_KFE_RH_SHANK" type="revolute">
         <parent link="RH_KFE"/>
         <child link="RH_SHANK"/>
         <origin rpy="0 0 0" xyz="0 0 0"/>
