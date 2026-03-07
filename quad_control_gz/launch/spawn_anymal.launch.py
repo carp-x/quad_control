@@ -9,7 +9,7 @@ import xacro
 def generate_launch_description():
 
     pkg_project = get_package_share_directory('quad_control_gz')
-    urdf_file = os.path.join(pkg_project, 'urdf', 'anymal_complete.xacro')
+    urdf_file = os.path.join(pkg_project, 'urdf', 'anymal.complete.xacro')
     robot_description_config = xacro.process_file(urdf_file)
     robot_desc = robot_description_config.toxml()
 

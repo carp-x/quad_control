@@ -1,5 +1,0 @@
-<robot>
-    <xacro:include filename="anymal.urdf" />
-    <xacro:include filename="anymal.gazebo.xacro" />
-    <xacro:include filename="anymal.ros2_control.xacro" />
-</robot>
