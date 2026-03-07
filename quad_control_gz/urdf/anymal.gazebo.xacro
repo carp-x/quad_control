@@ -2,8 +2,8 @@
 <robot xmlns:xacro="http://www.ros.org">
 
     <gazebo>
-        <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlSystem">
-        <parameters>$(find quad_control_gz)/config/quad_gz_sim_config.yaml</parameters>
+        <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <parameters>$(find quad_control_gz)/config/config.yaml</parameters>
         </plugin>
     </gazebo>
 

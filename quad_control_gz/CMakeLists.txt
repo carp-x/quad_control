@@ -86,6 +86,6 @@ ament_export_dependencies(
   hardware_interface
 )
 
-pluginlib_export_plugin_description_file(${PROJECT_NAME} quad_gz_sim_plugins.xml)
+pluginlib_export_plugin_description_file(gz_ros2_control plugins.xml)
 
 ament_package()
