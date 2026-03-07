@@ -4,6 +4,7 @@ project(quad_control_gz)
 add_compile_options(-Wall -Wextra -Wpedantic)
 
 find_package(ament_cmake REQUIRED)
+find_package(gz_sim_vendor REQUIRED)
 find_package(gz-sim REQUIRED)
 
 find_package(std_msgs REQUIRED)
@@ -23,12 +24,12 @@ find_package(hardware_interface REQUIRED)
 add_library(${PROJECT_NAME} SHARED
   src/QuadGaSimSystem.cpp
 )
-target_include_directories(${PROJECT_NAME} PUBLIC
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+target_include_directories(${PROJECT_NAME} 
+  PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
 )
 target_link_libraries(${PROJECT_NAME}
-  PUBLIC
     # gz-sim::core
     gz-sim::gz-sim
 )
@@ -50,13 +51,14 @@ ament_target_dependencies(${PROJECT_NAME}
 
 ## Install
 install(DIRECTORY
+  launch
   config
   urdf
   worlds
   DESTINATION share/${PROJECT_NAME}/
 )
-install(DIRECTORY include/
-  DESTINATION include/
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION include/${PROJECT_NAME}
 )
 install(TARGETS
   ${PROJECT_NAME}
@@ -68,7 +70,6 @@ install(TARGETS
 
 ament_export_include_directories(
   include
-  ${PROJECT_BINARY_DIR}/include
 )
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
@@ -85,6 +86,6 @@ ament_export_dependencies(
   hardware_interface
 )
 
-pluginlib_export_plugin_description_file(${PROJECT_NAME} ${PROJECT_NAME}_plugins.xml)
+pluginlib_export_plugin_description_file(${PROJECT_NAME} quad_gz_sim_plugins.xml)
 
 ament_package()
