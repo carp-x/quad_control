@@ -2,50 +2,6 @@
 <package format="3">
   <name>quad_control_gz</name>
   <version>1.0.1</version>
-  <description>quad_control_gz</description>
-
-  <maintainer email="ahcorde@osrfoundation.org">Alejandro Hernandez</maintainer>
-
-  <license>Apache License 2.0</license>
-
-  <url type="website">https://github.com/ros-controls/gz_ros2_control/blob/master/README.md</url>
-  <url type="bugtracker">https://github.com/ros-controls/gz_ros2_control/issues</url>
-  <url type="repository">https://github.com/ros-controls/gz_ros2_control</url>
-
-  <author>Alejandro Hernández</author>
-
-  <buildtool_depend>ament_cmake</buildtool_depend>
-
-
-
-
-
-  <!-- ros2_control -->
-  <depend>ros2_control_cmake</depend>
-  <exec_depend>ackermann_steering_controller</exec_depend>
-  <exec_depend>diff_drive_controller</exec_depend>
-  <exec_depend>effort_controllers</exec_depend>
-  <exec_depend>force_torque_sensor_broadcaster</exec_depend>
-  <exec_depend>imu_sensor_broadcaster</exec_depend>
-  <exec_depend>joint_state_broadcaster</exec_depend>
-  <exec_depend>joint_trajectory_controller</exec_depend>
-  <exec_depend>mecanum_drive_controller</exec_depend>
-  <exec_depend>ros2controlcli</exec_depend>
-  <exec_depend>tricycle_steering_controller</exec_depend>
-  <exec_depend>velocity_controllers</exec_depend>
-
-
-
-  <export>
-    <build_type>ament_cmake</build_type>
-  </export>
-</package>
----------
-
-<?xml version="1.0"?>
-<package format="3">
-  <name>quad_control_gz</name>
-  <version>1.0.1</version>
   <description>Quadrotor control system for Gazebo Sim</description>
   <maintainer email="ahcorde@osrfoundation.org">Alejandro Hernandez</maintainer>
   <license>Apache License 2.0</license>
