@@ -5,6 +5,8 @@
         <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
         <parameters>$(find quad_control_gz)/config/config.yaml</parameters>
         </plugin>
+        <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu">
+        </plugin>
     </gazebo>
 
     <xacro:macro name="preserve_fixed_joint" params="joint_name">
@@ -12,12 +14,17 @@
         <preserveFixedJoint>true</preserveFixedJoint>
         </gazebo>
     </xacro:macro>
-
     <xacro:preserve_fixed_joint joint_name="imu_joint"/>
-
     <xacro:preserve_fixed_joint joint_name="LF_shank_fixed_LF_FOOT"/>
     <xacro:preserve_fixed_joint joint_name="RF_shank_fixed_RF_FOOT"/>
     <xacro:preserve_fixed_joint joint_name="LH_shank_fixed_LH_FOOT"/>
     <xacro:preserve_fixed_joint joint_name="RH_shank_fixed_RH_FOOT"/>
+
+    <gazebo reference="imu_link">
+        <sensor name="base_imu" type="imu">
+            <always_on>1</always_on>
+            <update_rate>500</update_rate>
+        </sensor>
+    </gazebo>
 
 </robot>

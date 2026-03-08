@@ -43,6 +43,8 @@
 
 /******************************************************************************************************/
 #include <gz/sim/components/JointForceCmd.hh>
+#include <gz/sim/components/Imu.hh>
+#include <gz/sim/components/Sensor.hh>
 /******************************************************************************************************/
 
 struct jointData
@@ -92,6 +94,21 @@ struct jointData
   std::unique_ptr<control_toolbox::LowPassFilter<double>> lpf;
 };
 
+/******************************************************************************************************/
+struct imuData {
+  std::string name;
+
+  std::array<double, 4> ori;
+  std::array<double, 9> ori_cov;
+  std::array<double, 3> angular_vel;
+  std::array<double, 9> angular_vel_cov;
+  std::array<double, 3> linear_acc;
+  std::array<double, 9> linear_acc_cov;
+
+  sim::Entity sim_imu;
+};
+/******************************************************************************************************/
+
 class quad_robot::QuadGaSimSystemPrivate
 {
 public:
@@ -106,6 +123,10 @@ public:
 
   /// \brief vector with the joint's names.
   std::vector<struct jointData> joints_;
+
+  /******************************************************************************************************/
+  std::vector<std::shared_ptr<imuData>> imus_;
+  /******************************************************************************************************/
 
   /// \brief state interfaces that will be exported to the Resource Manager
   std::vector<hardware_interface::StateInterface> state_interfaces_;
@@ -361,8 +382,123 @@ bool QuadGaSimSystem::initSim(
     }
   }
 
+  /******************************************************************************************************/
+  registerIMUS(hardware_info);
+  /******************************************************************************************************/
+
   return true;
 }
+
+/******************************************************************************************************/
+void QuadGaSimSystem::registerIMUS(
+  const hardware_interface::HardwareInfo & hardware_info)
+{
+  size_t n_sensors = hardware_info.sensors.size();
+  std::vector<hardware_interface::ComponentInfo> sensor_components;
+
+  for (unsigned int j = 0; j < n_sensors; j++) {
+    hardware_interface::ComponentInfo component = hardware_info.sensors[j];
+    sensor_components.push_back(component);
+  }
+
+  this->dataPtr->ecm->Each<sim::components::Imu,
+    sim::components::Name>(
+    [&](const sim::Entity & entity,
+    const sim::components::Imu *,
+    const sim::components::Name * name) -> bool
+    {
+
+      RCLCPP_INFO_STREAM(this->nh_->get_logger(), "Loading sensor: " << name->Data());
+      auto sensorTopicComp = this->dataPtr->ecm->Component<
+        sim::components::SensorTopic>(entity);
+      if (sensorTopicComp) {
+        RCLCPP_INFO_STREAM(this->nh_->get_logger(), "Topic name: " << sensorTopicComp->Data());
+      }
+      RCLCPP_INFO_STREAM(
+        this->nh_->get_logger(), "\tState:");
+      
+      static const std::map<std::string, size_t> interface_name_map = {
+        {"orientation.x", 0},
+        {"orientation.y", 1},
+        {"orientation.z", 2},
+        {"orientation.w", 3},
+        {"angular_velocity.x", 0},
+        {"angular_velocity.y", 1},
+        {"angular_velocity.z", 2},
+        {"linear_acceleration.x", 0},
+        {"linear_acceleration.y", 1},
+        {"linear_acceleration.z", 2},
+      };
+
+      static const std::map<std::string, size_t> cov_map = {
+        {"xx", 0}, {"xy", 1}, {"xz", 2}, {"yx", 3}, {"yy", 4}, {"yz", 5}, {"zx", 6}, {"zy", 7}, {"zz", 8}
+      };
+
+      auto imu_data = std::make_shared<imuData>();
+      imu_data->name = name->Data();
+      imu_data->sim_imu = entity;
+
+      hardware_interface::ComponentInfo component;
+      for (auto & comp : sensor_components) {
+        if (comp.name == name->Data()) {
+          component = comp;
+        }
+      }
+
+      for (const auto & state_if : component.state_interfaces) {
+        RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t " << state_if.name);
+
+        double* data_ptr = nullptr;
+        if (state_if.name == "orientation.x") data_ptr = &imu_data->ori[0];
+        else if (state_if.name == "orientation.y") data_ptr = &imu_data->ori[1];
+        else if (state_if.name == "orientation.z") data_ptr = &imu_data->ori[2];
+        else if (state_if.name == "orientation.w") data_ptr = &imu_data->ori[3];
+        else if (state_if.name == "angular_velocity.x") data_ptr = &imu_data->angular_vel[0];
+        else if (state_if.name == "angular_velocity.y") data_ptr = &imu_data->angular_vel[1];
+        else if (state_if.name == "angular_velocity.z") data_ptr = &imu_data->angular_vel[2];
+        else if (state_if.name == "linear_acceleration.x") data_ptr = &imu_data->linear_acc[0];
+        else if (state_if.name == "linear_acceleration.y") data_ptr = &imu_data->linear_acc[1];
+        else if (state_if.name == "linear_acceleration.z") data_ptr = &imu_data->linear_acc[2];
+        else if (state_if.name.find("covariance") != std::string::npos) {
+          std::string suffix = state_if.name.substr(state_if.name.find_last_of('.') + 1);
+          size_t idx = cov_map.at(suffix);
+          if (state_if.name.find("orientation_covariance") != std::string::npos)
+            data_ptr = &imu_data->ori_cov[idx];
+          else if (state_if.name.find("angular_velocity_covariance") != std::string::npos)
+            data_ptr = &imu_data->angular_vel_cov[idx];
+          else if (state_if.name.find("linear_acceleration_covariance") != std::string::npos)
+            data_ptr = &imu_data->linear_acc_cov[idx];
+        }
+
+        if (data_ptr) {
+          this->dataPtr->state_interfaces_.emplace_back(
+            imu_data->name,
+            state_if.name,
+            data_ptr);
+        }
+      }
+
+      this->dataPtr->imus_.push_back(imu_data);
+      return true;
+    });
+
+    updateCovIMUS();
+}
+
+void QuadGaSimSystem::updateCovIMUS() 
+{
+  for (auto &imu_data_ptr : this->dataPtr->imus_) {
+    imu_data_ptr->ori_cov.fill(0.0);
+    imu_data_ptr->ori_cov[0] = imu_data_ptr->ori_cov[4] = imu_data_ptr->ori_cov[8] = imu_ori_cov_urdf_;
+    imu_data_ptr->angular_vel_cov.fill(0.0);
+    imu_data_ptr->angular_vel_cov[0] = imu_data_ptr->angular_vel_cov[4] = imu_data_ptr->angular_vel_cov[8] = imu_angular_vel_cov_urdf_;
+    imu_data_ptr->linear_acc_cov.fill(0.0);
+    imu_data_ptr->linear_acc_cov[0] = imu_data_ptr->linear_acc_cov[4] = imu_data_ptr->linear_acc_cov[8] = imu_linear_acc_cov_urdf_;
+  }
+
+  RCLCPP_INFO(this->nh_->get_logger(), "IMU Covariance successfully initialized from URDF.");
+}
+/******************************************************************************************************/
 
 CallbackReturn
 QuadGaSimSystem::on_init(const hardware_interface::HardwareComponentInterfaceParams & params)
@@ -372,6 +508,30 @@ QuadGaSimSystem::on_init(const hardware_interface::HardwareComponentInterfacePar
   {
     return CallbackReturn::ERROR;
   }
+
+  /******************************************************************************************************/
+  for (const auto & sensor : this->info_.sensors)
+  {
+    if (sensor.name == "base_imu")
+    {
+      try {
+        imu_ori_cov_urdf_ = std::stod(sensor.parameters.at("orientation_covariance_diagonal"));
+        imu_angular_vel_cov_urdf_ = std::stod(sensor.parameters.at("angular_velocity_covariance_diagonal"));
+        imu_linear_acc_cov_urdf_ = std::stod(sensor.parameters.at("linear_acceleration_covariance_diagonal"));
+        RCLCPP_INFO(this->nh_->get_logger(), "IMU parameter successfully read from URDF.");
+      }
+      catch (const std::out_of_range & e) {
+        RCLCPP_ERROR(this->nh_->get_logger(), "Missing IMU parameter: %s", e.what());
+        return CallbackReturn::ERROR;
+      }
+      catch (const std::invalid_argument & e) {
+        RCLCPP_ERROR(this->nh_->get_logger(), "Invalid IMU parameter value: %s", e.what());
+        return CallbackReturn::ERROR;
+      }
+    }
+  }
+  /******************************************************************************************************/
+
   return CallbackReturn::SUCCESS;
 }
 

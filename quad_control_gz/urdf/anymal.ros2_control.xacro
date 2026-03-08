@@ -44,6 +44,25 @@
             <state_interface name="linear_acceleration.x"/>
             <state_interface name="linear_acceleration.y"/>
             <state_interface name="linear_acceleration.z"/>
+
+            <xacro:macro name="covariance_generator" params="prefix">
+                <state_interface name="${prefix}.xx"/>
+                <state_interface name="${prefix}.xy"/>
+                <state_interface name="${prefix}.xz"/>
+                <state_interface name="${prefix}.yx"/>
+                <state_interface name="${prefix}.yy"/>
+                <state_interface name="${prefix}.yz"/>
+                <state_interface name="${prefix}.zx"/>
+                <state_interface name="${prefix}.zy"/>
+                <state_interface name="${prefix}.zz"/>
+            </xacro:macro>
+            <xacro:covariance_generator prefix="orientation_covariance"/>
+            <xacro:covariance_generator prefix="angular_velocity_covariance"/>
+            <xacro:covariance_generator prefix="linear_acceleration_covariance"/>
+
+            <param name="orientation_covariance_diagonal">0.0012</param>
+            <param name="angular_velocity_covariance_diagonal">0.0004</param>
+            <param name="linear_acceleration_covariance_diagonal">0.01</param>
         </sensor>
 
         <sensor name="LF_FOOT_sensor"><state_interface name="contact"/></sensor>

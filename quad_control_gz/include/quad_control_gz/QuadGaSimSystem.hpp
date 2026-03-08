@@ -73,6 +73,15 @@ public:
     unsigned int update_rate) override;
 
 private:
+  /******************************************************************************************************/
+  double imu_ori_cov_urdf_;
+  double imu_angular_vel_cov_urdf_;
+  double imu_linear_acc_cov_urdf_;
+  void registerIMUS(
+    const hardware_interface::HardwareInfo & hardware_info);
+  void updateCovIMUS();
+  /******************************************************************************************************/
+  
   /// \brief Private data class
   std::unique_ptr<QuadGaSimSystemPrivate> dataPtr;
 };

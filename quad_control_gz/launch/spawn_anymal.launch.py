@@ -20,6 +20,12 @@ def generate_launch_description():
         value=[mesh_file, ':', os.path.join(pkg_project, 'share')]
     )
 
+    # pkg_hardware = get_package_share_directory('quad_control_gz')
+    # set_gz_plugin_path = SetEnvironmentVariable(
+    #     name='GZ_SIM_SYSTEM_PLUGIN_PATH',
+    #     value=[os.path.join(pkg_hardware, 'lib')]
+    # )
+
     node_robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
@@ -42,6 +48,18 @@ def generate_launch_description():
             '-name', 'anymal',
             '-z', '0.6'                    # 离地高度
         ],
+    )
+
+    joint_state_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["joint_state_broadcaster"],
+    )
+
+    imu_sensor_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["imu_sensor_broadcaster"],
     )
 
     return LaunchDescription([
