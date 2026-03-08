@@ -43,8 +43,12 @@
 
 /******************************************************************************************************/
 #include <gz/sim/components/JointForceCmd.hh>
-#include <gz/sim/components/Imu.hh>
 #include <gz/sim/components/Sensor.hh>
+#include <gz/sim/components/Imu.hh>
+#include <gz/sim/components/Pose.hh>
+#include <gz/sim/components/AngularVelocity.hh>
+#include <gz/sim/components/LinearAcceleration.hh>
+
 /******************************************************************************************************/
 
 struct jointData
@@ -407,7 +411,6 @@ void QuadGaSimSystem::registerIMUS(
     const sim::components::Imu *,
     const sim::components::Name * name) -> bool
     {
-
       RCLCPP_INFO_STREAM(this->nh_->get_logger(), "Loading sensor: " << name->Data());
       auto sensorTopicComp = this->dataPtr->ecm->Component<
         sim::components::SensorTopic>(entity);
@@ -617,6 +620,34 @@ hardware_interface::return_type QuadGaSimSystem::read(
         this->dataPtr->joints_[i].joint_axis.Xyz()[1],
         this->dataPtr->joints_[i].joint_axis.Xyz()[2]});
   }
+
+  /******************************************************************************************************/
+  for (auto & imu_data_ptr : this->dataPtr->imus_) {
+    if (imu_data_ptr->sim_imu != sim::kNullEntity) {
+
+      auto pose_comp = this->dataPtr->ecm->Component<gz::sim::components::Pose>(imu_data_ptr->sim_imu);
+      auto ang_vel_comp = this->dataPtr->ecm->Component<gz::sim::components::AngularVelocity>(imu_data_ptr->sim_imu);
+      auto lin_acc_comp = this->dataPtr->ecm->Component<gz::sim::components::LinearAcceleration>(imu_data_ptr->sim_imu);
+
+      if (pose_comp) {
+        imu_data_ptr->ori[0] = pose_comp->Data().Rot().X();
+        imu_data_ptr->ori[1] = pose_comp->Data().Rot().Y();
+        imu_data_ptr->ori[2] = pose_comp->Data().Rot().Z();
+        imu_data_ptr->ori[3] = pose_comp->Data().Rot().W();
+      }
+      if (ang_vel_comp) {
+        imu_data_ptr->angular_vel[0] = ang_vel_comp->Data().X();
+        imu_data_ptr->angular_vel[1] = ang_vel_comp->Data().Y();
+        imu_data_ptr->angular_vel[2] = ang_vel_comp->Data().Z();
+      }
+      if (lin_acc_comp) {
+        imu_data_ptr->linear_acc[0] = lin_acc_comp->Data().X();
+        imu_data_ptr->linear_acc[1] = lin_acc_comp->Data().Y();
+        imu_data_ptr->linear_acc[2] = lin_acc_comp->Data().Z();
+      }      
+    }
+  }
+  /******************************************************************************************************/
 
   return hardware_interface::return_type::OK;
 }
