@@ -484,22 +484,6 @@ void QuadGaSimSystem::registerIMUS(
       this->dataPtr->imus_.push_back(imu_data);
       return true;
     });
-
-    updateCovIMUS();
-}
-
-void QuadGaSimSystem::updateCovIMUS() 
-{
-  for (auto &imu_data_ptr : this->dataPtr->imus_) {
-    imu_data_ptr->ori_cov.fill(0.0);
-    imu_data_ptr->ori_cov[0] = imu_data_ptr->ori_cov[4] = imu_data_ptr->ori_cov[8] = imu_ori_cov_urdf_;
-    imu_data_ptr->angular_vel_cov.fill(0.0);
-    imu_data_ptr->angular_vel_cov[0] = imu_data_ptr->angular_vel_cov[4] = imu_data_ptr->angular_vel_cov[8] = imu_angular_vel_cov_urdf_;
-    imu_data_ptr->linear_acc_cov.fill(0.0);
-    imu_data_ptr->linear_acc_cov[0] = imu_data_ptr->linear_acc_cov[4] = imu_data_ptr->linear_acc_cov[8] = imu_linear_acc_cov_urdf_;
-  }
-
-  RCLCPP_INFO(this->nh_->get_logger(), "IMU Covariance successfully initialized from URDF.");
 }
 /******************************************************************************************************/
 
@@ -518,10 +502,12 @@ QuadGaSimSystem::on_init(const hardware_interface::HardwareComponentInterfacePar
     if (sensor.name == "base_imu")
     {
       try {
-        imu_ori_cov_urdf_ = std::stod(sensor.parameters.at("orientation_covariance_diagonal"));
-        imu_angular_vel_cov_urdf_ = std::stod(sensor.parameters.at("angular_velocity_covariance_diagonal"));
-        imu_linear_acc_cov_urdf_ = std::stod(sensor.parameters.at("linear_acceleration_covariance_diagonal"));
+        double ori_cov = std::stod(sensor.parameters.at("orientation_covariance_diagonal"));
+        double angular_vel_cov = std::stod(sensor.parameters.at("angular_velocity_covariance_diagonal"));
+        double linear_acc_cov = std::stod(sensor.parameters.at("linear_acceleration_covariance_diagonal"));
         RCLCPP_INFO(this->nh_->get_logger(), "IMU parameter successfully read from URDF.");
+        updateCovIMUS(ori_cov, angular_vel_cov, linear_acc_cov);
+        RCLCPP_INFO(this->nh_->get_logger(), "IMU Covariance successfully initialized from URDF.");
       }
       catch (const std::out_of_range & e) {
         RCLCPP_ERROR(this->nh_->get_logger(), "Missing IMU parameter: %s", e.what());
@@ -537,6 +523,20 @@ QuadGaSimSystem::on_init(const hardware_interface::HardwareComponentInterfacePar
 
   return CallbackReturn::SUCCESS;
 }
+
+/******************************************************************************************************/
+void QuadGaSimSystem::updateCovIMUS(double ori_cov, double angular_vel_cov, double linear_acc_cov)
+{
+  for (auto &imu_data_ptr : this->dataPtr->imus_) {
+    imu_data_ptr->ori_cov.fill(0.0);
+    imu_data_ptr->ori_cov[0] = imu_data_ptr->ori_cov[4] = imu_data_ptr->ori_cov[8] = ori_cov;
+    imu_data_ptr->angular_vel_cov.fill(0.0);
+    imu_data_ptr->angular_vel_cov[0] = imu_data_ptr->angular_vel_cov[4] = imu_data_ptr->angular_vel_cov[8] = angular_vel_cov;
+    imu_data_ptr->linear_acc_cov.fill(0.0);
+    imu_data_ptr->linear_acc_cov[0] = imu_data_ptr->linear_acc_cov[4] = imu_data_ptr->linear_acc_cov[8] = linear_acc_cov;
+  }
+}
+/******************************************************************************************************/
 
 CallbackReturn QuadGaSimSystem::on_configure(
   const rclcpp_lifecycle::State & /*previous_state*/)

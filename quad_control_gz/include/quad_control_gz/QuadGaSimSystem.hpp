@@ -74,12 +74,9 @@ public:
 
 private:
   /******************************************************************************************************/
-  double imu_ori_cov_urdf_;
-  double imu_angular_vel_cov_urdf_;
-  double imu_linear_acc_cov_urdf_;
   void registerIMUS(
     const hardware_interface::HardwareInfo & hardware_info);
-  void updateCovIMUS();
+  void updateCovIMUS(double ori_cov, double angular_vel_cov, double linear_acc_cov);
   /******************************************************************************************************/
   
   /// \brief Private data class
