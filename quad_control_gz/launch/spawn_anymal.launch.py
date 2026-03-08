@@ -9,6 +9,7 @@ import xacro
 def generate_launch_description():
 
     pkg_project = get_package_share_directory('quad_control_gz')
+
     urdf_file = os.path.join(pkg_project, 'urdf', 'anymal.complete.xacro')
     robot_description_config = xacro.process_file(urdf_file)
     robot_desc = robot_description_config.toxml()
@@ -17,20 +18,17 @@ def generate_launch_description():
     mesh_file = os.path.dirname(pkg_meshes)
     set_gz_resource_path = SetEnvironmentVariable(
         name='GZ_SIM_RESOURCE_PATH',
-        value=[mesh_file, ':', os.path.join(pkg_project, 'share')]
+        value=[mesh_file + ':' + os.path.join(pkg_project, 'share')]
     )
-
-    # pkg_hardware = get_package_share_directory('quad_control_gz')
-    # set_gz_plugin_path = SetEnvironmentVariable(
-    #     name='GZ_SIM_SYSTEM_PLUGIN_PATH',
-    #     value=[os.path.join(pkg_hardware, 'lib')]
-    # )
 
     node_robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
         output='both',
-        parameters=[{'robot_description': robot_desc}]
+        parameters=[{
+            'robot_description': robot_desc,
+            'use_sim_time': True
+        }],
     )
 
     gz_sim = IncludeLaunchDescription(
@@ -44,27 +42,40 @@ def generate_launch_description():
         executable='create',
         output='screen',
         arguments=[
-            '-topic', 'robot_description', # 直接从 state_publisher 话题拿模型
+            '-topic', 'robot_description',
             '-name', 'anymal',
-            '-z', '0.6'                    # 离地高度
+            '-z', '0.6'
         ],
+        parameters=[{'use_sim_time': True}],
     )
 
     joint_state_spawner = Node(
         package="controller_manager",
         executable="spawner",
         arguments=["joint_state_broadcaster"],
+        parameters=[{'use_sim_time': True}],
     )
 
     imu_sensor_spawner = Node(
         package="controller_manager",
         executable="spawner",
         arguments=["imu_sensor_broadcaster"],
+        parameters=[{'use_sim_time': True}],
+    )
+
+    bridge_clock = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        arguments=['/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock'],
+        output='screen',
     )
 
     return LaunchDescription([
-        set_gz_resource_path,        # 必须先设路径
+        set_gz_resource_path,        # 先设路径
         node_robot_state_publisher,  # 发布模型
         gz_sim,                      # 开仿真器
         gz_spawn_entity,             # 生成实体
+        joint_state_spawner,
+        imu_sensor_spawner,
+        bridge_clock,
     ])
