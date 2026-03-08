@@ -12,8 +12,8 @@
                 <state_interface name="velocity"/>
                 <state_interface name="effort"/>
 
-                <command_interface name="posDes"/>
-                <command_interface name="velDes"/>
+                <command_interface name="pos_des"/>
+                <command_interface name="vel_des"/>
                 <command_interface name="ff"/>
                 <command_interface name="kp"/>
                 <command_interface name="kd"/>

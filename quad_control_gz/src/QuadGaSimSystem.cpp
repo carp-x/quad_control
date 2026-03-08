@@ -41,6 +41,10 @@
 #include "hardware_interface/lexical_casts.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 
+/******************************************************************************************************/
+#include <gz/sim/components/JointForceCmd.hh>
+/******************************************************************************************************/
+
 struct jointData
 {
   /// \brief Joint's names.
@@ -64,6 +68,23 @@ struct jointData
   /// \brief Current cmd joint velocity
   double joint_velocity_cmd;
 
+  /******************************************************************************************************/
+  /// \brief Target position command (pos_des)
+  double joint_pos_des;
+
+  /// \brief Target velocity command (vel_des)
+  double joint_vel_des;
+
+  /// \brief Feedforward effort command (ff)
+  double joint_ff;
+
+  /// \brief Proportional gain command (kp)
+  double joint_kp;
+  
+  /// \brief Derivative gain command (kd)
+  double joint_kd;
+  /******************************************************************************************************/
+  
   /// \brief handles to the joints from within Gazebo
   sim::Entity sim_joint;
 
@@ -200,6 +221,13 @@ bool QuadGaSimSystem::initSim(
     double initial_position = std::numeric_limits<double>::quiet_NaN();
     double initial_velocity = std::numeric_limits<double>::quiet_NaN();
     double initial_effort = std::numeric_limits<double>::quiet_NaN();
+    /******************************************************************************************************/
+    double initial_pos_des = std::numeric_limits<double>::quiet_NaN();
+    double initial_vel_des = std::numeric_limits<double>::quiet_NaN();
+    double initial_ff = std::numeric_limits<double>::quiet_NaN();
+    double initial_kp = std::numeric_limits<double>::quiet_NaN();
+    double initial_kd = std::numeric_limits<double>::quiet_NaN();
+    /******************************************************************************************************/
 
     // register the state handles
     for (unsigned int i = 0; i < joint_info.state_interfaces.size(); ++i) {
@@ -246,6 +274,58 @@ bool QuadGaSimSystem::initSim(
           this->dataPtr->joints_[j].joint_velocity_cmd = initial_velocity;
         }
       }
+      /******************************************************************************************************/
+      if (joint_info.command_interfaces[i].name == "pos_des") {
+        RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t pos_des");
+        this->dataPtr->command_interfaces_.emplace_back(
+          joint_name,
+          "pos_des",
+          &this->dataPtr->joints_[j].joint_pos_des);
+        if (!std::isnan(initial_pos_des)) {
+          this->dataPtr->joints_[j].joint_pos_des = initial_pos_des;
+        }
+      }
+      if (joint_info.command_interfaces[i].name == "vel_des") {
+        RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t vel_des");
+        this->dataPtr->command_interfaces_.emplace_back(
+          joint_name,
+          "vel_des",
+          &this->dataPtr->joints_[j].joint_vel_des);
+        if (!std::isnan(initial_vel_des)) {
+          this->dataPtr->joints_[j].joint_vel_des = initial_vel_des;
+        }
+      }
+      if (joint_info.command_interfaces[i].name == "ff") {
+        RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t ff");
+        this->dataPtr->command_interfaces_.emplace_back(
+          joint_name,
+          "ff",
+          &this->dataPtr->joints_[j].joint_ff);
+        if (!std::isnan(initial_ff)) {
+          this->dataPtr->joints_[j].joint_ff = initial_ff;
+        }
+      }
+      if (joint_info.command_interfaces[i].name == "kp") {
+        RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t kp");
+        this->dataPtr->command_interfaces_.emplace_back(
+          joint_name,
+          "kp",
+          &this->dataPtr->joints_[j].joint_kp);
+        if (!std::isnan(initial_kp)) {
+          this->dataPtr->joints_[j].joint_kp = initial_kp;
+        }
+      }
+      if (joint_info.command_interfaces[i].name == "kd") {
+        RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t kd");
+        this->dataPtr->command_interfaces_.emplace_back(
+          joint_name,
+          "kd",
+          &this->dataPtr->joints_[j].joint_kd);
+        if (!std::isnan(initial_kd)) {
+          this->dataPtr->joints_[j].joint_kd = initial_kd;
+        }
+      }
+      /******************************************************************************************************/
       auto it = joint_info.command_interfaces[i].parameters.find("damping_frequency");
       if (it != joint_info.command_interfaces[i].parameters.end()) {
         double damping_frequency = stod(it->second);
@@ -380,6 +460,8 @@ hardware_interface::return_type QuadGaSimSystem::write(
     if (this->dataPtr->joints_[i].sim_joint == sim::kNullEntity) {
       continue;
     }
+    /******************************************************************************************************/
+    /*
     double vel_cmd;
     if (this->dataPtr->joints_[i].lpf && this->dataPtr->joints_[i].lpf->is_configured()) {
       this->dataPtr->joints_[i].lpf->update(this->dataPtr->joints_[i].joint_velocity_cmd, vel_cmd);
@@ -389,6 +471,36 @@ hardware_interface::return_type QuadGaSimSystem::write(
     this->dataPtr->ecm->SetComponentData<sim::components::JointVelocityCmd>(
       this->dataPtr->joints_[i].sim_joint,
       {vel_cmd});
+    */
+    
+    if (std::isnan(this->dataPtr->joints_[i].joint_pos_des) || 
+        std::isnan(this->dataPtr->joints_[i].joint_vel_des) || 
+        std::isnan(this->dataPtr->joints_[i].joint_ff) ||
+        std::isnan(this->dataPtr->joints_[i].joint_kp) ||
+        std::isnan(this->dataPtr->joints_[i].joint_kd)) {
+      continue; 
+    }
+
+    double pos_cur = this->dataPtr->joints_[i].joint_position;
+    double vel_cur = this->dataPtr->joints_[i].joint_velocity;
+    double pos_des = this->dataPtr->joints_[i].joint_pos_des;
+    double vel_des = this->dataPtr->joints_[i].joint_vel_des;
+    double ff      = this->dataPtr->joints_[i].joint_ff;
+    double kp      = this->dataPtr->joints_[i].joint_kp;
+    double kd      = this->dataPtr->joints_[i].joint_kd;
+
+    double tau_cmd = ff + kp * (pos_des - pos_cur) + kd * (vel_des - vel_cur);
+    double filtered_tau;
+    if (this->dataPtr->joints_[i].lpf && this->dataPtr->joints_[i].lpf->is_configured()) {
+      this->dataPtr->joints_[i].lpf->update(tau_cmd, filtered_tau);
+    } else {
+      filtered_tau = tau_cmd;
+    }
+
+    this->dataPtr->ecm->SetComponentData<sim::components::JointForceCmd>(
+      this->dataPtr->joints_[i].sim_joint,
+      {filtered_tau});
+    /******************************************************************************************************/
   }
 
   return hardware_interface::return_type::OK;
