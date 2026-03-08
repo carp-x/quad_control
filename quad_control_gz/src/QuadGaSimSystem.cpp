@@ -398,6 +398,15 @@ QuadGaSimSystem::export_command_interfaces()
 
 CallbackReturn QuadGaSimSystem::on_activate(const rclcpp_lifecycle::State & previous_state)
 {
+  /******************************************************************************************************/
+  for (auto & joint : this->dataPtr->joints_) {
+    joint.joint_pos_des = joint.joint_position; 
+    joint.joint_vel_des = 0.0;
+    joint.joint_ff      = 0.0;
+    joint.joint_kp      = 50.0;
+    joint.joint_kd      = 1.0;
+  }
+  /******************************************************************************************************/
   return CallbackReturn::SUCCESS;
   return hardware_interface::SystemInterface::on_activate(previous_state);
 }
