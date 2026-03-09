@@ -139,11 +139,19 @@ public:
   std::string topic_name{};
   void OnForceTorque(const GZ_MSGS_NAMESPACE Wrench & msg);
 
+    // std::array<double, 6> f_t;
   double contact = false;
 };
 
 void ForceTorqueData::OnForceTorque(const GZ_MSGS_NAMESPACE Wrench & msg)
 {
+    // this->f_t[0] = msg.force().x();
+    // this->f_t[1] = msg.force().y();
+    // this->f_t[2] = msg.force().z();
+    // this->f_t[3] = msg.torque().x();
+    // this->f_t[4] = msg.torque().y();
+    // this->f_t[5] = msg.torque().z();
+
   const double to_contact_th = 10.0;
   const double to_no_contact_th = 4.0;
 
@@ -552,6 +560,15 @@ void QuadGaSimSystem::registerFTS(
       RCLCPP_INFO_STREAM(
         this->nh_->get_logger(), "\tState:");
       
+        // static const std::map<std::string, size_t> interface_name_map = {
+        //   {"force.x", 0},
+        //   {"force.y", 1},
+        //   {"force.z", 2},
+        //   {"torque.x", 3},
+        //   {"torque.y", 4},
+        //   {"torque.z", 5},
+        // };      
+        
       auto ft_data = std::make_shared<ForceTorqueData>();
       ft_data->name = name->Data();
       ft_data->sim_ft = entity;
@@ -566,10 +583,16 @@ void QuadGaSimSystem::registerFTS(
       for (const auto & state_if : component.state_interfaces) {
         RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t " << state_if.name);
 
+        double* data_ptr = nullptr;
+        if (state_if.name == "contact") data_ptr = &ft_data->contact;
+          // else {
+          //   size_t data_index = interface_name_map.at(state_if.name);
+          //   data_ptr = &ft_data->f_t[data_index];
+          // }
         this->dataPtr->state_interfaces_.emplace_back(
           ft_data->name,
           state_if.name,
-          &ft_data->contact);
+          data_ptr);
       }
       this->dataPtr->fts_.push_back(ft_data);
       return true;
