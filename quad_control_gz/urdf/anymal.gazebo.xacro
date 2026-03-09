@@ -33,7 +33,7 @@
 
     <xacro:macro name="foot_ft" params="prefix">
         <gazebo reference="${prefix}">
-        <sensor name="${prefix}_ft" type="force_torque">
+        <sensor name="${prefix[0:2]}_ft" type="force_torque">
             <always_on>true</always_on>
             <update_rate>500</update_rate>
             <topic>${prefix[0:2]}/ft</topic>
