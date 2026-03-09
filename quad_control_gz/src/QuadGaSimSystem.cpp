@@ -725,6 +725,18 @@ hardware_interface::return_type QuadGaSimSystem::read(
       }
     }
   }
+
+  for (auto & ft_data : this->dataPtr->fts_) {
+    if (ft_data->topic_name.empty()) {
+      auto sensorTopicComp = this->dataPtr->ecm->Component<sim::components::SensorTopic>(ft_data->sim_ft);
+      if (sensorTopicComp) {
+        ft_data->topic_name = sensorTopicComp->Data();
+        RCLCPP_INFO_STREAM(
+          this->nh_->get_logger(), "ForceTorque " << ft_data->name << " has a topic name: " << sensorTopicComp->Data());
+        this->dataPtr->node.Subscribe(ft_data->topic_name, &ForceTorqueData::OnForceTorque, ft_data.get());
+      }
+    }
+  }
   /******************************************************************************************************/
 
   return hardware_interface::return_type::OK;
