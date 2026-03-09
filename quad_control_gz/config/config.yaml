@@ -28,20 +28,20 @@ imu_sensor_broadcaster:
 
 lf_ft_sensor_broadcaster:
   ros__parameters:
-    sensor_names: "LF_shank_fixed_LF_FOOT_ft"
+    sensor_name: "LF_ft"
     frame_id: "LF_FOOT"
 
 rf_ft_sensor_broadcaster:
   ros__parameters:
-    sensor_names: "RF_ft"
+    sensor_name: "RF_ft"
     frame_id: "RF_FOOT"
 
 lh_ft_sensor_broadcaster:
   ros__parameters:
-    sensor_names: "LH_ft"
+    sensor_name: "LH_ft"
     frame_id: "LH_FOOT"
 
 rh_ft_sensor_broadcaster:
   ros__parameters:
-    sensor_names: "RH_ft"
+    sensor_name: "RH_ft"
     frame_id: "RH_FOOT"
