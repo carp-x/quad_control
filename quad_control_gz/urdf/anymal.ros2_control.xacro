@@ -70,6 +70,17 @@
         <sensor name="LH_FOOT_sensor"><state_interface name="contact"/></sensor>
         <sensor name="RH_FOOT_sensor"><state_interface name="contact"/></sensor>
 
+        <xacro:macro name="foot_contact_interface" params="prefix">
+            <sensor name="${prefix}_ft">
+            <state_interface name="contact"/> 
+            </sensor>
+        </xacro:macro>
+        
+        <xacro:foot_contact_interface prefix="LF"/>
+        <xacro:foot_contact_interface prefix="RF"/>
+        <xacro:foot_contact_interface prefix="LH"/>
+        <xacro:foot_contact_interface prefix="RH"/>
+
     </ros2_control>
 
 </robot>
