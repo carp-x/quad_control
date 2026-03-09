@@ -77,6 +77,8 @@ private:
   void registerIMUS(
     const hardware_interface::HardwareInfo & hardware_info);
   void updateCovIMUS(double ori_cov, double angular_vel_cov, double linear_acc_cov);
+  void registerFTS(
+    const hardware_interface::HardwareInfo & hardware_info);
   /******************************************************************************************************/
   
   /// \brief Private data class

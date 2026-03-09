@@ -7,7 +7,7 @@
         </plugin>
         <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu">
         </plugin>
-        <plugin filename="gz-sim-force-torque-system" name="gz::sim::systems::ForceTorque">
+        <plugin filename="libgz-sim8-forcetorque-system.so" name="gz::sim::systems::ForceTorque">
         </plugin>
     </gazebo>
 
@@ -32,11 +32,11 @@
     </gazebo>
 
     <xacro:macro name="foot_ft" params="prefix">
-        <gazebo reference="${prefix}_FOOT">
+        <gazebo reference="${prefix}">
         <sensor name="${prefix}_ft" type="force_torque">
             <always_on>true</always_on>
             <update_rate>500</update_rate>
-            <topic>${prefix}/ft</topic>
+            <topic>${prefix[0:2]}/ft</topic>
             <visualize>true</visualize>
             <force_torque>
                 <frame>child</frame>
@@ -46,9 +46,9 @@
         </gazebo>
     </xacro:macro>
 
-    <xacro:foot_ft prefix="LF"/>
-    <xacro:foot_ft prefix="RF"/>
-    <xacro:foot_ft prefix="LH"/>
-    <xacro:foot_ft prefix="RH"/>
+    <xacro:foot_ft prefix="LF_shank_fixed_LF_FOOT"/>
+    <xacro:foot_ft prefix="RF_shank_fixed_RF_FOOT"/>
+    <xacro:foot_ft prefix="LH_shank_fixed_LH_FOOT"/>
+    <xacro:foot_ft prefix="RH_shank_fixed_RH_FOOT"/>
 
 </robot>

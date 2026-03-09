@@ -47,6 +47,8 @@
 #include <gz/sim/components/Sensor.hh>
 #include <gz/sim/components/Imu.hh>
 #include <gz/msgs/imu.pb.h>
+#include <gz/sim/components/ForceTorque.hh>
+#include <gz/msgs/wrench.pb.h>
 #define GZ_TRANSPORT_NAMESPACE gz::transport::
 #define GZ_MSGS_NAMESPACE gz::msgs::
 /******************************************************************************************************/
@@ -99,7 +101,7 @@ struct jointData
 };
 
 /******************************************************************************************************/
-class imuData 
+class ImuData 
 {
 public:
   std::string name{};
@@ -115,7 +117,7 @@ public:
   std::array<double, 9> linear_acc_cov;
 };
 
-void imuData::OnIMU(const GZ_MSGS_NAMESPACE IMU & msg)
+void ImuData::OnIMU(const GZ_MSGS_NAMESPACE IMU & msg)
 {
   this->ori[0] = msg.orientation().x();
   this->ori[1] = msg.orientation().y();
@@ -127,6 +129,27 @@ void imuData::OnIMU(const GZ_MSGS_NAMESPACE IMU & msg)
   this->linear_acc[0] = msg.linear_acceleration().x();
   this->linear_acc[1] = msg.linear_acceleration().y();
   this->linear_acc[2] = msg.linear_acceleration().z();
+}
+
+class ForceTorqueData
+{
+public:
+  std::string name{};
+  sim::Entity sim_ft = sim::kNullEntity;
+  std::string topic_name{};
+  void OnForceTorque(const GZ_MSGS_NAMESPACE Wrench & msg);
+
+  double contact = false;
+};
+
+void ForceTorqueData::OnForceTorque(const GZ_MSGS_NAMESPACE Wrench & msg)
+{
+  const double to_contact_th = 10.0;
+  const double to_no_contact_th = 4.0;
+
+  double force_z = std::abs(msg.force().z());
+  if (force_z > to_contact_th) this->contact = true;
+  else if (force_z < to_no_contact_th) this->contact = false;
 }
 /******************************************************************************************************/
 
@@ -147,7 +170,8 @@ public:
 
   /******************************************************************************************************/
   GZ_TRANSPORT_NAMESPACE Node node;
-  std::vector<std::shared_ptr<imuData>> imus_;
+  std::vector<std::shared_ptr<ImuData>> imus_;
+  std::vector<std::shared_ptr<ForceTorqueData>> fts_;
   /******************************************************************************************************/
 
   /// \brief state interfaces that will be exported to the Resource Manager
@@ -406,6 +430,7 @@ bool QuadGaSimSystem::initSim(
 
   /******************************************************************************************************/
   registerIMUS(hardware_info);
+  registerFTS(hardware_info);
   /******************************************************************************************************/
 
   return true;
@@ -455,7 +480,7 @@ void QuadGaSimSystem::registerIMUS(
         {"xx", 0}, {"xy", 1}, {"xz", 2}, {"yx", 3}, {"yy", 4}, {"yz", 5}, {"zx", 6}, {"zy", 7}, {"zz", 8}
       };
 
-      auto imu_data = std::make_shared<imuData>();
+      auto imu_data = std::make_shared<ImuData>();
       imu_data->name = name->Data();
       imu_data->sim_imu = entity;
 
@@ -500,6 +525,56 @@ void QuadGaSimSystem::registerIMUS(
       }
 
       this->dataPtr->imus_.push_back(imu_data);
+      return true;
+    });
+}
+
+void QuadGaSimSystem::registerFTS(
+  const hardware_interface::HardwareInfo & hardware_info)
+{
+  size_t n_sensors = hardware_info.sensors.size();
+  std::vector<hardware_interface::ComponentInfo> sensor_components;
+
+  for (unsigned int j = 0; j < n_sensors; j++) {
+    hardware_interface::ComponentInfo component = hardware_info.sensors[j];
+    sensor_components.push_back(component);
+  }
+
+  this->dataPtr->ecm->Each<sim::components::ForceTorque,
+    sim::components::Name>(
+    [&](const sim::Entity & entity,
+    const sim::components::ForceTorque *,
+    const sim::components::Name * name) -> bool
+    {
+      RCLCPP_INFO_STREAM(this->nh_->get_logger(), "Loading sensor: " << name->Data());
+      auto sensorTopicComp = this->dataPtr->ecm->Component<
+        sim::components::SensorTopic>(entity);
+      if (sensorTopicComp) {
+        RCLCPP_INFO_STREAM(this->nh_->get_logger(), "Topic name: " << sensorTopicComp->Data());
+      }
+      RCLCPP_INFO_STREAM(
+        this->nh_->get_logger(), "\tState:");
+      
+      auto ft_data = std::make_shared<ForceTorqueData>();
+      ft_data->name = name->Data();
+      ft_data->sim_ft = entity;
+      
+      hardware_interface::ComponentInfo component;
+      for (auto & comp : sensor_components) {
+        if (comp.name == name->Data()) {
+          component = comp;
+        }
+      }
+
+      for (const auto & state_if : component.state_interfaces) {
+        RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t " << state_if.name);
+
+        this->dataPtr->state_interfaces_.emplace_back(
+          ft_data->name,
+          state_if.name,
+          &ft_data->contact);
+      }
+      this->dataPtr->fts_.push_back(ft_data);
       return true;
     });
 }
@@ -648,7 +723,7 @@ hardware_interface::return_type QuadGaSimSystem::read(
           imu_data->topic_name = sensorTopicComp->Data();
           RCLCPP_INFO_STREAM(
             this->nh_->get_logger(), "IMU " << imu_data->name << " has a topic name: " << sensorTopicComp->Data());
-          this->dataPtr->node.Subscribe(imu_data->topic_name, &imuData::OnIMU, imu_data.get());
+          this->dataPtr->node.Subscribe(imu_data->topic_name, &ImuData::OnIMU, imu_data.get());
         }
       }
     }
