@@ -546,13 +546,13 @@ QuadGaSimSystem::on_init(const hardware_interface::HardwareComponentInterfacePar
 /******************************************************************************************************/
 void QuadGaSimSystem::updateCovIMUS(double ori_cov, double angular_vel_cov, double linear_acc_cov)
 {
-  for (auto &imu_data_ptr : this->dataPtr->imus_) {
-    imu_data_ptr->ori_cov.fill(0.0);
-    imu_data_ptr->ori_cov[0] = imu_data_ptr->ori_cov[4] = imu_data_ptr->ori_cov[8] = ori_cov;
-    imu_data_ptr->angular_vel_cov.fill(0.0);
-    imu_data_ptr->angular_vel_cov[0] = imu_data_ptr->angular_vel_cov[4] = imu_data_ptr->angular_vel_cov[8] = angular_vel_cov;
-    imu_data_ptr->linear_acc_cov.fill(0.0);
-    imu_data_ptr->linear_acc_cov[0] = imu_data_ptr->linear_acc_cov[4] = imu_data_ptr->linear_acc_cov[8] = linear_acc_cov;
+  for (auto &imu_data : this->dataPtr->imus_) {
+    imu_data->ori_cov.fill(0.0);
+    imu_data->ori_cov[0] = imu_data->ori_cov[4] = imu_data->ori_cov[8] = ori_cov;
+    imu_data->angular_vel_cov.fill(0.0);
+    imu_data->angular_vel_cov[0] = imu_data->angular_vel_cov[4] = imu_data->angular_vel_cov[8] = angular_vel_cov;
+    imu_data->linear_acc_cov.fill(0.0);
+    imu_data->linear_acc_cov[0] = imu_data->linear_acc_cov[4] = imu_data->linear_acc_cov[8] = linear_acc_cov;
   }
 }
 /******************************************************************************************************/
@@ -641,15 +641,15 @@ hardware_interface::return_type QuadGaSimSystem::read(
   }
 
   /******************************************************************************************************/
-  for (auto & imu_data_ptr : this->dataPtr->imus_) {
-    if (imu_data_ptr->sim_imu != sim::kNullEntity) {
-      if (imu_data_ptr->topic_name.empty()) {
-        auto sensorTopicComp = this->dataPtr->ecm->Component<sim::components::SensorTopic>(imu_data_ptr->sim_imu);
+  for (auto & imu_data : this->dataPtr->imus_) {
+    if (imu_data->sim_imu != sim::kNullEntity) {
+      if (imu_data->topic_name.empty()) {
+        auto sensorTopicComp = this->dataPtr->ecm->Component<sim::components::SensorTopic>(imu_data->sim_imu);
         if (sensorTopicComp) {
-          imu_data_ptr->topic_name = sensorTopicComp->Data();
+          imu_data->topic_name = sensorTopicComp->Data();
           RCLCPP_INFO_STREAM(
-            this->nh_->get_logger(), "IMU " << imu_data_ptr->name << " has a topic name: " << sensorTopicComp->Data());
-          this->dataPtr->node.Subscribe(imu_data_ptr->topic_name, &imuData::OnIMU, imu_data_ptr.get());
+            this->nh_->get_logger(), "IMU " << imu_data->name << " has a topic name: " << sensorTopicComp->Data());
+          this->dataPtr->node.Subscribe(imu_data->topic_name, &imuData::OnIMU, imu_data.get());
         }
       }
     }
