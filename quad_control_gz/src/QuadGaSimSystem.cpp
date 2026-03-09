@@ -43,12 +43,13 @@
 
 /******************************************************************************************************/
 #include <gz/sim/components/JointForceCmd.hh>
+
+#include <gz/transport/Node.hh>
 #include <gz/sim/components/Sensor.hh>
 #include <gz/sim/components/Imu.hh>
-#include <gz/sim/components/Pose.hh>
-#include <gz/sim/components/AngularVelocity.hh>
-#include <gz/sim/components/LinearAcceleration.hh>
-
+#include <gz/msgs/imu.pb.h>
+#define GZ_TRANSPORT_NAMESPACE gz::transport::
+#define GZ_MSGS_NAMESPACE gz::msgs::
 /******************************************************************************************************/
 
 struct jointData
@@ -99,8 +100,13 @@ struct jointData
 };
 
 /******************************************************************************************************/
-struct imuData {
-  std::string name;
+class imuData 
+{
+public:
+  std::string name{};
+  sim::Entity sim_imu = sim::kNullEntity;
+  std::string topic_name{};
+  void OnIMU(const GZ_MSGS_NAMESPACE IMU & msg);
 
   std::array<double, 4> ori;
   std::array<double, 9> ori_cov;
@@ -108,9 +114,21 @@ struct imuData {
   std::array<double, 9> angular_vel_cov;
   std::array<double, 3> linear_acc;
   std::array<double, 9> linear_acc_cov;
-
-  sim::Entity sim_imu;
 };
+
+void imuData::OnIMU(const GZ_MSGS_NAMESPACE IMU & msg)
+{
+  this->ori[0] = msg.orientation().x();
+  this->ori[1] = msg.orientation().y();
+  this->ori[2] = msg.orientation().z();
+  this->ori[3] = msg.orientation().w();
+  this->angular_vel[0] = msg.angular_velocity().x();
+  this->angular_vel[1] = msg.angular_velocity().y();
+  this->angular_vel[2] = msg.angular_velocity().z();
+  this->linear_acc[0] = msg.linear_acceleration().x();
+  this->linear_acc[1] = msg.linear_acceleration().y();
+  this->linear_acc[2] = msg.linear_acceleration().z();
+}
 /******************************************************************************************************/
 
 class quad_robot::QuadGaSimSystemPrivate
@@ -129,6 +147,7 @@ public:
   std::vector<struct jointData> joints_;
 
   /******************************************************************************************************/
+  GZ_TRANSPORT_NAMESPACE Node node;
   std::vector<std::shared_ptr<imuData>> imus_;
   /******************************************************************************************************/
 
@@ -624,27 +643,15 @@ hardware_interface::return_type QuadGaSimSystem::read(
   /******************************************************************************************************/
   for (auto & imu_data_ptr : this->dataPtr->imus_) {
     if (imu_data_ptr->sim_imu != sim::kNullEntity) {
-
-      auto pose_comp = this->dataPtr->ecm->Component<gz::sim::components::Pose>(imu_data_ptr->sim_imu);
-      auto ang_vel_comp = this->dataPtr->ecm->Component<gz::sim::components::AngularVelocity>(imu_data_ptr->sim_imu);
-      auto lin_acc_comp = this->dataPtr->ecm->Component<gz::sim::components::LinearAcceleration>(imu_data_ptr->sim_imu);
-
-      if (pose_comp) {
-        imu_data_ptr->ori[0] = pose_comp->Data().Rot().X();
-        imu_data_ptr->ori[1] = pose_comp->Data().Rot().Y();
-        imu_data_ptr->ori[2] = pose_comp->Data().Rot().Z();
-        imu_data_ptr->ori[3] = pose_comp->Data().Rot().W();
+      if (imu_data_ptr->topic_name.empty()) {
+        auto sensorTopicComp = this->dataPtr->ecm->Component<sim::components::SensorTopic>(imu_data_ptr->sim_imu);
+        if (sensorTopicComp) {
+          imu_data_ptr->topic_name = sensorTopicComp->Data();
+          RCLCPP_INFO_STREAM(
+            this->nh_->get_logger(), "IMU " << imu_data_ptr->name << " has a topic name: " << sensorTopicComp->Data());
+          this->dataPtr->node.Subscribe(imu_data_ptr->topic_name, &imuData::OnIMU, imu_data_ptr.get());
+        }
       }
-      if (ang_vel_comp) {
-        imu_data_ptr->angular_vel[0] = ang_vel_comp->Data().X();
-        imu_data_ptr->angular_vel[1] = ang_vel_comp->Data().Y();
-        imu_data_ptr->angular_vel[2] = ang_vel_comp->Data().Z();
-      }
-      if (lin_acc_comp) {
-        imu_data_ptr->linear_acc[0] = lin_acc_comp->Data().X();
-        imu_data_ptr->linear_acc[1] = lin_acc_comp->Data().Y();
-        imu_data_ptr->linear_acc[2] = lin_acc_comp->Data().Z();
-      }      
     }
   }
   /******************************************************************************************************/
