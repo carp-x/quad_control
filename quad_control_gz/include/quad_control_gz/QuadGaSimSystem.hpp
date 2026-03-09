@@ -74,11 +74,13 @@ public:
 
 private:
   /******************************************************************************************************/
-  void registerIMUS(
+  void registerSensors(
     const hardware_interface::HardwareInfo & hardware_info);
+  void registerIMUS(
+    const std::vector<hardware_interface::ComponentInfo> & sensor_components);
   void updateCovIMUS(double ori_cov, double angular_vel_cov, double linear_acc_cov);
   void registerFTS(
-    const hardware_interface::HardwareInfo & hardware_info);
+    const std::vector<hardware_interface::ComponentInfo> & sensor_components);
   /******************************************************************************************************/
   
   /// \brief Private data class

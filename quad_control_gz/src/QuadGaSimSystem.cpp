@@ -429,25 +429,30 @@ bool QuadGaSimSystem::initSim(
   }
 
   /******************************************************************************************************/
-  registerIMUS(hardware_info);
-  registerFTS(hardware_info);
+  registerSensors(hardware_info);
   /******************************************************************************************************/
 
   return true;
 }
 
 /******************************************************************************************************/
-void QuadGaSimSystem::registerIMUS(
+void QuadGaSimSystem::registerSensors(
   const hardware_interface::HardwareInfo & hardware_info)
 {
   size_t n_sensors = hardware_info.sensors.size();
   std::vector<hardware_interface::ComponentInfo> sensor_components;
-
   for (unsigned int j = 0; j < n_sensors; j++) {
     hardware_interface::ComponentInfo component = hardware_info.sensors[j];
     sensor_components.push_back(component);
   }
 
+  registerIMUS(sensor_components);
+  registerFTS(sensor_components);
+}
+
+void QuadGaSimSystem::registerIMUS(
+  const std::vector<hardware_interface::ComponentInfo> & sensor_components)
+{
   this->dataPtr->ecm->Each<sim::components::Imu,
     sim::components::Name>(
     [&](const sim::Entity & entity,
@@ -530,16 +535,8 @@ void QuadGaSimSystem::registerIMUS(
 }
 
 void QuadGaSimSystem::registerFTS(
-  const hardware_interface::HardwareInfo & hardware_info)
+  const std::vector<hardware_interface::ComponentInfo> & sensor_components)
 {
-  size_t n_sensors = hardware_info.sensors.size();
-  std::vector<hardware_interface::ComponentInfo> sensor_components;
-
-  for (unsigned int j = 0; j < n_sensors; j++) {
-    hardware_interface::ComponentInfo component = hardware_info.sensors[j];
-    sensor_components.push_back(component);
-  }
-
   this->dataPtr->ecm->Each<sim::components::ForceTorque,
     sim::components::Name>(
     [&](const sim::Entity & entity,

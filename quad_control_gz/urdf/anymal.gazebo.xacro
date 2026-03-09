@@ -28,6 +28,18 @@
             <update_rate>500</update_rate>
             <topic>imu</topic>
             <visualize>true</visualize>
+            <imu>
+                <angular_velocity>
+                <x><noise type="gaussian"><stddev>2e-4</stddev></noise></x>
+                <y><noise type="gaussian"><stddev>2e-4</stddev></noise></y>
+                <z><noise type="gaussian"><stddev>2e-4</stddev></noise></z>
+                </angular_velocity>
+                <linear_acceleration>
+                <x><noise type="gaussian"><stddev>1.7e-2</stddev></noise></x>
+                <y><noise type="gaussian"><stddev>1.7e-2</stddev></noise></y>
+                <z><noise type="gaussian"><stddev>1.7e-2</stddev></noise></z>
+                </linear_acceleration>
+            </imu>
         </sensor>
     </gazebo>
 
