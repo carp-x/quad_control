@@ -67,7 +67,7 @@
 
         <xacro:macro name="foot_contact_interface" params="prefix">
             <sensor name="${prefix}_ft">
-            <state_interface name="contact"/> 
+            <state_interface name="contact"/>
             </sensor>
         </xacro:macro>
         
