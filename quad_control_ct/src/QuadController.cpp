@@ -9,17 +9,6 @@ controller_interface::CallbackReturn QuadController::on_init() {
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
-controller_interface::InterfaceConfiguration QuadController::command_interface_configuration() const {
-  controller_interface::InterfaceConfiguration config;
-  config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
-  for (const auto& joint : joint_names_) {
-    for (auto& interface : {"pos_des", "vel_des", "ff", "kp", "kd"}) {
-      config.names.push_back(joint + "/" + interface);
-    }
-  }
-  return config;
-}
-
 controller_interface::InterfaceConfiguration QuadController::state_interface_configuration() const {
   controller_interface::InterfaceConfiguration config;
   config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
@@ -43,6 +32,36 @@ controller_interface::InterfaceConfiguration QuadController::state_interface_con
   return config;
 }
 
+controller_interface::InterfaceConfiguration QuadController::command_interface_configuration() const {
+  controller_interface::InterfaceConfiguration config;
+  config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+  for (const auto& joint : joint_names_) {
+    for (auto& interface : {"pos_des", "vel_des", "ff", "kp", "kd"}) {
+      config.names.push_back(joint + "/" + interface);
+    }
+  }
+  return config;
+}
+
+controller_interface::return_type QuadController::update(const rclcpp::Time&, const rclcpp::Duration&) {
+  // 1. 读取数据示例
+  for (const auto& joint : joint_handles_) {
+    double q = joint.position.get().get_value();
+  }
+
+  for (const auto& foot : contact_handles_) {
+    if (foot.contact()) { /* 落地逻辑 */ }
+  }
+
+  // 2. 写入指令示例
+  for (auto& joint : joint_handles_) {
+    joint.pos_des.get().set_value(0.0);
+    joint.kp.get().set_value(50.0);
+  }
+
+  return controller_interface::return_type::OK;
+}
+
 controller_interface::CallbackReturn QuadController::on_configure(const rclcpp_lifecycle::State&) {
   return controller_interface::CallbackReturn::SUCCESS;
 }
@@ -52,13 +71,6 @@ controller_interface::CallbackReturn QuadController::on_activate(const rclcpp_li
     return controller_interface::CallbackReturn::ERROR;
   }
   RCLCPP_INFO(get_node()->get_logger(), "Quad Controller Activated Successfully");
-  return controller_interface::CallbackReturn::SUCCESS;
-}
-
-controller_interface::CallbackReturn QuadController::on_deactivate(const rclcpp_lifecycle::State&) {
-  joint_handles_.clear();
-  contact_handles_.clear();
-  imu_handle_.reset();
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
@@ -97,23 +109,11 @@ bool QuadController::setup_imu_handles() {
   return true; 
 }
 
-controller_interface::return_type QuadController::update(const rclcpp::Time&, const rclcpp::Duration&) {
-  // 1. 读取数据示例
-  for (const auto& joint : joint_handles_) {
-    double q = joint.position.get().get_value();
-  }
-
-  for (const auto& foot : contact_handles_) {
-    if (foot.contact()) { /* 落地逻辑 */ }
-  }
-
-  // 2. 写入指令示例
-  for (auto& joint : joint_handles_) {
-    joint.pos_des.get().set_value(0.0);
-    joint.kp.get().set_value(50.0);
-  }
-
-  return controller_interface::return_type::OK;
+controller_interface::CallbackReturn QuadController::on_deactivate(const rclcpp_lifecycle::State&) {
+  joint_handles_.clear();
+  contact_handles_.clear();
+  imu_handle_.reset();
+  return controller_interface::CallbackReturn::SUCCESS;
 }
 
 } // namespace quad_robot
