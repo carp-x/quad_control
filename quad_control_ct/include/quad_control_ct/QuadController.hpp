@@ -86,10 +86,16 @@ class QuadController : public controller_interface::ControllerInterface {
   const std::vector<std::string> foot_state_interfaces_{"contact"};
   
  private:
+  void stateIfConfig(controller_interface::InterfaceConfiguration& config) const;
+  void commandIfConfig(controller_interface::InterfaceConfiguration& config) const;
+  void printStateCommand();
+  void declareSensorParams(rclcpp_lifecycle::LifecycleNode& node);
+  bool loadSensorParams(rclcpp_lifecycle::LifecycleNode& node);
   bool setupJointHandles();
   bool setupIMUHandles();
   bool setupFTHandles();
-
+  void printHandlesCfg();
+  
   template <typename T>
   T* find_interface(std::vector<T>& interfaces, 
                     const std::string& name, 
