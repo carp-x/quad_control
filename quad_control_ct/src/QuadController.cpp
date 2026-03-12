@@ -5,10 +5,6 @@ namespace quad_robot {
 
 QuadController::~QuadController() = default;
 
-controller_interface::CallbackReturn QuadController::on_init() {
-  return controller_interface::CallbackReturn::SUCCESS;
-}
-
 controller_interface::InterfaceConfiguration QuadController::state_interface_configuration() const {
   controller_interface::InterfaceConfiguration config;
   config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
@@ -69,17 +65,34 @@ controller_interface::return_type QuadController::update(const rclcpp::Time&, co
   return controller_interface::return_type::OK;
 }
 
+controller_interface::CallbackReturn QuadController::on_init() {
+  auto node = get_node();
+
+  node->declare_parameter<std::vector<std::string>>("joints", std::vector<std::string>());
+  node->declare_parameter<std::vector<std::string>>("imus", std::vector<std::string>());
+  node->declare_parameter<std::vector<std::string>>("feet", std::vector<std::string>());
+
+  return controller_interface::CallbackReturn::SUCCESS;
+}
+
 controller_interface::CallbackReturn QuadController::on_configure(const rclcpp_lifecycle::State&) {
-  joint_names_ = {
-    "LF_HAA_LF_HIP", "LF_HFE_LF_THIGH", "LF_KFE_LF_SHANK",
-    "RF_HAA_RF_HIP", "RF_HFE_RF_THIGH", "RF_KFE_RF_SHANK",
-    "LH_HAA_LH_HIP", "LH_HFE_LH_THIGH", "LH_KFE_LH_SHANK",
-    "RH_HAA_RH_HIP", "RH_HFE_RH_THIGH", "RH_KFE_RH_SHANK",
-  };
-  
-  imu_names_ = {"base_imu"};
-  
-  foot_names_ = {"LF_ft", "RF_ft", "LH_ft", "RH_ft"};
+  auto node = get_node();
+
+  if (!node->get_parameter("joints", joint_names_) || joint_names_.empty()) {
+    RCLCPP_ERROR(node->get_logger(), "Failed to load 'joints' parameter or the list is empty.");
+    return controller_interface::CallbackReturn::ERROR;
+  }
+  if (!node->get_parameter("imus", imu_names_) || imu_names_.empty()) {
+    RCLCPP_ERROR(node->get_logger(), "Failed to load 'imus' parameter or the list is empty.");
+    return controller_interface::CallbackReturn::ERROR;
+  }
+  if (!node->get_parameter("feet", foot_names_) || foot_names_.empty()) {
+    RCLCPP_ERROR(node->get_logger(), "Failed to load 'feet' parameter or the list is empty.");
+    return controller_interface::CallbackReturn::ERROR;
+  }
+  RCLCPP_INFO(node->get_logger(), 
+              "Parameters loaded successfully: %zu joints, %zu IMUs, %zu feet sensors.", 
+              joint_names_.size(), imu_names_.size(), foot_names_.size());
 
   return controller_interface::CallbackReturn::SUCCESS;
 }
@@ -88,7 +101,55 @@ controller_interface::CallbackReturn QuadController::on_activate(const rclcpp_li
   if (!setupJointHandles() || !setupIMUHandles() || !setupFTHandles()) {
     return controller_interface::CallbackReturn::ERROR;
   }
-  RCLCPP_INFO(get_node()->get_logger(), "Quad Controller Activated Successfully");
+
+  auto logger = get_node()->get_logger();
+  RCLCPP_INFO(logger, "--------------------------------------------------");
+  RCLCPP_INFO(logger, "Quad Controller Activated Successfully");
+
+  RCLCPP_INFO(logger, ">> [Joint Handles]");
+  for (const auto& jh : joint_handles_) {
+    RCLCPP_INFO(logger, "   - %s (state: pos, vel, eff | command: pos_des, vel_des, ff, kp, kd)", 
+                jh.name.c_str());
+  }
+  
+  RCLCPP_INFO(logger, ">> [IMU Handles]");
+  for (const auto& ih : imu_handles_) {
+    RCLCPP_INFO(logger, ">> IMU Name: %s", ih.name.c_str());
+
+    std::string ori_str;
+    for (const auto& iface : ih.ori) ori_str += (iface.get().get_interface_name() + " ");
+    RCLCPP_INFO(logger, "   - Orientation: [ %s]", ori_str.c_str());
+
+    std::string ori_cov_str;
+    for (const auto& iface : ih.ori_cov) ori_cov_str += (iface.get().get_interface_name() + " ");
+    RCLCPP_INFO(logger, "   - Ori Cov: [ %s]", ori_cov_str.c_str());
+
+    std::string ang_vel_str;
+    for (const auto& iface : ih.angular_vel) ang_vel_str += (iface.get().get_interface_name() + " ");
+    RCLCPP_INFO(logger, "   - Angular Vel: [ %s]", ang_vel_str.c_str());
+
+    std::string ang_vel_cov_str;
+    for (const auto& iface : ih.angular_vel_cov) ang_vel_cov_str += (iface.get().get_interface_name() + " ");
+    RCLCPP_INFO(logger, "   - AngVel Cov: [ %s]", ang_vel_cov_str.c_str());
+
+    std::string lin_acc_str;
+    for (const auto& iface : ih.linear_acc) lin_acc_str += (iface.get().get_interface_name() + " ");
+    RCLCPP_INFO(logger, "   - Linear Acc: [ %s]", lin_acc_str.c_str());
+
+    std::string lin_acc_cov_str;
+    for (const auto& iface : ih.linear_acc_cov) lin_acc_cov_str += (iface.get().get_interface_name() + " ");
+    RCLCPP_INFO(logger, "   - LinAcc Cov: [ %s]", lin_acc_cov_str.c_str());
+  }
+
+  RCLCPP_INFO(logger, ">> [FT Handles]");
+  for (const auto& ch : ft_handles_) {
+    RCLCPP_INFO(logger, "   - %s -> %s/%s", 
+                ch.name.c_str(),
+                ch.contact.get().get_prefix_name().c_str(), 
+                ch.contact.get().get_interface_name().c_str());
+  }
+  RCLCPP_INFO(logger, "--------------------------------------------------");
+
   return controller_interface::CallbackReturn::SUCCESS;
 }
 

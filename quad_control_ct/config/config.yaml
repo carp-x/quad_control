@@ -15,6 +15,11 @@ quad_controller:
       - RH_HFE_RH_THIGH
       - RH_KFE_RH_SHANK
     
-    imu_name: "base_imu"
+    imus: 
+      - base_imu
     
-    feet: ["LF_ft", "RF_ft", "LH_ft", "RH_ft"]
+    feet:
+      - LF_ft
+      - RF_ft
+      - LH_ft
+      - RH_ft
