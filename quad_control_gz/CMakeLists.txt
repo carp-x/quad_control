@@ -22,7 +22,7 @@ find_package(hardware_interface REQUIRED)
 #########
 
 add_library(${PROJECT_NAME} SHARED
-  src/QuadGaSimSystem.cpp
+  src/QuadGzSimSystem.cpp
 )
 target_include_directories(${PROJECT_NAME} 
   PUBLIC

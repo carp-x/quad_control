@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "quad_control_gz/QuadGaSimSystem.hpp"
+#include "quad_control_gz/QuadGzSimSystem.hpp"
 
 #include <array>
 #include <cstddef>
