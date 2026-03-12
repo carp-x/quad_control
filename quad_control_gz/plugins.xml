@@ -1,7 +1,7 @@
 <library path="quad_control_gz">
   <class
-    name="quad_robot/QuadGaSimSystem"
-    type="quad_robot::QuadGaSimSystem"
+    name="quad_robot/QuadGzSimSystem"
+    type="quad_robot::QuadGzSimSystem"
     base_class_type="gz_ros2_control::GazeboSimSystemInterface">
     <description>
       Custom ros2_control hardware component to be loaded by the gazebo plugin.

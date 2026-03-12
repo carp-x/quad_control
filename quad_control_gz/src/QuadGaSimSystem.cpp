@@ -161,12 +161,12 @@ void ForceTorqueData::OnForceTorque(const GZ_MSGS_NAMESPACE Wrench & msg)
 }
 /******************************************************************************************************/
 
-class quad_robot::QuadGaSimSystemPrivate
+class quad_robot::QuadGzSimSystemPrivate
 {
 public:
-  QuadGaSimSystemPrivate() = default;
+  QuadGzSimSystemPrivate() = default;
 
-  ~QuadGaSimSystemPrivate() = default;
+  ~QuadGzSimSystemPrivate() = default;
   /// \brief Degrees od freedom.
   size_t n_dof_;
 
@@ -199,14 +199,14 @@ public:
 namespace quad_robot
 {
 
-bool QuadGaSimSystem::initSim(
+bool QuadGzSimSystem::initSim(
   rclcpp::Node::SharedPtr & model_nh,
   std::map<std::string, sim::Entity> & enableJoints,
   const hardware_interface::HardwareInfo & hardware_info,
   sim::EntityComponentManager & _ecm,
   unsigned int update_rate)
 {
-  this->dataPtr = std::make_unique<QuadGaSimSystemPrivate>();
+  this->dataPtr = std::make_unique<QuadGzSimSystemPrivate>();
   this->dataPtr->last_update_sim_time_ros_ = rclcpp::Time();
 
   this->nh_ = model_nh;
@@ -444,7 +444,7 @@ bool QuadGaSimSystem::initSim(
 }
 
 /******************************************************************************************************/
-void QuadGaSimSystem::registerSensors(
+void QuadGzSimSystem::registerSensors(
   const hardware_interface::HardwareInfo & hardware_info)
 {
   size_t n_sensors = hardware_info.sensors.size();
@@ -458,7 +458,7 @@ void QuadGaSimSystem::registerSensors(
   registerFTS(sensor_components);
 }
 
-void QuadGaSimSystem::registerIMUS(
+void QuadGzSimSystem::registerIMUS(
   const std::vector<hardware_interface::ComponentInfo> & sensor_components)
 {
   this->dataPtr->ecm->Each<sim::components::Imu,
@@ -542,7 +542,7 @@ void QuadGaSimSystem::registerIMUS(
     });
 }
 
-void QuadGaSimSystem::registerFTS(
+void QuadGzSimSystem::registerFTS(
   const std::vector<hardware_interface::ComponentInfo> & sensor_components)
 {
   this->dataPtr->ecm->Each<sim::components::ForceTorque,
@@ -601,7 +601,7 @@ void QuadGaSimSystem::registerFTS(
 /******************************************************************************************************/
 
 CallbackReturn
-QuadGaSimSystem::on_init(const hardware_interface::HardwareComponentInterfaceParams & params)
+QuadGzSimSystem::on_init(const hardware_interface::HardwareComponentInterfaceParams & params)
 {
   if (hardware_interface::SystemInterface::on_init(params) !=
     CallbackReturn::SUCCESS)
@@ -638,7 +638,7 @@ QuadGaSimSystem::on_init(const hardware_interface::HardwareComponentInterfacePar
 }
 
 /******************************************************************************************************/
-void QuadGaSimSystem::updateCovIMUS(double ori_cov, double angular_vel_cov, double linear_acc_cov)
+void QuadGzSimSystem::updateCovIMUS(double ori_cov, double angular_vel_cov, double linear_acc_cov)
 {
   for (auto &imu_data : this->dataPtr->imus_) {
     imu_data->ori_cov.fill(0.0);
@@ -651,7 +651,7 @@ void QuadGaSimSystem::updateCovIMUS(double ori_cov, double angular_vel_cov, doub
 }
 /******************************************************************************************************/
 
-CallbackReturn QuadGaSimSystem::on_configure(
+CallbackReturn QuadGzSimSystem::on_configure(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
   RCLCPP_INFO(
@@ -661,18 +661,18 @@ CallbackReturn QuadGaSimSystem::on_configure(
 }
 
 std::vector<hardware_interface::StateInterface>
-QuadGaSimSystem::export_state_interfaces()
+QuadGzSimSystem::export_state_interfaces()
 {
   return std::move(this->dataPtr->state_interfaces_);
 }
 
 std::vector<hardware_interface::CommandInterface>
-QuadGaSimSystem::export_command_interfaces()
+QuadGzSimSystem::export_command_interfaces()
 {
   return std::move(this->dataPtr->command_interfaces_);
 }
 
-CallbackReturn QuadGaSimSystem::on_activate(const rclcpp_lifecycle::State & previous_state)
+CallbackReturn QuadGzSimSystem::on_activate(const rclcpp_lifecycle::State & previous_state)
 {
   /******************************************************************************************************/
   for (auto & joint : this->dataPtr->joints_) {
@@ -687,13 +687,13 @@ CallbackReturn QuadGaSimSystem::on_activate(const rclcpp_lifecycle::State & prev
   return hardware_interface::SystemInterface::on_activate(previous_state);
 }
 
-CallbackReturn QuadGaSimSystem::on_deactivate(const rclcpp_lifecycle::State & previous_state)
+CallbackReturn QuadGzSimSystem::on_deactivate(const rclcpp_lifecycle::State & previous_state)
 {
   return CallbackReturn::SUCCESS;
   return hardware_interface::SystemInterface::on_deactivate(previous_state);
 }
 
-hardware_interface::return_type QuadGaSimSystem::read(
+hardware_interface::return_type QuadGzSimSystem::read(
   const rclcpp::Time & /*time*/,
   const rclcpp::Duration & /*period*/)
 {
@@ -765,7 +765,7 @@ hardware_interface::return_type QuadGaSimSystem::read(
   return hardware_interface::return_type::OK;
 }
 
-hardware_interface::return_type QuadGaSimSystem::write(
+hardware_interface::return_type QuadGzSimSystem::write(
   const rclcpp::Time & /*time*/,
   const rclcpp::Duration & /*period*/)
 {
@@ -822,4 +822,4 @@ hardware_interface::return_type QuadGaSimSystem::write(
 
 #include "pluginlib/class_list_macros.hpp"  // NOLINT
 PLUGINLIB_EXPORT_CLASS(
-  quad_robot::QuadGaSimSystem, gz_ros2_control::GazeboSimSystemInterface)
+  quad_robot::QuadGzSimSystem, gz_ros2_control::GazeboSimSystemInterface)

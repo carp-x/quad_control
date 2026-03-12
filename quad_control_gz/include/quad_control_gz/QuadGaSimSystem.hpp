@@ -28,12 +28,12 @@ namespace quad_robot
 using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
 // Forward declaration
-class QuadGaSimSystemPrivate;
+class QuadGzSimSystemPrivate;
 
 // These class must inherit `gz_ros2_control::GazeboSimSystemInterface` which implements a
 // simulated `ros2_control` `hardware_interface::SystemInterface`.
 
-class QuadGaSimSystem : public gz_ros2_control::GazeboSimSystemInterface
+class QuadGzSimSystem : public gz_ros2_control::GazeboSimSystemInterface
 {
 public:
   // Documentation Inherited
@@ -84,7 +84,7 @@ private:
   /******************************************************************************************************/
   
   /// \brief Private data class
-  std::unique_ptr<QuadGaSimSystemPrivate> dataPtr;
+  std::unique_ptr<QuadGzSimSystemPrivate> dataPtr;
 };
 
 }  // namespace quad_robot
