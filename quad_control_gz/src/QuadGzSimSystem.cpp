@@ -489,10 +489,6 @@ void QuadGzSimSystem::registerIMUS(
         {"linear_acceleration.z", 2},
       };
 
-      static const std::map<std::string, size_t> cov_map = {
-        {"xx", 0}, {"xy", 1}, {"xz", 2}, {"yx", 3}, {"yy", 4}, {"yz", 5}, {"zx", 6}, {"zy", 7}, {"zz", 8}
-      };
-
       auto imu_data = std::make_shared<ImuData>();
       imu_data->name = name->Data();
       imu_data->sim_imu = entity;
@@ -520,7 +516,7 @@ void QuadGzSimSystem::registerIMUS(
         else if (state_if.name == "linear_acceleration.z") data_ptr = &imu_data->linear_acc[2];
         else if (state_if.name.find("covariance") != std::string::npos) {
           std::string suffix = state_if.name.substr(state_if.name.find_last_of('.') + 1);
-          size_t idx = cov_map.at(suffix);
+          size_t idx = static_cast<size_t>(std::stoull(suffix));
           if (state_if.name.find("orientation_covariance") != std::string::npos)
             data_ptr = &imu_data->ori_cov[idx];
           else if (state_if.name.find("angular_velocity_covariance") != std::string::npos)

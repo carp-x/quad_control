@@ -46,15 +46,15 @@
             <state_interface name="linear_acceleration.z"/>
 
             <xacro:macro name="covariance_generator" params="prefix">
-                <state_interface name="${prefix}.xx"/>
-                <state_interface name="${prefix}.xy"/>
-                <state_interface name="${prefix}.xz"/>
-                <state_interface name="${prefix}.yx"/>
-                <state_interface name="${prefix}.yy"/>
-                <state_interface name="${prefix}.yz"/>
-                <state_interface name="${prefix}.zx"/>
-                <state_interface name="${prefix}.zy"/>
-                <state_interface name="${prefix}.zz"/>
+                <state_interface name="${prefix}.0"/>
+                <state_interface name="${prefix}.1"/>
+                <state_interface name="${prefix}.2"/>
+                <state_interface name="${prefix}.3"/>
+                <state_interface name="${prefix}.4"/>
+                <state_interface name="${prefix}.5"/>
+                <state_interface name="${prefix}.6"/>
+                <state_interface name="${prefix}.7"/>
+                <state_interface name="${prefix}.8"/>
             </xacro:macro>
             <xacro:covariance_generator prefix="orientation_covariance"/>
             <xacro:covariance_generator prefix="angular_velocity_covariance"/>
