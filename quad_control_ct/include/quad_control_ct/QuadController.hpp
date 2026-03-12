@@ -66,17 +66,26 @@ class QuadController : public controller_interface::ControllerInterface {
 
  protected:
   std::vector<JointHandle> joint_handles_;
-  std::unique_ptr<ImuHandle> imu_handle_;
-  std::vector<ForceTorqueHandle> contact_handles_;
+  std::vector<ImuHandle> imu_handles_;
+  std::vector<ForceTorqueHandle> ft_handles_;
 
-  std::vector<std::string> joint_names_ = {
-      "LF_HAA_LF_HIP", "LF_HFE_LF_THIGH", "LF_KFE_LF_SHANK",
-      "RF_HAA_RF_HIP", "RF_HFE_RF_THIGH", "RF_KFE_RF_SHANK",
-      "LH_HAA_LH_HIP", "LH_HFE_LH_THIGH", "LH_KFE_LH_SHANK",
-      "RH_HAA_RH_HIP", "RH_HFE_RH_THIGH", "RH_KFE_RH_SHANK"};
-  std::vector<std::string> foot_names_ = {"LF_ft", "RF_ft", "LH_ft", "RH_ft"};
-  std::string imu_name_ = "base_imu";
-
+  std::vector<std::string> joint_names_;
+  const std::vector<std::string> joint_state_interfaces_{"position", "velocity", "effort"};
+  const std::vector<std::string> joint_cmd_interfaces_{"pos_des", "vel_des", "ff", "kp", "kd"};
+  
+  std::vector<std::string> imu_names_;
+  const std::vector<std::string> imu_state_interfaces_{
+    "orientation.x", "orientation.y", "orientation.z", "orientation.w",
+    "angular_velocity.x", "angular_velocity.y", "angular_velocity.z",
+    "linear_acceleration.x", "linear_acceleration.y", "linear_acceleration.z",    
+  };
+  const std::vector<std::string> imu_state_interfaces_cov_{
+    "orientation_covariance", "angular_velocity_covariance", "linear_acceleration_covariance",
+  };
+  
+  std::vector<std::string> foot_names_;
+  const std::vector<std::string> foot_state_interfaces_{"contact"};
+  
  private:
   bool setup_joint_handles();
   bool setup_imu_handles();

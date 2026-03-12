@@ -12,22 +12,29 @@ controller_interface::CallbackReturn QuadController::on_init() {
 controller_interface::InterfaceConfiguration QuadController::state_interface_configuration() const {
   controller_interface::InterfaceConfiguration config;
   config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
-  
-  // 关节状态
+
   for (const auto& joint : joint_names_) {
-    for (auto& interface : {"position", "velocity", "effort"}) {
+    for (auto& interface : joint_state_interfaces_) {
       config.names.push_back(joint + "/" + interface);
     }
   }
 
-  // IMU 状态 (对应 xacro 定义)
-  std::vector<std::string> imu_interfaces = {"orientation.x", "orientation.y", "orientation.z", "orientation.w",
-                                            "angular_velocity.x", "angular_velocity.y", "angular_velocity.z",
-                                            "linear_acceleration.x", "linear_acceleration.y", "linear_acceleration.z"};
-  for (const auto& interface : imu_interfaces) config.names.push_back(imu_name_ + "/" + interface);
+  for (const auto& imu : imu_names_) {
+    for (auto& interface : imu_state_interfaces_) {
+      config.names.push_back(imu + "/" + interface);
+    }
+    for (const auto& interface : imu_state_interfaces_cov_) {
+      for (size_t idx = 0; idx < 9; ++idx) {
+        config.names.push_back(imu + "/" + interface + "." + std::to_string(idx));
+      }
+    }
+  }
 
-  // 足端接触
-  for (const auto& foot : foot_names_) config.names.push_back(foot + "/contact");
+  for (const auto& foot : foot_names_) {
+    for (const auto& interface : foot_state_interfaces_) {
+      config.names.push_back(foot + "/" + interface);
+    }
+  }
 
   return config;
 }
@@ -35,34 +42,45 @@ controller_interface::InterfaceConfiguration QuadController::state_interface_con
 controller_interface::InterfaceConfiguration QuadController::command_interface_configuration() const {
   controller_interface::InterfaceConfiguration config;
   config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+
   for (const auto& joint : joint_names_) {
-    for (auto& interface : {"pos_des", "vel_des", "ff", "kp", "kd"}) {
+    for (auto& interface : joint_cmd_interfaces_) {
       config.names.push_back(joint + "/" + interface);
     }
   }
+
   return config;
 }
 
 controller_interface::return_type QuadController::update(const rclcpp::Time&, const rclcpp::Duration&) {
+  
   // 1. 读取数据示例
   for (const auto& joint : joint_handles_) {
     double q = joint.position.get().get_value();
-  }
-
-  for (const auto& foot : contact_handles_) {
-    if (foot.contact()) { /* 落地逻辑 */ }
+    //
   }
 
   // 2. 写入指令示例
   for (auto& joint : joint_handles_) {
     joint.pos_des.get().set_value(0.0);
-    joint.kp.get().set_value(50.0);
+    //
   }
 
   return controller_interface::return_type::OK;
 }
 
 controller_interface::CallbackReturn QuadController::on_configure(const rclcpp_lifecycle::State&) {
+  joint_names_ = {
+    "LF_HAA_LF_HIP", "LF_HFE_LF_THIGH", "LF_KFE_LF_SHANK",
+    "RF_HAA_RF_HIP", "RF_HFE_RF_THIGH", "RF_KFE_RF_SHANK",
+    "LH_HAA_LH_HIP", "LH_HFE_LH_THIGH", "LH_KFE_LH_SHANK",
+    "RH_HAA_RH_HIP", "RH_HFE_RH_THIGH", "RH_KFE_RH_SHANK",
+  };
+  
+  imu_names_ = {"base_imu"};
+  
+  foot_names_ = {"LF_ft", "RF_ft", "LH_ft", "RH_ft"};
+
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
@@ -75,44 +93,80 @@ controller_interface::CallbackReturn QuadController::on_activate(const rclcpp_li
 }
 
 bool QuadController::setup_joint_handles() {
+  if (joint_names_.empty()) return false;
   joint_handles_.clear();
+
   for (const auto& name : joint_names_) {
-    auto pos = find_interface(state_interfaces_, name, "position");
-    auto vel = find_interface(state_interfaces_, name, "velocity");
-    auto eff = find_interface(state_interfaces_, name, "effort");
-    auto p_d = find_interface(command_interfaces_, name, "pos_des");
-    auto v_d = find_interface(command_interfaces_, name, "vel_des");
-    auto ff  = find_interface(command_interfaces_, name, "ff");
-    auto kp  = find_interface(command_interfaces_, name, "kp");
-    auto kd  = find_interface(command_interfaces_, name, "kd");
+    auto pos = find_interface(state_interfaces_, name, joint_state_interfaces_[0]);
+    auto vel = find_interface(state_interfaces_, name, joint_state_interfaces_[1]);
+    auto eff = find_interface(state_interfaces_, name, joint_state_interfaces_[2]);
+    auto p_d = find_interface(command_interfaces_, name, joint_cmd_interfaces_[0]);
+    auto v_d = find_interface(command_interfaces_, name, joint_cmd_interfaces_[1]);
+    auto ff  = find_interface(command_interfaces_, name, joint_cmd_interfaces_[2]);
+    auto kp  = find_interface(command_interfaces_, name, joint_cmd_interfaces_[3]);
+    auto kd  = find_interface(command_interfaces_, name, joint_cmd_interfaces_[4]);
 
     if (!pos || !vel || !eff || !p_d || !v_d || !ff || !kp || !kd) return false;
     joint_handles_.emplace_back(JointHandle{name, *pos, *vel, *eff, *p_d, *v_d, *ff, *kp, *kd});
   }
-  return true;
-}
 
-bool QuadController::setup_contact_handles() {
-  contact_handles_.clear();
-  for (const auto& name : foot_names_) {
-    auto contact = find_interface(state_interfaces_, name, "contact");
-    if (!contact) return false;
-    contact_handles_.emplace_back(ForceTorqueHandle{name, *contact});
-  }
   return true;
 }
 
 bool QuadController::setup_imu_handles() {
-  // 简化的 IMU 绑定逻辑 (ori, ang_vel, lin_acc)
-  // 此处由于 ImuHandle 结构复杂，通常需要按顺序循环填充 ori[4], angular_vel[3] 等
-  // 示例中略去协方差的循环绑定逻辑
-  return true; 
+
+  if (imu_names_.empty()) return false;
+  imu_handles_.clear();
+
+  for (const auto& name : imu_names_) {
+    std::vector<const hardware_interface::LoanedStateInterface*> base_ifs;
+    for (const auto& interface : imu_state_interfaces_) {
+      auto res = find_interface(state_interfaces_, name, interface);
+      if (!res) return false;
+      base_ifs.push_back(res);
+    }
+
+    std::vector<const hardware_interface::LoanedStateInterface*> cov_ifs;
+    for (const auto& interface : imu_state_interfaces_cov_) {
+      for (size_t idx = 0; idx < 9; ++idx) {
+        auto res = find_interface(state_interfaces_, name, interface + "." + std::to_string(idx));
+        if (!res) return false;
+        cov_ifs.push_back(res);
+      }
+    }
+
+    ImuHandle imu{
+      name,
+      {*base_ifs[0], *base_ifs[1], *base_ifs[2], *base_ifs[3]},
+      {*cov_ifs[0], *cov_ifs[1], *cov_ifs[2], *cov_ifs[3], *cov_ifs[4], *cov_ifs[5], *cov_ifs[6], *cov_ifs[7], *cov_ifs[8]},
+      {*base_ifs[4], *base_ifs[5], *base_ifs[6]},
+      {*cov_ifs[9], *cov_ifs[10], *cov_ifs[11], *cov_ifs[12], *cov_ifs[13], *cov_ifs[14], *cov_ifs[15], *cov_ifs[16], *cov_ifs[17]},
+      {*base_ifs[7], *base_ifs[8], *base_ifs[9]},
+      {*cov_ifs[18], *cov_ifs[19], *cov_ifs[20], *cov_ifs[21], *cov_ifs[22], *cov_ifs[23], *cov_ifs[24], *cov_ifs[25], *cov_ifs[26]}
+    };
+    imu_handles_.emplace_back(std::move(imu));
+  }
+  
+  return true;
+}
+
+bool QuadController::setup_contact_handles() {
+  if (foot_names_.empty()) return false;
+  ft_handles_.clear();
+
+  for (const auto& name : foot_names_) {
+    auto contact = find_interface(state_interfaces_, name, foot_state_interfaces_[0]);
+    if (!contact) return false;
+    ft_handles_.emplace_back(ForceTorqueHandle{name, *contact});
+  }
+
+  return true;
 }
 
 controller_interface::CallbackReturn QuadController::on_deactivate(const rclcpp_lifecycle::State&) {
   joint_handles_.clear();
-  contact_handles_.clear();
-  imu_handle_.reset();
+  ft_handles_.clear();
+  imu_handles_.clear();
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
