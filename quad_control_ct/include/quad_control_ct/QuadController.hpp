@@ -87,10 +87,10 @@ class QuadController : public controller_interface::ControllerInterface {
   const std::vector<std::string> foot_state_interfaces_{"contact"};
   
  private:
-  bool setup_joint_handles();
-  bool setup_imu_handles();
-  bool setup_contact_handles();
-
+  bool setupJointHandles();
+  bool setupIMUHandles();
+  bool setupFTHandles();
+  
   template <typename T>
   T* find_interface(std::vector<T>& interfaces, 
                     const std::string& name, 

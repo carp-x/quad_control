@@ -85,14 +85,14 @@ controller_interface::CallbackReturn QuadController::on_configure(const rclcpp_l
 }
 
 controller_interface::CallbackReturn QuadController::on_activate(const rclcpp_lifecycle::State&) {
-  if (!setup_joint_handles() || !setup_imu_handles() || !setup_contact_handles()) {
+  if (!setupJointHandles() || !setupIMUHandles() || !setupFTHandles()) {
     return controller_interface::CallbackReturn::ERROR;
   }
   RCLCPP_INFO(get_node()->get_logger(), "Quad Controller Activated Successfully");
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
-bool QuadController::setup_joint_handles() {
+bool QuadController::setupJointHandles() {
   if (joint_names_.empty()) return false;
   joint_handles_.clear();
 
@@ -113,7 +113,7 @@ bool QuadController::setup_joint_handles() {
   return true;
 }
 
-bool QuadController::setup_imu_handles() {
+bool QuadController::setupIMUHandles() {
 
   if (imu_names_.empty()) return false;
   imu_handles_.clear();
@@ -146,11 +146,11 @@ bool QuadController::setup_imu_handles() {
     };
     imu_handles_.emplace_back(std::move(imu));
   }
-  
+
   return true;
 }
 
-bool QuadController::setup_contact_handles() {
+bool QuadController::setupFTHandles() {
   if (foot_names_.empty()) return false;
   ft_handles_.clear();
 
