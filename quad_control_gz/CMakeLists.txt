@@ -47,6 +47,8 @@ ament_target_dependencies(${PROJECT_NAME}
   hardware_interface
 )
 
+pluginlib_export_plugin_description_file(gz_ros2_control plugins.xml)
+
 #########
 
 ## Install
@@ -68,24 +70,22 @@ install(TARGETS
   RUNTIME DESTINATION bin
 )
 
-ament_export_include_directories(
-  include
-)
-ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
-ament_export_dependencies(
-  gz-sim
-  std_msgs  
-  geometry_msgs
-  control_msgs
-  pluginlib
-  rclcpp
-  rclcpp_action
-  rclcpp_lifecycle
-  control_toolbox
-  gz_ros2_control
-  hardware_interface
-)
-
-pluginlib_export_plugin_description_file(gz_ros2_control plugins.xml)
+  # ament_export_include_directories(
+  #   include
+  # )
+  # ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+  # ament_export_dependencies(
+  #   gz-sim
+  #   std_msgs  
+  #   geometry_msgs
+  #   control_msgs
+  #   pluginlib
+  #   rclcpp
+  #   rclcpp_action
+  #   rclcpp_lifecycle
+  #   control_toolbox
+  #   gz_ros2_control
+  #   hardware_interface
+  # )
 
 ament_package()

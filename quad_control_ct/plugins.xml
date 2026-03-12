@@ -1,0 +1,9 @@
+<library path="quad_control_ct">
+  <class name="quad_robot/QuadController" 
+         type="quad_robot::QuadController" 
+         base_class_type="controller_interface::ControllerInterface">
+    <description>
+      ...
+    </description>
+  </class>
+</library>

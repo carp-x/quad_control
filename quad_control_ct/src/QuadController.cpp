@@ -1,4 +1,4 @@
-#include "quad_robot/QuadController.hpp"
+#include "quad_control_ct/QuadController.hpp"
 #include <pluginlib/class_list_macros.hpp>
 
 namespace quad_robot {

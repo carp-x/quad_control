@@ -42,8 +42,8 @@ struct ForceTorqueHandle {
   // Read
   std::reference_wrapper<const hardware_interface::LoanedStateInterface> contact;
 
-  bool contact() const {
-    return contact.get().get_value() > 0.99;
+  bool incontact() const {
+    return contact.get().get_optional<double>().value_or(0.0) > 0.99;
   }
 };
 
@@ -90,7 +90,7 @@ class QuadController : public controller_interface::ControllerInterface {
   bool setupJointHandles();
   bool setupIMUHandles();
   bool setupFTHandles();
-  
+
   template <typename T>
   T* find_interface(std::vector<T>& interfaces, 
                     const std::string& name, 
