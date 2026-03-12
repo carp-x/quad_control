@@ -3,13 +3,12 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <array>
 
 #include "controller_interface/controller_interface.hpp"
 #include "hardware_interface/handle.hpp"
 #include "rclcpp/subscription.hpp"
-#include "rclcpp_lifecycle/state.hpp"
 #include "realtime_tools/realtime_publisher.hpp"
-#include "realtime_tools/realtime_thread_safe_box.hpp"
 
 
 struct JointHandle {
