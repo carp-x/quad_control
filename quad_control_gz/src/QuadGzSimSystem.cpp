@@ -504,17 +504,7 @@ void QuadGzSimSystem::registerIMUS(
         RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t " << state_if.name);
 
         double* data_ptr = nullptr;
-        if (state_if.name == "orientation.x") data_ptr = &imu_data->ori[0];
-        else if (state_if.name == "orientation.y") data_ptr = &imu_data->ori[1];
-        else if (state_if.name == "orientation.z") data_ptr = &imu_data->ori[2];
-        else if (state_if.name == "orientation.w") data_ptr = &imu_data->ori[3];
-        else if (state_if.name == "angular_velocity.x") data_ptr = &imu_data->angular_vel[0];
-        else if (state_if.name == "angular_velocity.y") data_ptr = &imu_data->angular_vel[1];
-        else if (state_if.name == "angular_velocity.z") data_ptr = &imu_data->angular_vel[2];
-        else if (state_if.name == "linear_acceleration.x") data_ptr = &imu_data->linear_acc[0];
-        else if (state_if.name == "linear_acceleration.y") data_ptr = &imu_data->linear_acc[1];
-        else if (state_if.name == "linear_acceleration.z") data_ptr = &imu_data->linear_acc[2];
-        else if (state_if.name.find("covariance") != std::string::npos) {
+        if (state_if.name.find("covariance") != std::string::npos) {
           std::string suffix = state_if.name.substr(state_if.name.find_last_of('.') + 1);
           size_t idx = static_cast<size_t>(std::stoull(suffix));
           if (state_if.name.find("orientation_covariance") != std::string::npos)
@@ -523,6 +513,15 @@ void QuadGzSimSystem::registerIMUS(
             data_ptr = &imu_data->angular_vel_cov[idx];
           else if (state_if.name.find("linear_acceleration_covariance") != std::string::npos)
             data_ptr = &imu_data->linear_acc_cov[idx];
+        }
+        else {
+          size_t idx = interface_name_map.at(state_if.name);
+          if (state_if.name.find("orientation") != std::string::npos)
+            data_ptr = &imu_data->ori[idx];
+          else if (state_if.name.find("angular_velocity") != std::string::npos)
+            data_ptr = &imu_data->angular_vel[idx];
+          else if (state_if.name.find("linear_acceleration") != std::string::npos)
+            data_ptr = &imu_data->linear_acc[idx];
         }
 
         if (data_ptr) {
@@ -582,8 +581,8 @@ void QuadGzSimSystem::registerFTS(
         double* data_ptr = nullptr;
         if (state_if.name == "contact") data_ptr = &ft_data->contact;
           // else {
-          //   size_t data_index = interface_name_map.at(state_if.name);
-          //   data_ptr = &ft_data->f_t[data_index];
+          //   size_t idx = interface_name_map.at(state_if.name);
+          //   data_ptr = &ft_data->f_t[idx];
           // }
         this->dataPtr->state_interfaces_.emplace_back(
           ft_data->name,
