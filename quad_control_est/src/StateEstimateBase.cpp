@@ -64,4 +64,4 @@ void StateEstimateBase::publishMsgs(const nav_msgs::msg::Odometry& odom) {
   }
 }
 
-}  // namespace quad_robot
+} // namespace quad_robot

@@ -36,4 +36,4 @@ vector_t FromTopicStateEstimate::update(const rclcpp::Time& /*time*/, const rclc
   return rbd_state_;
 }
 
-}  // namespace quad_robot
+} // namespace quad_robot

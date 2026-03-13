@@ -22,4 +22,4 @@ class FromTopicStateEstimate : public StateEstimateBase {
   realtime_tools::RealtimeBuffer<nav_msgs::msg::Odometry> buffer_;
 };
 
-}  // namespace quad_robot
+} // namespace quad_robot

@@ -98,4 +98,4 @@ Eigen::Matrix<SCALAR_T, 3, 1> quatToZyx(const Eigen::Quaternion<SCALAR_T>& q) {
   return zyx;
 }
 
-}  // namespace quad_robot
+} // namespace quad_robot
