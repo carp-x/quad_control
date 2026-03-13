@@ -74,27 +74,27 @@ LeggedRobotVisualizer::LeggedRobotVisualizer(
   endEffectorKinematicsPtr_->setPinocchioInterface(pinocchioInterface_);
   costDesiredBasePositionPublisher_ =
       node->create_publisher<visualization_msgs::msg::Marker>(
-          "/legged_robot/desiredBaseTrajectory", 1);
+          "/quad_robot/desiredBaseTrajectory", 1);
   costDesiredFeetPositionPublishers_.resize(
       centroidalModelInfo_.numThreeDofContacts);
   costDesiredFeetPositionPublishers_[0] =
       node->create_publisher<visualization_msgs::msg::Marker>(
-          "/legged_robot/desiredFeetTrajectory/LF", 1);
+          "/quad_robot/desiredFeetTrajectory/LF", 1);
   costDesiredFeetPositionPublishers_[1] =
       node->create_publisher<visualization_msgs::msg::Marker>(
-          "/legged_robot/desiredFeetTrajectory/RF", 1);
+          "/quad_robot/desiredFeetTrajectory/RF", 1);
   costDesiredFeetPositionPublishers_[2] =
       node->create_publisher<visualization_msgs::msg::Marker>(
-          "/legged_robot/desiredFeetTrajectory/LH", 1);
+          "/quad_robot/desiredFeetTrajectory/LH", 1);
   costDesiredFeetPositionPublishers_[3] =
       node->create_publisher<visualization_msgs::msg::Marker>(
-          "/legged_robot/desiredFeetTrajectory/RH", 1);
+          "/quad_robot/desiredFeetTrajectory/RH", 1);
   stateOptimizedPublisher_ =
       node->create_publisher<visualization_msgs::msg::MarkerArray>(
-          "/legged_robot/optimizedStateTrajectory", 1);
+          "/quad_robot/optimizedStateTrajectory", 1);
   currentStatePublisher_ =
       node->create_publisher<visualization_msgs::msg::MarkerArray>(
-          "/legged_robot/currentState", 1);
+          "/quad_robot/currentState", 1);
 
   jointPublisher_ =
       node_->create_publisher<sensor_msgs::msg::JointState>("joint_states", 1);

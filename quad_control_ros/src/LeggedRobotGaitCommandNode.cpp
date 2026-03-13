@@ -36,7 +36,7 @@ using namespace ocs2;
 using namespace legged_robot;
 
 int main(int argc, char* argv[]) {
-  const std::string robotName = "legged_robot";
+  const std::string robotName = "quad_robot";
 
   rclcpp::init(argc, argv);
   rclcpp::Node::SharedPtr node =

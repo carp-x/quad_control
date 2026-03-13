@@ -123,7 +123,7 @@ class LeggedRobotGoalPublisher {
 };
 
 int main(int argc, char* argv[]) {
-  const std::string robotName = "legged_robot";
+  const std::string robotName = "quad_robot";
 
   rclcpp::init(argc, argv);
   auto node = rclcpp::Node::make_shared(robotName + "_rviz_target");

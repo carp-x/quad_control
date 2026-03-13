@@ -742,28 +742,28 @@ Visualization Manager:
           Displays:
             - Class: rviz_default_plugins/Marker
               Enabled: true
-              Marker Topic: /legged_robot/desiredFeetTrajectory/LF
+              Marker Topic: /quad_robot/desiredFeetTrajectory/LF
               Name: Marker
               Namespaces: ~
               Queue Size: 100
               Value: true
             - Class: rviz_default_plugins/Marker
               Enabled: true
-              Marker Topic: /legged_robot/desiredFeetTrajectory/LH
+              Marker Topic: /quad_robot/desiredFeetTrajectory/LH
               Name: Marker
               Namespaces: ~
               Queue Size: 100
               Value: true
             - Class: rviz_default_plugins/Marker
               Enabled: true
-              Marker Topic: /legged_robot/desiredFeetTrajectory/RF
+              Marker Topic: /quad_robot/desiredFeetTrajectory/RF
               Name: Marker
               Namespaces: ~
               Queue Size: 100
               Value: true
             - Class: rviz_default_plugins/Marker
               Enabled: true
-              Marker Topic: /legged_robot/desiredFeetTrajectory/RH
+              Marker Topic: /quad_robot/desiredFeetTrajectory/RH
               Name: Marker
               Namespaces: ~
               Queue Size: 100
@@ -772,7 +772,7 @@ Visualization Manager:
           Name: Target Feet Trajectories
         - Class: rviz_default_plugins/Marker
           Enabled: true
-          Marker Topic: /legged_robot/desiredBaseTrajectory
+          Marker Topic: /quad_robot/desiredBaseTrajectory
           Name: Target Base Trajectory
           Namespaces: ~
           Queue Size: 100
