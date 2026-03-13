@@ -42,8 +42,8 @@ class StateEstimateBase {
   virtual void updateContact(contact_flag_t contact_flag) { contact_flag_ = std::move(contact_flag); }
   
   virtual void updateImu(const Eigen::Quaternion<scalar_t>& quat, 
-                         const vector3_t& angular_vel_local, 
-                         const vector3_t& linear_acc_local,
+                         const vector3_t& angular_vel, 
+                         const vector3_t& linear_acc,
                          const matrix3_t& ori_cov, 
                          const matrix3_t& angular_vel_cov,
                          const matrix3_t& linear_acc_cov);
@@ -70,8 +70,8 @@ class StateEstimateBase {
   vector_t rbd_state_;
   contact_flag_t contact_flag_{};
   Eigen::Quaternion<scalar_t> quat_ = Eigen::Quaternion<scalar_t>::Identity();
-  vector3_t angular_vel_local_ = vector3_t::Zero();
-  vector3_t linear_acc_local_ = vector3_t::Zero();
+  vector3_t angular_vel_ = vector3_t::Zero();
+  vector3_t linear_acc_ = vector3_t::Zero();
   matrix3_t ori_cov_ = matrix3_t::Zero();
   matrix3_t angular_vel_cov_ = matrix3_t::Zero();
   matrix3_t linear_acc_cov_ = matrix3_t::Zero();
