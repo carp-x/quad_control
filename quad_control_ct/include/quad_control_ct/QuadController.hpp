@@ -10,6 +10,7 @@
 #include "rclcpp/subscription.hpp"
 #include "realtime_tools/realtime_publisher.hpp"
 
+namespace quad_robot {
 
 struct JointHandle {
   std::string name;
@@ -45,8 +46,6 @@ struct ForceTorqueHandle {
     return contact.get().get_optional<double>().value_or(0.0) > 0.99;
   }
 };
-
-namespace quad_robot {
 
 class QuadController : public controller_interface::ControllerInterface {
  public:

@@ -53,6 +53,8 @@
 #define GZ_MSGS_NAMESPACE gz::msgs::
 /******************************************************************************************************/
 
+namespace quad_robot {
+
 struct jointData
 {
   /// \brief Joint's names.
@@ -161,7 +163,7 @@ void ForceTorqueData::OnForceTorque(const GZ_MSGS_NAMESPACE Wrench & msg)
 }
 /******************************************************************************************************/
 
-class quad_robot::QuadGzSimSystemPrivate
+class QuadGzSimSystemPrivate
 {
 public:
   QuadGzSimSystemPrivate() = default;
@@ -195,9 +197,6 @@ public:
   /// \brief controller update rate
   unsigned int update_rate;
 };
-
-namespace quad_robot
-{
 
 bool QuadGzSimSystem::initSim(
   rclcpp::Node::SharedPtr & model_nh,
