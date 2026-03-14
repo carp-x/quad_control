@@ -10,7 +10,7 @@ LinearKalmanFilter::LinearKalmanFilter(std::shared_ptr<rclcpp_lifecycle::Lifecyc
                                        PinocchioInterface pinocchio_interface,
                                        CentroidalModelInfo info,
                                        const PinocchioEndEffectorKinematics& ee_kinematics)
-    : StateEstimateBase(node_ptr, pinocchio_interface, info, ee_kinematics),
+    : StateEstimateBase(node_ptr, std::move(pinocchio_interface), std::move(info), ee_kinematics),
       num_contacts_(info_.numThreeDofContacts),
       dim_contacts_(3 * num_contacts_),
       num_state_(6 + dim_contacts_),
@@ -32,11 +32,6 @@ LinearKalmanFilter::LinearKalmanFilter(std::shared_ptr<rclcpp_lifecycle::Lifecyc
   //     [     dt   * I ]
   //     [       0      ]
   B_.setZero(num_state_, 3);
-  
-  Q_.setZero(num_state_, num_state_);
-  P_.setIdentity(num_state_, num_state_) * 100.0;
-  R_.setZero(num_observe_, num_observe_);
-  feet_heights_.setZero(num_contacts_);
 
   // [  I(3x3)   0(3x3)  -I(3x3)    0       0       0    ] -> ee_rel_pos_1
   // [    ...      ...      ...     ...     ...     ...  ]
@@ -50,6 +45,11 @@ LinearKalmanFilter::LinearKalmanFilter(std::shared_ptr<rclcpp_lifecycle::Lifecyc
     C_(2 * dim_contacts_ + i, 6 + 3 * i + 2) = 1.0;                     
   }
   C_.block(0, 6, dim_contacts_, dim_contacts_) = -matrix_t::Identity(dim_contacts_, dim_contacts_);
+  
+  Q_.setIdentity(num_state_, num_state_);
+  P_ = 100.0 * Q_;
+  R_.setIdentity(num_observe_, num_observe_);
+  feet_heights_.setZero(num_contacts_);
 }
 
 vector_t LinearKalmanFilter::update(const rclcpp::Time& time, const rclcpp::Duration& period) {
@@ -65,26 +65,26 @@ vector_t LinearKalmanFilter::update(const rclcpp::Time& time, const rclcpp::Dura
   
   auto odom = getOdomMsg();
   odom.header.stamp = time;
+  odom.header.frame_id = "odom";
+  odom.child_frame_id = "base";
   publishMsgs(odom);
-
+  
   return rbd_state_;
 }
 
 void LinearKalmanFilter::preparePredict(scalar_t dt, matrix_t& A, matrix_t& B, matrix_t& Q, vector_t& u) {
-  // A = [I, I*dt; 0, I]
+
   A.block<3, 3>(0, 3) = dt * matrix3_t::Identity();
   
-  // B = [0.5*dt^2; dt]
   B.block<3, 3>(0, 0) = 0.5 * dt * dt * matrix3_t::Identity();
   B.block<3, 3>(3, 0) = dt * matrix3_t::Identity();
 
-  // Q (过程噪声/模型不确定性)
   Q.block<3, 3>(0, 0) = (dt / 20.0) * matrix3_t::Identity() * q_base_pos_;
   Q.block<3, 3>(3, 3) = (dt * 9.81 / 20.0) * matrix3_t::Identity() * q_base_vel_;
   Q.block(6, 6, dim_contacts_, dim_contacts_) = dt * matrix_t::Identity(dim_contacts_, dim_contacts_) * q_ee_pos_static_;
 
-  // 计算世界系下的合加速度 (旋转机体加速度并补偿重力)
-  u = getRotationMatrixFromZyxEulerAngles(quatToZyx(quat_)) * linear_acc_local_ + vector3_t(0, 0, -9.81);
+  vector3_t g(0, 0, -9.81);
+  u = getRotationMatrixFromZyxEulerAngles(quatToZyx(quat_)) * linear_acc_ + g;
 }
 
 void LinearKalmanFilter::predictXP(vector_t& x, matrix_t& P, const matrix_t& A, const matrix_t& B, const matrix_t& Q, const vector_t& u) {
@@ -93,19 +93,22 @@ void LinearKalmanFilter::predictXP(vector_t& x, matrix_t& P, const matrix_t& A, 
 }
 
 void LinearKalmanFilter::prepareUpdate(vector_t& z, matrix_t& /*H*/, matrix_t& R) {
-  // 同步 Pinocchio 运动学
   const auto& model = pinocchio_interface_.getModel();
   auto& data = pinocchio_interface_.getData();
   vector_t q_pino = vector_t::Zero(info_.generalizedCoordinatesNum);
-  q_pino.segment<3>(3) = rbd_state_.head<3>(); // 仅姿态
+  q_pino.segment<3>(3) = rbd_state_.head<3>(); // Only set orientation, let position in origin.
   q_pino.tail(info_.actuatedDofNum) = rbd_state_.segment(6, info_.actuatedDofNum);
+  vector_t v_pino = vector_t::Zero(info_.generalizedCoordinatesNum);
+  v_pino.segment<3>(3) = getEulerAnglesZyxDerivativesFromGlobalAngularVelocity<scalar_t>(
+                            q_pino.segment<3>(3),
+                            rbd_state_.segment<3>(info_.generalizedCoordinatesNum)); // Only set angular velocity, let linear velocity be zero
+  v_pino.tail(info_.actuatedDofNum) = rbd_state_.segment(6 + info_.generalizedCoordinatesNum, info_.actuatedDofNum);
   
-  pinocchio::forwardKinematics(model, data, q_pino);
+  pinocchio::forwardKinematics(model, data, q_pino, v_pino);
   pinocchio::updateFramePlacements(model, data);
-
   const auto ee_pos = ee_kinematics_->getPosition(vector_t());
   const auto ee_vel = ee_kinematics_->getVelocity(vector_t(), vector_t());
-
+  
   // 动态构建观测向量与噪声权重
   for (size_t i = 0; i < num_contacts_; i++) {
     scalar_t trust = contact_flag_[i] ? 1.0 : 100.0; // 摆动腿不信任度增加
