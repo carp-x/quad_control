@@ -2,6 +2,7 @@
 #include <pinocchio/algorithm/kinematics.hpp>
 
 #include <ocs2_robotic_tools/common/RotationTransforms.h>
+#include <ocs2_robotic_tools/common/RotationDerivativesTransforms.h>
 #include "quad_control_est/LinearKalmanFilter.hpp"
 
 namespace quad_robot {
@@ -54,7 +55,7 @@ LinearKalmanFilter::LinearKalmanFilter(std::shared_ptr<rclcpp_lifecycle::Lifecyc
 
 vector_t LinearKalmanFilter::update(const rclcpp::Time& time, const rclcpp::Duration& period) {
 
-  dtScaling(period.toSec(), A_, B_, Q_);
+  dtScaling(period.seconds(), A_, B_, Q_);
   updateInput(u_);
   updateObserve(z_);
   updateFilter(x_hat_, P_);
