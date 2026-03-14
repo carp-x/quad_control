@@ -59,8 +59,13 @@ vector_t LinearKalmanFilter::update(const rclcpp::Time& time, const rclcpp::Dura
   updateInput(u_);
   updateObserve(z_);
   updateFilter(x_hat_, P_);
-
   updateLinear(x_hat_.head<3>(), x_hat_.segment<3>(3));
+
+  vector3_t zyx = quatToZyx(quat_) - zyx_offset_;
+  vector3_t angular_vel_global = getGlobalAngularVelocityFromEulerAnglesZyxDerivatives<scalar_t>(
+      zyx, 
+      getEulerAnglesZyxDerivativesFromLocalAngularVelocity<scalar_t>(quatToZyx(quat_), angular_vel_));
+  updateAngular(zyx, angular_vel_global);
   
   auto odom = getOdomMsg();
   odom.header.stamp = time;
