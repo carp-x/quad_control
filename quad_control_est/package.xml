@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>quad_control_est</name>
+  <version>0.1.0</version>
+  <description>Quadrped Robot State Estimation with Linear Kalman Filter</description>
+  <maintainer email="your_email@todo.todo">user</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- ROS 2 Core Dependencies -->
+  <depend>rclcpp</depend>
+  <depend>rclcpp_lifecycle</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>realtime_tools</depend>
+
+  <!-- OCS2 & Pinocchio Dependencies -->
+  <depend>ocs2_core</depend>
+  <depend>ocs2_pinocchio_interface</depend>
+  <depend>ocs2_centroidal_model</depend>
+  <depend>ocs2_legged_robot</depend>
+  <depend>ocs2_robotic_tools</depend>
+  <depend>pinocchio</depend>
+  <depend>eigen</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
