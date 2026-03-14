@@ -82,7 +82,7 @@ void LinearKalmanFilter::dtScaling(const scalar_t dt, matrix_t& A, matrix_t& B, 
 }
 
 void LinearKalmanFilter::updateInput(vector_t& u) {
-  u = getRotationMatrixFromZyxEulerAngles(quat_to_zyx(quat_)) * linear_accel_local_ + g_;
+  u = getRotationMatrixFromZyxEulerAngles(quatToZyx(quat_)) * linear_acc_ + g_;
 }
 
 void LinearKalmanFilter::updateObserve(vector_t& z) {
