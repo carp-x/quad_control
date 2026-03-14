@@ -16,13 +16,13 @@ class LinearKalmanFilter : public StateEstimateBase {
  protected:
   nav_msgs::msg::Odometry getOdomMsg();
   
-  const scalar_t q_base_pos_      = 0.02;   // 基座位置预测随时间积分的漂移
-  const scalar_t q_base_vel_      = 0.02;   // 基座速度预测产生的误差
-  const scalar_t q_ee_pos_static_ = 0.002;  // 支撑阶段足端世界坐标保持不变的静态假设噪声
+  const scalar_t q_base_pos_      = 0.02;
+  const scalar_t q_base_vel_      = 0.02;
+  const scalar_t q_ee_pos_static_ = 0.002;
 
-  const scalar_t r_ee_pos_        = 0.005;  // 关节编码器算出的足端相对位置综合噪声
-  const scalar_t r_ee_vel_        = 0.1;    // 关节编码器算出的足端相对速度综合噪声
-  const scalar_t r_ee_height_     = 0.01;   // 对足端高度(地面约束)的观测噪声
+  const scalar_t r_ee_pos_        = 0.005;
+  const scalar_t r_ee_vel_        = 0.1;
+  const scalar_t r_ee_height_     = 0.01;
   
   const scalar_t foot_radius_ = 0.02;
   vector_t feet_heights_;

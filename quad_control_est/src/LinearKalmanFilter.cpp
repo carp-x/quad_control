@@ -16,21 +16,38 @@ LinearKalmanFilter::LinearKalmanFilter(std::shared_ptr<rclcpp_lifecycle::Lifecyc
       num_state_(6 + dim_contacts_),
       num_observe_(2 * dim_contacts_ + num_contacts_) {
   
+  // [base_pos(3), base_vel(3), ee_pos_1(3), ..., ee_pos_4(3)]^T 
   x_hat_.setZero(num_state_);
+  // [acc_x, acc_y, acc_z]^T (World Frame)
   u_.setZero(3);
+  // [ee_rel_pos(12), ee_rel_vel(12), ee_height(4)]^T
   z_.setZero(num_observe_);
+  
+  // A = [ I(3x3)  I*dt(3x3)  0 ]
+  //     [   0       I(3x3)   0 ]
+  //     [   0         0      I ]
   A_.setIdentity(num_state_, num_state_);
+  
+  // B = [ 0.5*dt^2 * I ]
+  //     [     dt   * I ]
+  //     [       0      ]
   B_.setZero(num_state_, 3);
+  
   Q_.setZero(num_state_, num_state_);
   P_.setIdentity(num_state_, num_state_) * 100.0;
   R_.setZero(num_observe_, num_observe_);
   feet_heights_.setZero(num_contacts_);
-  
+
+  // [  I(3x3)   0(3x3)  -I(3x3)    0       0       0    ] -> ee_rel_pos_1
+  // [    ...      ...      ...     ...     ...     ...  ]
+  // [  0(3x3)   I(3x3)     0       0       0       0    ] -> ee_rel_vel_1
+  // [    ...      ...      ...     ...     ...     ...  ]
+  // [    0        0      [0,0,1]   0       0       0    ] -> ee_height_1
   C_.setZero(num_observe_, num_state_);
   for (size_t i = 0; i < num_contacts_; ++i) {
-    C_.block<3, 3>(3 * i, 0) = matrix3_t::Identity();                   // 关联 base_pos
-    C_.block<3, 3>(3 * (num_contacts_ + i), 3) = matrix3_t::Identity(); // 关联 base_vel
-    C_(2 * dim_contacts_ + i, 6 + 3 * i + 2) = 1.0;                     // 关联 ee_pos_z
+    C_.block<3, 3>(3 * i, 0) = matrix3_t::Identity();                   
+    C_.block<3, 3>(3 * (num_contacts_ + i), 3) = matrix3_t::Identity(); 
+    C_(2 * dim_contacts_ + i, 6 + 3 * i + 2) = 1.0;                     
   }
   C_.block(0, 6, dim_contacts_, dim_contacts_) = -matrix_t::Identity(dim_contacts_, dim_contacts_);
 }
