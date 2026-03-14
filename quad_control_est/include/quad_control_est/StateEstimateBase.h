@@ -56,7 +56,7 @@ class StateEstimateBase {
   void updateAngular(const vector3_t& zyx, const vector_t& angular_vel);
   void updateLinear(const vector_t& pos, const vector_t& linear_vel);
   void publishMsgs(const nav_msgs::msg::Odometry& odom);
-
+  
   // ROS 2 Lifecycle Node Handle
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_ptr_;
   

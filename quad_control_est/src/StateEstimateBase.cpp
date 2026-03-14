@@ -7,8 +7,8 @@ StateEstimateBase::StateEstimateBase(std::shared_ptr<rclcpp_lifecycle::Lifecycle
                                      CentroidalModelInfo info,
                                      const PinocchioEndEffectorKinematics& ee_kinematics)
     : node_ptr_(node_ptr),
-      pinocchio_interface_(pinocchio_interface),
-      info_(info),
+      pinocchio_interface_(std::move(pinocchio_interface)),
+      info_(std::move(info)),
       ee_kinematics_(ee_kinematics.clone()),
       rbd_state_(vector_t::Zero(2 * info_.generalizedCoordinatesNum)) {
   

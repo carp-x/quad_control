@@ -6,7 +6,7 @@ FromTopicStateEstimate::FromTopicStateEstimate(std::shared_ptr<rclcpp_lifecycle:
                                                PinocchioInterface pinocchio_interface, 
                                                CentroidalModelInfo info,
                                                const PinocchioEndEffectorKinematics& ee_kinematics)
-    : StateEstimateBase(node_ptr, pinocchio_interface, info, ee_kinematics) {
+    : StateEstimateBase(node_ptr, std::move(pinocchio_interface), std::move(info), ee_kinematics) {
   
   sub_ = node_ptr_->create_subscription<nav_msgs::msg::Odometry>(
     "/ground_truth/state", 
