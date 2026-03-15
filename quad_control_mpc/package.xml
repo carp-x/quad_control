@@ -1,14 +1,15 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>quad_control_mpc</name>
-  <version>0.0.1</version>
+  <version>0.0.0</version>
   <description>The quad_control_mpc package</description>
-
-  <maintainer email="farbod.farshidian@gmail.com">Farbod Farshidian</maintainer>
-  <maintainer email="rgrandia@ethz.ch">Ruben Grandia</maintainer>
-  <maintainer email="jeanpierre.sleiman@mavt.ethz.ch">Jean-Pierre Sleiman</maintainer>
+  <maintainer email="liyuxin_2016@163.com">Yuxin Li</maintainer>
 
   <license>BSD-3</license>
+  <author>Farbod Farshidian</author>
+  <author>Ruben Grandia</author>
+  <author>Jean-Pierre Sleiman</author>
+  <author>Yuxin Li</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

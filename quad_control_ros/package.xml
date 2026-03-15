@@ -3,12 +3,13 @@
   <name>quad_control_ros</name>
   <version>0.0.0</version>
   <description>The quad_control_ros package</description>
+  <maintainer email="liyuxin_2016@163.com">Yuxin Li</maintainer>
 
-  <maintainer email="farbod.farshidian@gmail.com">Farbod Farshidian</maintainer>
-  <maintainer email="jcarius@ethz.ch">Jan Carius</maintainer>
-  <maintainer email="rgrandia@ethz.ch">Ruben Grandia</maintainer>
-
-  <license>TODO</license>
+  <license>BSD-3</license>
+  <author>Farbod Farshidian</author>
+  <author>Jan Carius</author>
+  <author>Ruben Grandia</author>
+  <author>Yuxin Li</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
