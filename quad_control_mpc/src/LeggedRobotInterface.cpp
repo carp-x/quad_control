@@ -60,7 +60,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/filesystem/path.hpp>
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -381,5 +381,5 @@ std::unique_ptr<StateInputConstraint> LeggedRobotInterface::getNormalVelocityCon
   }
 }
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

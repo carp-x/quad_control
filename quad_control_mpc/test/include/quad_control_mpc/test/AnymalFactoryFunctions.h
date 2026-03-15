@@ -38,7 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_mpc/reference_manager/SwitchedModelReferenceManager.h"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /** Returns a Pinocchio interface based on a defined URDF_FILE  */
 std::unique_ptr<PinocchioInterface> createAnymalPinocchioInterface();
@@ -49,5 +49,5 @@ CentroidalModelInfo createAnymalCentroidalModelInfo(const PinocchioInterface& pi
 /** Return a Switched model mode schedule manager based on TASK_FILE */
 std::shared_ptr<SwitchedModelReferenceManager> createReferenceManager(size_t numFeet);
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

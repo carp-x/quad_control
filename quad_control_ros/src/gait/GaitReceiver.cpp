@@ -33,7 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_ros/gait/ModeSequenceTemplateRos.h"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -79,5 +79,5 @@ void GaitReceiver::mpcModeSequenceCallback(
   gaitUpdated_ = true;
 }
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

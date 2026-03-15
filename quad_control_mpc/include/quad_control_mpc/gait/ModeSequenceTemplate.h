@@ -39,7 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_mpc/gait/MotionPhaseDefinition.h"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /**
  * ModeSequenceTemplate describes a periodic sequence of modes. It is defined by
@@ -123,5 +123,5 @@ ModeSequenceTemplate loadModeSequenceTemplate(const std::string& filename, const
  */
 ModeSchedule loadModeSchedule(const std::string& filename, const std::string& topicName, bool verbose);
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

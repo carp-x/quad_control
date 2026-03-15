@@ -36,7 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vector>
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /** Convert mode sequence template to ROS message */
 inline ocs2_msgs::msg::ModeSchedule createModeSequenceTemplateMsg(
@@ -61,5 +61,5 @@ inline ModeSequenceTemplate readModeSequenceTemplateMsg(
   return {switchingTimes, modeSequence};
 }
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

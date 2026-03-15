@@ -36,7 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_core/Types.h>
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /**
  * A gait is a periodic mode schedule parameterized by a "phase" variable.
@@ -85,5 +85,5 @@ scalar_t timeLeftInMode(scalar_t phase, const Gait& gait);
 /** Print gait */
 std::ostream& operator<<(std::ostream& stream, const Gait& gait);
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

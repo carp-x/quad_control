@@ -36,7 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_mpc/reference_manager/SwitchedModelReferenceManager.h"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 class ZeroForceConstraint final : public StateInputConstraint {
  public:
@@ -65,5 +65,5 @@ class ZeroForceConstraint final : public StateInputConstraint {
   const CentroidalModelInfo info_;
 };
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

@@ -33,7 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_centroidal_model/AccessHelperFunctions.h>
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -206,5 +206,5 @@ matrix_t FrictionConeConstraint::frictionConeSecondDerivativeState(size_t stateD
   return ddhdxdx;
 }
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

@@ -36,7 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_mpc/reference_manager/SwitchedModelReferenceManager.h"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /**
  * Specializes the CppAd version of normal velocity constraint on an end-effector position and linear velocity.
@@ -72,5 +72,5 @@ class NormalVelocityConstraintCppAd final : public StateInputConstraint {
   const size_t contactPointIndex_;
 };
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

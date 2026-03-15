@@ -31,7 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_mpc/constraint/EndEffectorLinearConstraint.h"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -111,5 +111,5 @@ VectorFunctionLinearApproximation EndEffectorLinearConstraint::getLinearApproxim
   return linearApproximation;
 }
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

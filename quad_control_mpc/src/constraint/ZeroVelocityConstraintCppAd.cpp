@@ -31,7 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_mpc/constraint/ZeroVelocityConstraintCppAd.h"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -77,5 +77,5 @@ VectorFunctionLinearApproximation ZeroVelocityConstraintCppAd::getLinearApproxim
   return eeLinearConstraintPtr_->getLinearApproximation(time, state, input, preComp);
 }
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

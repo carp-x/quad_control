@@ -38,7 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_mpc/gait/MotionPhaseDefinition.h"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -246,5 +246,5 @@ SwingTrajectoryPlanner::Config loadSwingTrajectorySettings(const std::string& fi
   return config;
 }
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

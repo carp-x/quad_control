@@ -31,7 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_mpc/foot_planner/CubicSpline.h"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -107,5 +107,5 @@ scalar_t CubicSpline::normalizedTime(scalar_t t) const {
   return (t - t0_) / dt_;
 }
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

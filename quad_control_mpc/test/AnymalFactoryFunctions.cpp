@@ -40,12 +40,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace {
 const std::string URDF_FILE = ocs2::robotic_assets::getPath() + "/resources/anymal_c/urdf/anymal.urdf";
-const std::string TASK_FILE = ocs2::legged_robot::getPath() + "/config/mpc/" + "task.info";
-const std::string REFERENCE_FILE = ocs2::legged_robot::getPath() + "/config/command/" + "reference.info";
+const std::string TASK_FILE = ocs2::quad_robot::getPath() + "/config/mpc/" + "task.info";
+const std::string REFERENCE_FILE = ocs2::quad_robot::getPath() + "/config/command/" + "reference.info";
 }  // unnamed namespace
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -79,5 +79,5 @@ std::shared_ptr<SwitchedModelReferenceManager> createReferenceManager(size_t num
   return std::make_shared<SwitchedModelReferenceManager>(std::move(gaitSchedule), std::move(swingTrajectoryPlanner));
 }
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

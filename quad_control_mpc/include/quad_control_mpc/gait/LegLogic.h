@@ -35,7 +35,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_mpc/common/Types.h"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 struct LegPhase {
   scalar_t phase;
@@ -109,5 +109,5 @@ std::vector<SwingTiming> extractSwingTimings(const std::vector<scalar_t>& eventT
  */
 feet_array_t<std::vector<bool>> extractContactFlags(const std::vector<size_t>& modeSequence);
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

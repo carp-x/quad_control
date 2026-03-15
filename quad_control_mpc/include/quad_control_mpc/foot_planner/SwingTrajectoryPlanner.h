@@ -36,7 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_mpc/foot_planner/SplineCpg.h"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 class SwingTrajectoryPlanner {
  public:
@@ -111,5 +111,5 @@ class SwingTrajectoryPlanner {
 SwingTrajectoryPlanner::Config loadSwingTrajectorySettings(const std::string& fileName,
                                                            const std::string& fieldName = "swing_trajectory_config", bool verbose = true);
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

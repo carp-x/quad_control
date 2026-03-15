@@ -36,7 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_core/misc/LoadData.h>
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 ModelSettings loadModelSettings(const std::string& filename, const std::string& fieldName, bool verbose) {
   ModelSettings modelSettings;
@@ -63,5 +63,5 @@ ModelSettings loadModelSettings(const std::string& filename, const std::string& 
   return modelSettings;
 }
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

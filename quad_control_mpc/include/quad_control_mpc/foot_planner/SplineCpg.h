@@ -33,7 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_mpc/foot_planner/CubicSpline.h"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 class SplineCpg {
  public:
@@ -55,5 +55,5 @@ class SplineCpg {
   CubicSpline rightSpline_;
 };
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

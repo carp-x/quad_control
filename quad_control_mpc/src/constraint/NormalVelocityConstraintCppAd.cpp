@@ -32,7 +32,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_mpc/LeggedRobotPreComputation.h"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -84,5 +84,5 @@ VectorFunctionLinearApproximation NormalVelocityConstraintCppAd::getLinearApprox
   return eeLinearConstraintPtr_->getLinearApproximation(time, state, input, preComp);
 }
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

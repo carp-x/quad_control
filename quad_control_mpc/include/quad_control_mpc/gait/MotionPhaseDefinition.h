@@ -43,7 +43,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_mpc/common/Types.h"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 enum ModeNumber {  // {LF, RF, LH, RH}
   FLY = 0,
@@ -184,5 +184,5 @@ inline size_t string2ModeNumber(const std::string& modeString) {
   return nameToMode[modeString];
 }
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // end of namespace ocs2

@@ -36,7 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_mpc/reference_manager/SwitchedModelReferenceManager.h"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 class LeggedRobotInitializer final : public Initializer {
  public:
@@ -62,5 +62,5 @@ class LeggedRobotInitializer final : public Initializer {
   const bool extendNormalizedMomentum_;
 };
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

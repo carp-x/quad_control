@@ -31,7 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_mpc/foot_planner/SplineCpg.h"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -84,5 +84,5 @@ scalar_t SplineCpg::finalTimeDerivative(scalar_t time) const {
   }
 }
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

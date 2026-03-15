@@ -44,7 +44,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "rclcpp/rclcpp.hpp"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 class LeggedRobotVisualizer : public DummyObserver {
  public:
@@ -131,5 +131,5 @@ class LeggedRobotVisualizer : public DummyObserver {
   scalar_t minPublishTimeDifference_;
 };
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

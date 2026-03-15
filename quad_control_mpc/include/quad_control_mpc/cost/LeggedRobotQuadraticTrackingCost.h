@@ -38,7 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_mpc/reference_manager/SwitchedModelReferenceManager.h"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /**
  * State-input tracking cost used for intermediate times
@@ -91,5 +91,5 @@ class LeggedRobotStateQuadraticCost final : public QuadraticStateCost {
   const SwitchedModelReferenceManager* referenceManagerPtr_;
 };
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

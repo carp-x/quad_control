@@ -40,7 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "rclcpp/rclcpp.hpp"
 
 using namespace ocs2;
-using namespace legged_robot;
+using namespace quad_robot;
 
 int main(int argc, char** argv) {
   const std::string robotName = "quad_robot";

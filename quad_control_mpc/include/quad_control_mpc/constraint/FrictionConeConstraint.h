@@ -37,7 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_mpc/reference_manager/SwitchedModelReferenceManager.h"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /**
  * Implements the constraint h(t,x,u) >= 0
@@ -144,5 +144,5 @@ class FrictionConeConstraint final : public StateInputConstraint {
   matrix3_t t_R_w = matrix3_t::Identity();
 };
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

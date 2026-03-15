@@ -41,7 +41,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "rclcpp/rclcpp.hpp"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /** This class implements mode_sequence communication using ROS. */
 class GaitCommandPublisher {
@@ -66,5 +66,5 @@ class GaitCommandPublisher {
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr gaitSubscriber_;
 };
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // end of namespace ocs2

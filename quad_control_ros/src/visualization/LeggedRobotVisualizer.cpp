@@ -55,7 +55,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <kdl_parser/kdl_parser.hpp>
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -457,5 +457,5 @@ void LeggedRobotVisualizer::publishOptimizedStateTrajectory(
   stateOptimizedPublisher_->publish(markerArray);
 }
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

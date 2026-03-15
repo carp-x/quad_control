@@ -35,7 +35,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_centroidal_model/AccessHelperFunctions.h>
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -63,5 +63,5 @@ void LeggedRobotInitializer::compute(scalar_t time, const vector_t& state, scala
   }
 }
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

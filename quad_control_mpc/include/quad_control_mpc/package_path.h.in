@@ -33,12 +33,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /** Gets the path to the package source directory. */
 inline std::string getPath() {
   return "@PROJECT_SOURCE_DIR@";
 }
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

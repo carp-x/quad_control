@@ -38,7 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_mpc/test/AnymalFactoryFunctions.h"
 
 using namespace ocs2;
-using namespace legged_robot;
+using namespace quad_robot;
 
 class TestFrictionConeConstraint : public testing::Test {
  public:

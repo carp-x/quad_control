@@ -38,7 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_mpc/gait/MotionPhaseDefinition.h"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /**
  * Manages the ModeSchedule and the TargetTrajectories for switched model.
@@ -65,5 +65,5 @@ class SwitchedModelReferenceManager : public ReferenceManager {
   std::shared_ptr<SwingTrajectoryPlanner> swingTrajectoryPtr_;
 };
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

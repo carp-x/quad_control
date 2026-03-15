@@ -38,7 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_mpc/gait/ModeSequenceTemplate.h"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 class GaitSchedule {
  public:
@@ -82,5 +82,5 @@ class GaitSchedule {
   scalar_t phaseTransitionStanceTime_;
 };
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

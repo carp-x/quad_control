@@ -37,7 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_robotic_tools/end_effector/EndEffectorKinematics.h>
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /**
  * Defines a linear constraint on an end-effector position (xee) and linear velocity (vee).
@@ -90,5 +90,5 @@ class EndEffectorLinearConstraint final : public StateInputConstraint {
   Config config_;
 };
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

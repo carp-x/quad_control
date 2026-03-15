@@ -31,7 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_mpc/dynamics/LeggedRobotDynamicsAD.h"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -56,5 +56,5 @@ VectorFunctionLinearApproximation LeggedRobotDynamicsAD::linearApproximation(sca
   return pinocchioCentroidalDynamicsAd_.getLinearApproximation(time, state, input);
 }
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

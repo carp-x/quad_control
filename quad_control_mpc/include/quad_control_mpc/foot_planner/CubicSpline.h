@@ -33,7 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_core/Types.h>
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 class CubicSpline {
  public:
@@ -73,5 +73,5 @@ class CubicSpline {
   scalar_t dc3_;  // derivative w.r.t. dt_
 };
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

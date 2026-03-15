@@ -38,7 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_mpc/common/ModelSettings.h"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 class LeggedRobotDynamicsAD final : public SystemDynamicsBase {
  public:
@@ -58,5 +58,5 @@ class LeggedRobotDynamicsAD final : public SystemDynamicsBase {
   PinocchioCentroidalDynamicsAD pinocchioCentroidalDynamicsAd_;
 };
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

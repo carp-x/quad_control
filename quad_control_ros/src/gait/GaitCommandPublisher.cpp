@@ -38,7 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_ros/gait/ModeSequenceTemplateRos.h"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -101,5 +101,5 @@ void GaitCommandPublisher::printGaitList(
   std::cout << std::endl;
 }
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // end of namespace ocs2

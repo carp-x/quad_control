@@ -52,7 +52,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * General interface for mpc implementation on the legged robot model
  */
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 class LeggedRobotInterface final : public RobotInterface {
  public:
@@ -127,5 +127,5 @@ class LeggedRobotInterface final : public RobotInterface {
   vector_t initialState_;
 };
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2

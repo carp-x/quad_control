@@ -43,7 +43,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_mpc/foot_planner/SwingTrajectoryPlanner.h"
 
 namespace ocs2 {
-namespace legged_robot {
+namespace quad_robot {
 
 /** Callback for caching and reference update */
 class LeggedRobotPreComputation : public PreComputation {
@@ -72,5 +72,5 @@ class LeggedRobotPreComputation : public PreComputation {
   std::vector<EndEffectorLinearConstraint::Config> eeNormalVelConConfigs_;
 };
 
-}  // namespace legged_robot
+}  // namespace quad_robot
 }  // namespace ocs2
