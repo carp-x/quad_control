@@ -53,7 +53,7 @@ class LinearKalmanFilter : public StateEstimateBase {
   const scalar_t r_ee_vel_        = 0.1;
   const scalar_t r_ee_height_     = 0.01;
   
-  const scalar_t foot_radius_ = 0.02;
+  const scalar_t foot_radius_ = 0.08;
   vector_t feet_heights_;
 
   const scalar_t p_scale_init_ = 100.0;
