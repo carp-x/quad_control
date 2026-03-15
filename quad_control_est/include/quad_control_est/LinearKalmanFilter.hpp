@@ -34,7 +34,7 @@ class LinearKalmanFilter : public StateEstimateBase {
   const scalar_t suspect_factor_no_contact_ = 100.0;
   
  private:
-  void dtScaling(const scalar_t dt, matrix_t& A, matrix_t& B, matrix_t& Q);
+  void discretizeModel(const scalar_t dt, matrix_t& A, matrix_t& B, matrix_t& Q);
   void updateInput(vector_t& u);
   void updateObserve(vector_t& z);
   void updateFilter(vector_t& x_hat, matrix_t& P);

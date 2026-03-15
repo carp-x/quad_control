@@ -1,7 +1,9 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.5)
 project(quad_control_est)
 
-# 消除 hpp-fcl/coal 警告 (必须放在 find_package(pinocchio) 之前)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 add_definitions(-DCOAL_DISABLE_HPP_FCL_WARNINGS)
 
 find_package(ament_cmake REQUIRED)
@@ -9,8 +11,8 @@ find_package(pinocchio REQUIRED)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(Boost REQUIRED COMPONENTS system filesystem log_setup log)
 
-find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(realtime_tools REQUIRED)
@@ -43,8 +45,8 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 ament_target_dependencies(${PROJECT_NAME}
-  geometry_msgs
   nav_msgs
+  geometry_msgs
   rclcpp
   rclcpp_lifecycle
   realtime_tools
@@ -63,11 +65,9 @@ install(TARGETS ${PROJECT_NAME}
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
-
 install(DIRECTORY include/
   DESTINATION include
 )
-
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
 ament_export_targets(export_${PROJECT_NAME})
@@ -75,8 +75,8 @@ ament_export_targets(export_${PROJECT_NAME})
 ament_export_dependencies(
   pinocchio 
   Boost 
-  geometry_msgs
   nav_msgs
+  geometry_msgs
   rclcpp
   rclcpp_lifecycle
   realtime_tools

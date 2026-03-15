@@ -30,9 +30,9 @@ vector_t FromTopicStateEstimate::update(const rclcpp::Time& /*time*/, const rclc
                 vector3_t(odom.twist.twist.angular.x, odom.twist.twist.angular.y, odom.twist.twist.angular.z));
   updateLinear(vector3_t(odom.pose.pose.position.x, odom.pose.pose.position.y, odom.pose.pose.position.z),
                vector3_t(odom.twist.twist.linear.x, odom.twist.twist.linear.y, odom.twist.twist.linear.z));
-  
+
   publishMsgs(odom);
-  
+
   return rbd_state_;
 }
 

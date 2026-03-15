@@ -9,8 +9,8 @@
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
 
 // ROS 2 Messages
-#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 
 // Realtime Tools
 #include <realtime_tools/realtime_publisher.hpp>
@@ -82,6 +82,7 @@ class StateEstimateBase {
   
   std::shared_ptr<OdomPublisher> odom_pub_;
   std::shared_ptr<PosePublisher> pose_pub_;
+  const scalar_t publish_rate_ = 200.0;
   rclcpp::Time last_pub_;
 };
 

@@ -55,7 +55,7 @@ LinearKalmanFilter::LinearKalmanFilter(std::shared_ptr<rclcpp_lifecycle::Lifecyc
 
 vector_t LinearKalmanFilter::update(const rclcpp::Time& time, const rclcpp::Duration& period) {
 
-  dtScaling(period.seconds(), A_, B_, Q_);
+  discretizeModel(period.seconds(), A_, B_, Q_);
   updateInput(u_);
   updateObserve(z_);
   updateFilter(x_hat_, P_);
@@ -76,7 +76,7 @@ vector_t LinearKalmanFilter::update(const rclcpp::Time& time, const rclcpp::Dura
   return rbd_state_;
 }
 
-void LinearKalmanFilter::dtScaling(const scalar_t dt, matrix_t& A, matrix_t& B, matrix_t& Q) {
+void LinearKalmanFilter::discretizeModel(const scalar_t dt, matrix_t& A, matrix_t& B, matrix_t& Q) {
   A.block<3, 3>(0, 3) = dt * matrix3_t::Identity();
   
   B.block<3, 3>(0, 0) = 0.5 * dt * dt * matrix3_t::Identity();
@@ -149,10 +149,10 @@ void LinearKalmanFilter::updateFilter(vector_t& x_hat, matrix_t& P) {
 
   auto S = C_ * P * C_.transpose() + R;
   auto K = P * C_.transpose() * S.lu().solve(matrix_t::Identity(num_observe_, num_observe_));
-  
+
   x_hat += K * (z_ - C_ * x_hat);
   P = (matrix_t::Identity(num_state_, num_state_) - K * C_) * P;
-  P = 0.5 * (P + P.transpose()); // ? symmetrization
+  P = 0.5 * (P + P.transpose());
 }
 
 nav_msgs::msg::Odometry LinearKalmanFilter::getOdomMsg() {
