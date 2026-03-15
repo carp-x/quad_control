@@ -33,13 +33,31 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include <vector>
 #include <array>
+#include <atomic>
+#include <thread>
 
-#include "controller_interface/controller_interface.hpp"
-#include "hardware_interface/handle.hpp"
-#include "rclcpp/subscription.hpp"
-#include "realtime_tools/realtime_publisher.hpp"
+#include <controller_interface/controller_interface.hpp>
+#include <hardware_interface/handle.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp_lifecycle/lifecycle_node.hpp>
+
+#include <ocs2_core/Types.h>
+#include <ocs2_core/misc/Benchmark.h>
+#include <ocs2_mpc/MPC_Base.h>
+#include <ocs2_mpc/MPC_MRT_Interface.h>
+#include <ocs2_sqp/SqpMpc.h>
+
+#include <ocs2_pinocchio_interface/PinocchioEndEffectorKinematics.h>
+#include <ocs2_centroidal_model/CentroidalModelRbdConversions.h>
+
+#include "quad_control_est/StateEstimateBase.hpp"
+#include "quad_control_ros/visualization/LeggedRobotVisualizer.h"
+#include "quad_control_mpc/LeggedRobotInterface.h"
+#include "quad_control_mpc/gait/GaitSchedule.h"
 
 namespace quad_robot {
+using namespace ocs2;
+using namespace legged_robot;
 
 struct JointHandle {
   std::string name;
@@ -135,6 +153,37 @@ class QuadController : public controller_interface::ControllerInterface {
                            });
     return (it != interfaces.end()) ? &(*it) : nullptr;
   }
+
+ protected:
+  virtual void setupQuadrupedInterface(const std::string& task_file, const std::string& urdf_file, const std::string& reference_file,
+                                    bool verbose);
+  virtual void setupMpc();
+  virtual void setupMrt();
+  virtual void setupStateEstimation(const std::string& task_file, bool verbose);
+  virtual void updateStateEstimation(const rclcpp::Time& time, const rclcpp::Duration& period);
+
+  std::shared_ptr<LeggedRobotInterface> quadruped_interface_;
+  std::shared_ptr<PinocchioEndEffectorKinematics> ee_kinematics_ptr_;
+
+  std::shared_ptr<MPC_BASE> mpc_;
+  std::shared_ptr<MPC_MRT_Interface> mpc_mrt_interface_;
+
+  SystemObservation current_observation_;
+  vector_t measured_rbd_state_;
+  std::shared_ptr<StateEstimateBase> state_estimate_;
+  std::shared_ptr<CentroidalModelRbdConversions> rbd_conversions_;
+
+  rclcpp::Publisher<SystemObservation>::SharedPtr observation_publisher_;
+  std::shared_ptr<LeggedRobotVisualizer> robot_visualizer_;
+  // std::shared_ptr<LeggedSelfCollisionVisualization> self_collision_visualization_;
+
+ private:
+  const std::string robot_name_ = "quad_robot";
+  std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_ptr_;
+
+  std::thread mpc_thread_;
+  std::atomic_bool controller_running_{}, mpc_running_{};
+  benchmark::RepeatedTimer mpc_timer_;
 };
 
 }  // namespace quad_robot

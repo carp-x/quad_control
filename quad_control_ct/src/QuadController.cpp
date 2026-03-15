@@ -27,6 +27,11 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
+#include <pthread.h>
+#include <sched.h>
+#include <chrono>
+#include <angles/angles.h>
+
 #include "quad_control_ct/QuadController.hpp"
 
 namespace quad_robot {
@@ -325,6 +330,128 @@ controller_interface::CallbackReturn QuadController::on_deactivate(const rclcpp_
   ft_handles_.clear();
   imu_handles_.clear();
   return controller_interface::CallbackReturn::SUCCESS;
+}
+
+void QuadController::setupQuadrupedInterface(const std::string& task_file, const std::string& urdf_file, 
+                                             const std::string& reference_file, bool verbose) {
+  quadruped_interface_ = std::make_shared<LeggedRobotInterface>(task_file, urdf_file, reference_file);
+}
+
+void QuadController::setupMpc() {
+  auto ros_reference_manager_ptr = std::make_shared<RosReferenceManager>(
+      node_ptr_, quadruped_interface_->getReferenceManagerPtr(), robot_name_);
+  ros_reference_manager_ptr->subscribe(*node_ptr_);
+
+  auto gait_receiver_ptr = std::make_shared<GaitReceiver>(
+      node_ptr_, quadruped_interface_->getSwitchedModelReferenceManagerPtr()->getGaitSchedule(), robot_name_);
+  
+  mpc_ = std::make_shared<SqpMpc>(quadruped_interface_->mpcSettings(), 
+                                  quadruped_interface_->sqpSettings(),
+                                  quadruped_interface_->getOptimalControlProblem(), 
+                                  quadruped_interface_->getInitializer());
+  mpc_->getSolverPtr()->setReferenceManager(ros_reference_manager_ptr);
+  mpc_->getSolverPtr()->addSynchronizedModule(gait_receiver_ptr);
+
+  rbd_conversions_ = std::make_shared<CentroidalModelRbdConversions>(
+      quadruped_interface_->getPinocchioInterface(),
+      quadruped_interface_->getCentroidalModelInfo());  
+
+  observation_publisher_ = node_ptr_->create_publisher<SystemObservation>(
+      robot_name_ + "_mpc_observation", rclcpp::SystemDefaultsQoS());
+}
+
+void QuadController::setupMrt() {
+  mpc_mrt_interface_ = std::make_shared<MPC_MRT_Interface>(*mpc_);
+  mpc_mrt_interface_->initRollout(&quadruped_interface_->getRollout());
+  mpc_timer_.reset();
+
+  if (mpc_thread_.joinable()) {
+      controller_running_ = false;
+      mpc_thread_.join();
+  }
+  controller_running_ = true;
+  mpc_running_ = false;
+  mpc_thread_ = std::thread([this]() {
+    double desired_frequency = quadruped_interface_->mpcSettings().mpcDesiredFrequency_;
+    auto sleep_duration = std::chrono::microseconds(static_cast<int>(1e6 / desired_frequency));
+
+    while (rclcpp::ok() && controller_running_) {
+      auto start = std::chrono::steady_clock::now();
+      try {
+        if (mpc_running_) {
+          mpc_timer_.startTimer();
+          mpc_mrt_interface_->advanceMpc();
+          mpc_timer_.stopTimer();
+        }
+      } catch (const std::exception& e) {
+        controller_running_ = false;
+        RCLCPP_ERROR(node_ptr_->get_logger(), "[OCS2 MPC thread] Error: %s", e.what());
+      }
+      auto end = std::chrono::steady_clock::now();
+      auto elapsed = end - start;
+      if (sleep_duration > elapsed) {
+        std::this_thread::sleep_for(sleep_duration - elapsed);
+      }
+    }
+  });
+
+  int priority = quadruped_interface_->sqpSettings().threadPriority;
+  if (priority > 0) {
+    struct sched_param param;
+    param.sched_priority = priority;
+    if (pthread_setschedparam(mpc_thread_.native_handle(), SCHED_FIFO, &param) != 0) {
+      RCLCPP_WARN(node_ptr_->get_logger(), "Failed to set MPC thread priority to %d", priority);
+    } else {
+      RCLCPP_INFO(node_ptr_->get_logger(), "Successfully set MPC thread priority to %d", priority);
+    }
+  }
+}
+
+void QuadController::setupStateEstimation(const std::string& task_file, bool verbose) {
+  state_estimate_ = std::make_shared<LinearKalmanFilter>(node_ptr_,
+                                                         quadruped_interface_->getPinocchioInterface(),
+                                                         quadruped_interface_->getCentroidalModelInfo(), *ee_kinematics_ptr_);
+  current_observation_.time = 0.0;
+}
+
+void QuadController::updateStateEstimation(const rclcpp::Time& time, const rclcpp::Duration& period) {
+  vector_t joint_pos(joint_handles_.size()), joint_vel(joint_handles_.size());
+  contact_flag_t contact_flag;
+  Eigen::Quaternion<scalar_t> quat;
+  vector3_t angular_vel, linear_acc;
+  matrix3_t ori_cov, angular_vel_cov, linear_acc_cov;
+
+  for (size_t i = 0; i < joint_handles_.size(); ++i) {
+    joint_pos(i) = joint_handles_[i].position.get().get_value();
+    joint_vel(i) = joint_handles_[i].velocity.get().get_value();
+  }
+  for (size_t i = 0; i < ft_handles_.size(); ++i) {
+    contact_flag[i] = ft_handles_[i].incontact();
+  }
+  auto& ih = imu_handles_[0];
+  for (size_t i = 0; i < 4; ++i) {
+    quat.coeffs()(i) = ih.ori[i].get().get_value();
+  }
+  for (size_t i = 0; i < 3; ++i) {
+    angular_vel(i) = ih.angular_vel[i].get().get_value();
+    linear_acc(i) = ih.linear_acc[i].get().get_value();
+  }
+  for (size_t i = 0; i < 9; ++i) {
+    ori_cov(i) = ih.ori_cov[i].get().get_value();
+    angular_vel_cov(i) = ih.angular_vel_cov[i].get().get_value();
+    linear_acc_cov(i) = ih.linear_acc_cov[i].get().get_value();
+  }
+
+  state_estimate_->updateJointStates(joint_pos, joint_vel);
+  state_estimate_->updateContact(contact_flag);
+  state_estimate_->updateImu(quat, angular_vel, linear_acc, ori_cov, angular_vel_cov, linear_acc_cov);
+  measured_rbd_state_ = state_estimate_->update(time, period);
+
+  scalar_t yaw_last = current_observation_.state(9);  
+  current_observation_.state = rbd_conversions_->computeCentroidalStateFromRbdModel(measured_rbd_state_);
+  current_observation_.state(9) = yaw_last + angles::shortest_angular_distance(yaw_last, current_observation_.state(9));
+  current_observation_.mode = state_estimate_->getMode();
+  current_observation_.time += period.seconds();
 }
 
 } // namespace quad_robot
