@@ -4,8 +4,10 @@
   <name>quad_control_ct</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="liyuxin_2016@163.com">l</maintainer>
-  <license>TODO: License declaration</license>
+  <maintainer email="liyuxin_2016@163.com">Yuxin Li</maintainer>
+
+  <license>BSD-3</license>
+  <author>Yuxin Li</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

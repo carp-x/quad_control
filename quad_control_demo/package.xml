@@ -3,9 +3,11 @@
 <package format="3">
   <name>quad_control_demo</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>The quad_control_demo package</description>
   <maintainer email="liyuxin_2016@163.com">l</maintainer>
-  <license>TODO: License declaration</license>
+
+  <license>BSD-3</license>
+  <author>Yuxin Li</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

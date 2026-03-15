@@ -818,6 +818,6 @@ hardware_interface::return_type QuadGzSimSystem::write(
 }
 }  // namespace quad_robot
 
-#include "pluginlib/class_list_macros.hpp"  // NOLINT
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(
   quad_robot::QuadGzSimSystem, gz_ros2_control::GazeboSimSystemInterface)

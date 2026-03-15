@@ -1,10 +1,12 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>quad_control_est</name>
-  <version>0.1.0</version>
+  <version>0.0.0</version>
   <description>Quadrped Robot State Estimation with Linear Kalman Filter</description>
-  <maintainer email="your_email@todo.todo">user</maintainer>
-  <license>Apache-2.0</license>
+  <maintainer email="liyuxin_2016@163.com">Yuxin Li</maintainer>
+
+  <license>BSD-3</license>
+  <author>Yuxin Li</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
