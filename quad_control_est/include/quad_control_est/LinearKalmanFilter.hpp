@@ -45,22 +45,22 @@ class LinearKalmanFilter : public StateEstimateBase {
  protected:
   nav_msgs::msg::Odometry getOdomMsg();
   
-  const scalar_t q_base_pos_      = 0.02;
-  const scalar_t q_base_vel_      = 0.02;
-  const scalar_t q_ee_pos_static_ = 0.002;
+  const scalar_t q_base_pos_      = 0.01;
+  const scalar_t q_base_vel_      = 0.1;
+  const scalar_t q_ee_pos_static_ = 0.001;
 
-  const scalar_t r_ee_pos_        = 0.005;
-  const scalar_t r_ee_vel_        = 0.1;
-  const scalar_t r_ee_height_     = 0.01;
+  const scalar_t r_ee_pos_        = 0.01;
+  const scalar_t r_ee_vel_        = 0.5;
+  const scalar_t r_ee_height_     = 0.005;
   
   const scalar_t foot_radius_ = 0.08;
   vector_t feet_heights_;
 
-  const scalar_t p_scale_init_ = 100.0;
+  const scalar_t p_scale_init_ = 1.0;
   const scalar_t q_scale_factor_ = 20.0;
   const vector3_t g_{0, 0, -9.81};
   const scalar_t suspect_factor_contact_ = 1.0;
-  const scalar_t suspect_factor_no_contact_ = 100.0;
+  const scalar_t suspect_factor_no_contact_ = 1000.0;
   
  private:
   void discretizeModel(const scalar_t dt, matrix_t& A, matrix_t& B, matrix_t& Q);
