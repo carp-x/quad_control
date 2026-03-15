@@ -1,4 +1,4 @@
-// Copyright 2026 Yuxin Li <liyuxin_2016@163.com>
+// Copyright 2026 Yuxin Li
 //
 // Copyright 2025 AIT Austrian Institute of Technology GmbH
 //
