@@ -1,10 +1,16 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>quad_control_gz</name>
-  <version>1.0.1</version>
-  <description>Quadrotor control system for Gazebo Sim</description>
-  <maintainer email="ahcorde@osrfoundation.org">Alejandro Hernandez</maintainer>
+  <version>0.0.0</version>
+  <description>
+    A refactored version of the gz_ros2_control_demos package, extended for quadrupedal robot platforms.
+    Original work by Alejandro Hernandez (OSRF).
+  </description>
+  <maintainer email="liyuxin_2016@163.com">Yuxin Li</maintainer>
+
   <license>Apache License 2.0</license>
+  <author>Alejandro Hernández</author>
+  <author>Yuxin Li</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

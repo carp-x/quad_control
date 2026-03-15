@@ -1,3 +1,5 @@
+// Copyright 2026 Yuxin Li <liyuxin_2016@163.com>
+//
 // Copyright 2025 AIT Austrian Institute of Technology GmbH
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,6 +13,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// NOTICE: This file has been modified by Yuxin Li in 2026.
 
 #pragma once
 
