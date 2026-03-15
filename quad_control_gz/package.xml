@@ -12,13 +12,13 @@
   <depend>std_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>control_msgs</depend>
-  <depend>pluginlib</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_action</depend>
   <depend>rclcpp_lifecycle</depend>
   <depend>control_toolbox</depend>
   <depend>gz_ros2_control</depend>
   <depend>hardware_interface</depend>
+  <depend>pluginlib</depend>
 
   <exec_depend>ament_index_python</exec_depend>
   <exec_depend>launch</exec_depend>
