@@ -469,7 +469,7 @@ void QuadController::activateMrt() {
       mpc_thread_.join();
   }
   controller_running_ = true;
-  mpc_running_ = true;
+  mpc_running_ = false;
   mpc_thread_ = std::thread([this]() {
     double desired_frequency = quad_interface_->mpcSettings().mpcDesiredFrequency_;
     auto sleep_duration = std::chrono::microseconds(static_cast<int>(1e6 / desired_frequency));
