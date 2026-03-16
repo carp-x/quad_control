@@ -31,8 +31,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "quad_control_est/StateEstimateBase.hpp"
 
-#include <realtime_tools/realtime_buffer.hpp>
-
 namespace quad_control {
 
 class FromTopicStateEstimate : public StateEstimateBase {

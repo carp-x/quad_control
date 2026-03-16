@@ -32,6 +32,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ocs2_robotic_tools/common/RotationTransforms.h>
 #include <ocs2_robotic_tools/common/RotationDerivativesTransforms.h>
+
 #include "quad_control_est/LinearKalmanFilter.hpp"
 
 namespace quad_control {

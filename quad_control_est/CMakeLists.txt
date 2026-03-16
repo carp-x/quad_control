@@ -20,8 +20,8 @@ find_package(realtime_tools REQUIRED)
 find_package(ocs2_core REQUIRED)
 find_package(ocs2_pinocchio_interface REQUIRED)
 find_package(ocs2_centroidal_model REQUIRED)
-find_package(ocs2_legged_robot REQUIRED)
 find_package(ocs2_robotic_tools REQUIRED)
+find_package(quad_control_mpc REQUIRED)
 
 ######
 
@@ -53,8 +53,8 @@ ament_target_dependencies(${PROJECT_NAME}
   ocs2_core
   ocs2_pinocchio_interface
   ocs2_centroidal_model
-  ocs2_legged_robot
   ocs2_robotic_tools
+  quad_control_mpc
 )
 
 ######
@@ -83,8 +83,8 @@ ament_export_dependencies(
   ocs2_core
   ocs2_pinocchio_interface
   ocs2_centroidal_model
-  ocs2_legged_robot
   ocs2_robotic_tools
+  quad_control_mpc
 )
 
 ament_package()

@@ -33,29 +33,26 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include <vector>
 
-// ROS 2 Core & Lifecycle
-#include <rclcpp/rclcpp.hpp>
-#include <rclcpp_lifecycle/lifecycle_node.hpp>
-
-// ROS 2 Messages
 #include <nav_msgs/msg/odometry.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 
-// Realtime Tools
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp_lifecycle/lifecycle_node.hpp>
+#include <realtime_tools/realtime_buffer.hpp>
 #include <realtime_tools/realtime_publisher.hpp>
 
-// OCS2 & Pinocchio
-#include <ocs2_centroidal_model/CentroidalModelInfo.h>
 #include <ocs2_core/Types.h>
-#include <ocs2_legged_robot/common/ModelSettings.h>
-#include <ocs2_legged_robot/common/Types.h>
-#include <ocs2_legged_robot/gait/MotionPhaseDefinition.h>
 #include <ocs2_pinocchio_interface/PinocchioEndEffectorKinematics.h>
+#include <ocs2_centroidal_model/CentroidalModelInfo.h>
+
+#include "quad_control_mpc/common/Types.h"
+#include "quad_control_mpc/common/ModelSettings.h"
+#include "quad_control_mpc/gait/MotionPhaseDefinition.h"
 
 namespace quad_control {
 
 using namespace ocs2;
-using namespace legged_robot;
+using namespace quad_robot;
 
 class StateEstimateBase {
  public:
