@@ -459,11 +459,6 @@ void QuadController::setupMrt() {
   mpc_mrt_interface_->initRollout(&quad_interface_->getRollout());
   mpc_timer_.reset();
 
-  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController setupMrt succeed.");
-}
-
-
-void QuadController::activateMrt() {
   if (mpc_thread_.joinable()) {
       controller_running_ = false;
       mpc_thread_.join();
@@ -505,6 +500,39 @@ void QuadController::activateMrt() {
     }
   }
 
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController setupMrt succeed.");
+}
+
+
+void QuadController::activateMrt() {
+
+  const auto time = node_lifecycle_->now();
+  current_observation_.time = time.seconds();
+
+  current_observation_.state.setZero(quad_interface_->getCentroidalModelInfo().stateDim);
+  current_observation_.input.setZero(quad_interface_->getCentroidalModelInfo().inputDim);
+  current_observation_.mode = ModeNumber::STANCE;
+
+  unsigned int controller_hz = get_update_rate();
+  const rclcpp::Duration period = (controller_hz > 0) 
+      ? rclcpp::Duration::from_seconds(1.0 / static_cast<double>(controller_hz)) 
+      : rclcpp::Duration::from_seconds(0.002);
+  updateStateEstimation(time, period);
+  TargetTrajectories target_trajectories({current_observation_.time}, 
+                                         {current_observation_.state}, 
+                                         {current_observation_.input});
+
+  mpc_mrt_interface_->setCurrentObservation(current_observation_);
+  mpc_mrt_interface_->getReferenceManager().setTargetTrajectories(target_trajectories);
+
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "Waiting for the initial policy ...");
+  while (rclcpp::ok() && !mpc_mrt_interface_->initialPolicyReceived()) {
+    mpc_mrt_interface_->advanceMpc();
+    std::this_thread::sleep_for(std::chrono::milliseconds(
+        static_cast<int>(1000.0 / quad_interface_->mpcSettings().mrtDesiredFrequency_)));
+  }
+
+  mpc_running_ = true;
   RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController activateMrt succeed.");
 }
 
