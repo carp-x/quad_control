@@ -198,7 +198,7 @@ class QuadController : public controller_interface::ControllerInterface {
  private:
   const std::string robot_name_ = "quad_robot";
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_ptr_;
-  rclcpp::Node::SharedPtr node_;
+  rclcpp::Node::SharedPtr node_base_;
 
   std::thread mpc_thread_;
   std::atomic_bool controller_running_{}, mpc_running_{};

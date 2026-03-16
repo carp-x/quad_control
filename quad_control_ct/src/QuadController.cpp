@@ -94,8 +94,8 @@ controller_interface::return_type QuadController::update(const rclcpp::Time&, co
 }
 
 void QuadController::printStateCommand() {
-  auto logger = get_node()->get_logger();
-  auto& clock = *(get_node()->get_clock());
+  auto logger = node_ptr_->get_logger();
+  auto& clock = *(node_ptr_->get_clock());
   
   // Lambda
   auto get_v = [](const auto& iface) -> double {
@@ -172,6 +172,7 @@ controller_interface::CallbackReturn QuadController::on_init() {
     return controller_interface::CallbackReturn::ERROR;
   }
   
+  RCLCPP_INFO(node_ptr_->get_logger(), "QuadController on_init succeed.");
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
@@ -188,7 +189,7 @@ void QuadController::declareFileParams(rclcpp_lifecycle::LifecycleNode& node) {
 }
 
 controller_interface::CallbackReturn QuadController::on_configure(const rclcpp_lifecycle::State&) {
-  node_ = std::make_shared<rclcpp::Node>(robot_name_);
+  node_base_ = std::make_shared<rclcpp::Node>(robot_name_);
 
   if (!loadSensorParams(*node_ptr_)) return controller_interface::CallbackReturn::ERROR;
   if (!loadFileParams(*node_ptr_)) return controller_interface::CallbackReturn::ERROR;
@@ -207,6 +208,7 @@ controller_interface::CallbackReturn QuadController::on_configure(const rclcpp_l
     return controller_interface::CallbackReturn::ERROR;
   }
 
+  RCLCPP_INFO(node_ptr_->get_logger(), "QuadController on_configure succeed.");
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
@@ -243,7 +245,7 @@ bool QuadController::loadFileParams(rclcpp_lifecycle::LifecycleNode& node) {
     return false;
   }
 
-  RCLCPP_INFO(node.get_logger(), "Loading OCS2 files:\nTask: %s\nURDF: %s\nRef: %s", 
+  RCLCPP_INFO(node.get_logger(), "Loaded files:\nTask: %s\nURDF: %s\nRef: %s", 
               task_file_.c_str(), urdf_file_.c_str(), reference_file_.c_str());
   return true;
 }
@@ -252,10 +254,11 @@ controller_interface::CallbackReturn QuadController::on_activate(const rclcpp_li
   if (!setupJointHandles() || !setupIMUHandles() || !setupFTHandles()) {
     return controller_interface::CallbackReturn::ERROR;
   }
-  printHandlesCfg();
 
   activateMrt();
 
+  printHandlesCfg();
+  RCLCPP_INFO(node_ptr_->get_logger(), "QuadController on_activate succeed.");
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
@@ -331,9 +334,8 @@ bool QuadController::setupFTHandles() {
 }
 
 void QuadController::printHandlesCfg() {
-  auto logger = get_node()->get_logger();
+  auto logger = node_ptr_->get_logger();
   RCLCPP_INFO(logger, "--------------------------------------------------");
-  RCLCPP_INFO(logger, "Quad Controller Activated Successfully");
 
   RCLCPP_INFO(logger, ">> [Joint Handles]");
   for (const auto& jh : joint_handles_) {
@@ -408,15 +410,17 @@ void QuadController::setupQuadInterface(const std::string& task_file,
       quad_interface_->getPinocchioInterface(), 
       *pinocchio_mapping_ptr_,
       quad_interface_->modelSettings().contactNames3DoF);
+  
+  RCLCPP_INFO(node_ptr_->get_logger(), "QuadController setupQuadInterface succeed.");
 }
 
 void QuadController::setupMpc() {
   auto ros_reference_manager_ptr = std::make_shared<RosReferenceManager>(
       robot_name_, quad_interface_->getReferenceManagerPtr());
-  ros_reference_manager_ptr->subscribe(node_);
+  ros_reference_manager_ptr->subscribe(node_base_);
 
   auto gait_receiver_ptr = std::make_shared<GaitReceiver>(
-      node_, quad_interface_->getSwitchedModelReferenceManagerPtr()->getGaitSchedule(), robot_name_);
+      node_base_, quad_interface_->getSwitchedModelReferenceManagerPtr()->getGaitSchedule(), robot_name_);
   
   mpc_ = std::make_shared<SqpMpc>(quad_interface_->mpcSettings(), 
                                   quad_interface_->sqpSettings(),
@@ -424,12 +428,16 @@ void QuadController::setupMpc() {
                                   quad_interface_->getInitializer());
   mpc_->getSolverPtr()->setReferenceManager(ros_reference_manager_ptr);
   mpc_->getSolverPtr()->addSynchronizedModule(gait_receiver_ptr);
+
+  RCLCPP_INFO(node_ptr_->get_logger(), "QuadController setupMpc succeed.");
 }
 
 void QuadController::setupMrt() {
   mpc_mrt_interface_ = std::make_shared<MPC_MRT_Interface>(*mpc_);
   mpc_mrt_interface_->initRollout(&quad_interface_->getRollout());
   mpc_timer_.reset();
+
+  RCLCPP_INFO(node_ptr_->get_logger(), "QuadController setupMrt succeed.");
 }
 
 void QuadController::activateMrt() {
@@ -473,6 +481,8 @@ void QuadController::activateMrt() {
       RCLCPP_INFO(node_ptr_->get_logger(), "Successfully set MPC thread priority to %d", priority);
     }
   }
+
+  RCLCPP_INFO(node_ptr_->get_logger(), "QuadController activateMrt succeed.");
 }
 
 void QuadController::setupStateEstimation(const std::string& task_file) {
@@ -481,12 +491,16 @@ void QuadController::setupStateEstimation(const std::string& task_file) {
                                                          quad_interface_->getCentroidalModelInfo(), 
                                                          *ee_kinematics_ptr_);
   current_observation_.time = 0.0;
+
+  RCLCPP_INFO(node_ptr_->get_logger(), "QuadController setupStateEstimation succeed.");
 }
 
 void QuadController::setupRbd() {
   rbd_conversions_ = std::make_shared<CentroidalModelRbdConversions>(
       quad_interface_->getPinocchioInterface(),
-      quad_interface_->getCentroidalModelInfo());  
+      quad_interface_->getCentroidalModelInfo());
+  
+  RCLCPP_INFO(node_ptr_->get_logger(), "QuadController setupRbd succeed.");
 }
 
 void QuadController::setupSub() {
@@ -497,13 +511,17 @@ void QuadController::setupPub() {
   observation_publisher_ = node_ptr_->create_publisher<ocs2_msgs::msg::MpcObservation>(
       robot_name_ + "_mpc_observation", 
       rclcpp::SystemDefaultsQoS());
+  
+  RCLCPP_INFO(node_ptr_->get_logger(), "QuadController setupPub succeed.");
 }
 
 void QuadController::setupVisualization() {
   robot_visualizer_ = std::make_shared<LeggedRobotVisualizer>(
       quad_interface_->getPinocchioInterface(), 
       quad_interface_->getCentroidalModelInfo(),
-      *ee_kinematics_ptr_, node_);
+      *ee_kinematics_ptr_, node_base_);
+  
+  RCLCPP_INFO(node_ptr_->get_logger(), "QuadController setupVisualization succeed.");
 }
 
 void QuadController::updateStateEstimation(const rclcpp::Time& time, 
