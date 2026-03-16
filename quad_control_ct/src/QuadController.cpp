@@ -332,30 +332,30 @@ controller_interface::CallbackReturn QuadController::on_deactivate(const rclcpp_
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
-void QuadController::setupQuadrupedInterface(const std::string& task_file, const std::string& urdf_file, 
-                                             const std::string& reference_file, bool verbose) {
-  quadruped_interface_ = std::make_shared<LeggedRobotInterface>(task_file, urdf_file, reference_file);
+void QuadController::setupQuadInterface(const std::string& task_file, 
+                                        const std::string& urdf_file, 
+                                        const std::string& reference_file) {
+  quad_interface_ = std::make_shared<LeggedRobotInterface>(task_file, urdf_file, reference_file);
 }
 
 void QuadController::setupMpc() {
-
   auto ros_reference_manager_ptr = std::make_shared<RosReferenceManager>(
-      robot_name_, quadruped_interface_->getReferenceManagerPtr());
+      robot_name_, quad_interface_->getReferenceManagerPtr());
   ros_reference_manager_ptr->subscribe(node_);
 
   auto gait_receiver_ptr = std::make_shared<GaitReceiver>(
-      node_, quadruped_interface_->getSwitchedModelReferenceManagerPtr()->getGaitSchedule(), robot_name_);
+      node_, quad_interface_->getSwitchedModelReferenceManagerPtr()->getGaitSchedule(), robot_name_);
   
-  mpc_ = std::make_shared<SqpMpc>(quadruped_interface_->mpcSettings(), 
-                                  quadruped_interface_->sqpSettings(),
-                                  quadruped_interface_->getOptimalControlProblem(), 
-                                  quadruped_interface_->getInitializer());
+  mpc_ = std::make_shared<SqpMpc>(quad_interface_->mpcSettings(), 
+                                  quad_interface_->sqpSettings(),
+                                  quad_interface_->getOptimalControlProblem(), 
+                                  quad_interface_->getInitializer());
   mpc_->getSolverPtr()->setReferenceManager(ros_reference_manager_ptr);
   mpc_->getSolverPtr()->addSynchronizedModule(gait_receiver_ptr);
 
   rbd_conversions_ = std::make_shared<CentroidalModelRbdConversions>(
-      quadruped_interface_->getPinocchioInterface(),
-      quadruped_interface_->getCentroidalModelInfo());  
+      quad_interface_->getPinocchioInterface(),
+      quad_interface_->getCentroidalModelInfo());  
 
   observation_publisher_ = node_ptr_->create_publisher<ocs2_msgs::msg::MpcObservation>(
       robot_name_ + "_mpc_observation", rclcpp::SystemDefaultsQoS());
@@ -363,7 +363,7 @@ void QuadController::setupMpc() {
 
 void QuadController::setupMrt() {
   mpc_mrt_interface_ = std::make_shared<MPC_MRT_Interface>(*mpc_);
-  mpc_mrt_interface_->initRollout(&quadruped_interface_->getRollout());
+  mpc_mrt_interface_->initRollout(&quad_interface_->getRollout());
   mpc_timer_.reset();
 
   if (mpc_thread_.joinable()) {
@@ -373,7 +373,7 @@ void QuadController::setupMrt() {
   controller_running_ = true;
   mpc_running_ = false;
   mpc_thread_ = std::thread([this]() {
-    double desired_frequency = quadruped_interface_->mpcSettings().mpcDesiredFrequency_;
+    double desired_frequency = quad_interface_->mpcSettings().mpcDesiredFrequency_;
     auto sleep_duration = std::chrono::microseconds(static_cast<int>(1e6 / desired_frequency));
 
     while (rclcpp::ok() && controller_running_) {
@@ -396,7 +396,7 @@ void QuadController::setupMrt() {
     }
   });
 
-  int priority = quadruped_interface_->sqpSettings().threadPriority;
+  int priority = quad_interface_->sqpSettings().threadPriority;
   if (priority > 0) {
     struct sched_param param;
     param.sched_priority = priority;
@@ -408,14 +408,16 @@ void QuadController::setupMrt() {
   }
 }
 
-void QuadController::setupStateEstimation(const std::string& task_file, bool verbose) {
+void QuadController::setupStateEstimation(const std::string& task_file) {
   state_estimate_ = std::make_shared<LinearKalmanFilter>(node_ptr_,
-                                                         quadruped_interface_->getPinocchioInterface(),
-                                                         quadruped_interface_->getCentroidalModelInfo(), *ee_kinematics_ptr_);
+                                                         quad_interface_->getPinocchioInterface(),
+                                                         quad_interface_->getCentroidalModelInfo(), 
+                                                         *ee_kinematics_ptr_);
   current_observation_.time = 0.0;
 }
 
-void QuadController::updateStateEstimation(const rclcpp::Time& time, const rclcpp::Duration& period) {
+void QuadController::updateStateEstimation(const rclcpp::Time& time, 
+                                           const rclcpp::Duration& period) {
   vector_t joint_pos(joint_handles_.size()), joint_vel(joint_handles_.size());
   contact_flag_t contact_flag;
   Eigen::Quaternion<scalar_t> quat;

@@ -161,14 +161,16 @@ class QuadController : public controller_interface::ControllerInterface {
   }
 
  protected:
-  virtual void setupQuadrupedInterface(const std::string& task_file, const std::string& urdf_file, const std::string& reference_file,
-                                    bool verbose);
+  virtual void setupQuadInterface(const std::string& task_file,
+                                  const std::string& urdf_file,
+                                  const std::string& reference_file);
   virtual void setupMpc();
   virtual void setupMrt();
-  virtual void setupStateEstimation(const std::string& task_file, bool verbose);
-  virtual void updateStateEstimation(const rclcpp::Time& time, const rclcpp::Duration& period);
+  virtual void setupStateEstimation(const std::string& task_file);
+  virtual void updateStateEstimation(const rclcpp::Time& time, 
+                                     const rclcpp::Duration& period);
 
-  std::shared_ptr<LeggedRobotInterface> quadruped_interface_;
+  std::shared_ptr<LeggedRobotInterface> quad_interface_;
   std::shared_ptr<PinocchioEndEffectorKinematics> ee_kinematics_ptr_;
 
   std::shared_ptr<MPC_BASE> mpc_;
