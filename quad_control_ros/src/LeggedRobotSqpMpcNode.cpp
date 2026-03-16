@@ -28,16 +28,17 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#include <quad_control_mpc/LeggedRobotInterface.h>
+#include <stdexcept>
+
+#include <rclcpp/rclcpp.hpp>
+
+#include <ocs2_sqp/SqpMpc.h>
 #include <ocs2_ros_interfaces/mpc/MPC_ROS_Interface.h>
 #include <ocs2_ros_interfaces/synchronized_module/RosReferenceManager.h>
 #include <ocs2_ros_interfaces/synchronized_module/SolverObserverRosCallbacks.h>
-#include <ocs2_sqp/SqpMpc.h>
 
-#include <stdexcept>
-
+#include "quad_control_mpc/LeggedRobotInterface.h"
 #include "quad_control_ros/gait/GaitReceiver.h"
-#include "rclcpp/rclcpp.hpp"
 
 using namespace ocs2;
 using namespace quad_robot;

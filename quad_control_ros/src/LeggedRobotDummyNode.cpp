@@ -28,16 +28,17 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
-#include <ocs2_centroidal_model/CentroidalModelPinocchioMapping.h>
-#include <quad_control_mpc/LeggedRobotInterface.h>
-#include <ocs2_pinocchio_interface/PinocchioEndEffectorKinematics.h>
-#include <ocs2_ros_interfaces/mrt/MRT_ROS_Dummy_Loop.h>
-#include <ocs2_ros_interfaces/mrt/MRT_ROS_Interface.h>
-
 #include <stdexcept>
 
+#include <rclcpp/rclcpp.hpp>
+
+#include <ocs2_ros_interfaces/mrt/MRT_ROS_Interface.h>
+#include <ocs2_ros_interfaces/mrt/MRT_ROS_Dummy_Loop.h>
+#include <ocs2_pinocchio_interface/PinocchioEndEffectorKinematics.h>
+#include <ocs2_centroidal_model/CentroidalModelPinocchioMapping.h>
+
+#include "quad_control_mpc/LeggedRobotInterface.h"
 #include "quad_control_ros/visualization/LeggedRobotVisualizer.h"
-#include "rclcpp/rclcpp.hpp"
 
 using namespace ocs2;
 using namespace quad_robot;

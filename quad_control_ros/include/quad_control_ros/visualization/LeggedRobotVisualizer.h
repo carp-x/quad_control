@@ -29,19 +29,22 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
 #pragma once
-#include <ocs2_centroidal_model/CentroidalModelInfo.h>
-#include <ocs2_core/Types.h>
-#include <quad_control_mpc/common/Types.h>
-#include <ocs2_pinocchio_interface/PinocchioEndEffectorKinematics.h>
-#include <ocs2_ros_interfaces/mrt/DummyObserver.h>
-#include <ocs2_ros_interfaces/visualization/VisualizationColors.h>
-#include <tf2_ros/transform_broadcaster.h>
 
-#include <robot_state_publisher/robot_state_publisher.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/rclcpp.hpp>
+
+#include <tf2_ros/transform_broadcaster.h>
+#include <robot_state_publisher/robot_state_publisher.hpp>
+
+#include <ocs2_core/Types.h>
+#include <ocs2_ros_interfaces/mrt/DummyObserver.h>
+#include <ocs2_ros_interfaces/visualization/VisualizationColors.h>
+#include <ocs2_pinocchio_interface/PinocchioEndEffectorKinematics.h>
+#include <ocs2_centroidal_model/CentroidalModelInfo.h>
+
+#include "quad_control_mpc/common/Types.h"
 
 namespace ocs2 {
 namespace quad_robot {

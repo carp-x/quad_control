@@ -28,14 +28,14 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
-#include "quad_control_ros/gait/GaitCommandPublisher.h"
+#include <algorithm>
+
+#include <ocs2_msgs/msg/mode_schedule.hpp>
 
 #include <ocs2_core/misc/LoadData.h>
 
-#include <algorithm>
-#include <ocs2_msgs/msg/mode_schedule.hpp>
-
 #include "quad_control_ros/gait/ModeSequenceTemplateRos.h"
+#include "quad_control_ros/gait/GaitCommandPublisher.h"
 
 namespace ocs2 {
 namespace quad_robot {

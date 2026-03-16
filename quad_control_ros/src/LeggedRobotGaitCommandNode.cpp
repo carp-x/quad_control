@@ -28,10 +28,11 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
-#include "quad_control_ros/gait/GaitCommandPublisher.h"
-#include "rclcpp/rclcpp.hpp"
-
 #include <stdexcept>
+
+#include <rclcpp/rclcpp.hpp>
+
+#include "quad_control_ros/gait/GaitCommandPublisher.h"
 
 using namespace ocs2;
 using namespace quad_robot;

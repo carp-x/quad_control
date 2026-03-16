@@ -28,6 +28,10 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
+// URDF related
+#include <urdf/model.h>
+#include <kdl_parser/kdl_parser.hpp>
+
 // Pinocchio forward declarations must be included first
 #include <pinocchio/fwd.hpp>
 
@@ -35,24 +39,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <pinocchio/algorithm/frames.hpp>
 #include <pinocchio/algorithm/kinematics.hpp>
 
-#include "quad_control_ros/visualization/LeggedRobotVisualizer.h"
-
-// OCS2
-#include <ocs2_centroidal_model/AccessHelperFunctions.h>
-#include <ocs2_core/misc/LinearInterpolation.h>
-#include <ocs2_robotic_tools/common/RotationTransforms.h>
-#include <ocs2_ros_interfaces/visualization/VisualizationHelpers.h>
-
-#include "quad_control_mpc/gait/MotionPhaseDefinition.h"
-
 // Additional messages not in the helpers file
 #include <geometry_msgs/msg/pose_array.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
-// URDF related
-#include <urdf/model.h>
+// OCS2
+#include <ocs2_core/misc/LinearInterpolation.h>
+#include <ocs2_centroidal_model/AccessHelperFunctions.h>
+#include <ocs2_robotic_tools/common/RotationTransforms.h>
+#include <ocs2_ros_interfaces/visualization/VisualizationHelpers.h>
 
-#include <kdl_parser/kdl_parser.hpp>
+#include "quad_control_mpc/gait/MotionPhaseDefinition.h"
+#include "quad_control_ros/visualization/LeggedRobotVisualizer.h"
 
 namespace ocs2 {
 namespace quad_robot {

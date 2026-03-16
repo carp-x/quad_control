@@ -30,16 +30,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include <ocs2_core/Types.h>
-#include <quad_control_mpc/gait/GaitSchedule.h>
-#include <quad_control_mpc/gait/ModeSequenceTemplate.h>
-#include <quad_control_mpc/gait/MotionPhaseDefinition.h>
-#include <ocs2_oc/synchronized_module/SolverSynchronizedModule.h>
-
 #include <mutex>
+
 #include <ocs2_msgs/msg/mode_schedule.hpp>
 
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/rclcpp.hpp>
+
+#include <ocs2_core/Types.h>
+#include <ocs2_oc/synchronized_module/SolverSynchronizedModule.h>
+
+#include "quad_control_mpc/gait/GaitSchedule.h"
+#include "quad_control_mpc/gait/ModeSequenceTemplate.h"
+#include "quad_control_mpc/gait/MotionPhaseDefinition.h"
 
 namespace ocs2 {
 namespace quad_robot {

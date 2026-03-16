@@ -30,15 +30,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include <quad_control_mpc/gait/ModeSequenceTemplate.h>
-
-#include <ocs2_msgs/msg/mode_schedule.hpp>
-#include <std_msgs/msg/string.hpp>
-#include <std_msgs/msg/bool.hpp>
 #include <string>
 #include <vector>
 
-#include "rclcpp/rclcpp.hpp"
+#include <std_msgs/msg/string.hpp>
+#include <std_msgs/msg/bool.hpp>
+#include <ocs2_msgs/msg/mode_schedule.hpp>
+
+#include <rclcpp/rclcpp.hpp>
+
+#include "quad_control_mpc/gait/ModeSequenceTemplate.h"
 
 namespace ocs2 {
 namespace quad_robot {
