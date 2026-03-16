@@ -26,7 +26,7 @@ find_package(ocs2_centroidal_model REQUIRED)
 find_package(ocs2_msgs REQUIRED)
 find_package(ocs2_ros_interfaces REQUIRED)
 
-find_package(quad_control_est REQUIRED)
+find_package(quad_control_se REQUIRED)
 find_package(quad_control_ros REQUIRED)
 find_package(quad_control_mpc REQUIRED)
 
@@ -67,7 +67,7 @@ ament_target_dependencies(${PROJECT_NAME}
   ocs2_msgs
   ocs2_ros_interfaces
 
-  quad_control_est
+  quad_control_se
   quad_control_ros
   quad_control_mpc
 )

@@ -53,7 +53,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_msgs/msg/mpc_observation.hpp>
 #include <ocs2_ros_interfaces/synchronized_module/RosReferenceManager.h>
 
-#include "quad_control_est/LinearKalmanFilter.hpp"
+#include "quad_control_se/LinearKalmanFilter.hpp"
 #include "quad_control_ros/visualization/LeggedRobotVisualizer.h"
 #include "quad_control_mpc/LeggedRobotInterface.h"
 #include "quad_control_ros/gait/GaitReceiver.h"
