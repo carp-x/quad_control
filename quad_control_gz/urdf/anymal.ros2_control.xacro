@@ -3,7 +3,7 @@
 
     <ros2_control name="AnymalCGzSimHardware" type="system">
         <hardware>
-            <plugin>quad_robot/QuadGzSimSystem</plugin>
+            <plugin>quad_control/QuadGzSimSystem</plugin>
         </hardware>
 
         <xacro:macro name="hybrid_joint_interface" params="name">
