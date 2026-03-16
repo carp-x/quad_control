@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "quad_control_est/StateEstimateBase.hpp"
 
-namespace quadruped_estimate {
+namespace quad_control {
 
 StateEstimateBase::StateEstimateBase(std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_ptr,
                                      PinocchioInterface pinocchio_interface, 
@@ -92,4 +92,4 @@ void StateEstimateBase::publishMsgs(const nav_msgs::msg::Odometry& odom) {
   }
 }
 
-} // namespace quadruped_estimate
+} // namespace quad_control

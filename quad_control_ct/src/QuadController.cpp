@@ -34,7 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "quad_control_ct/QuadController.hpp"
 
-namespace quadruped_controller {
+namespace quad_control {
 
 QuadController::~QuadController() = default;
 
@@ -455,7 +455,7 @@ void QuadController::updateStateEstimation(const rclcpp::Time& time, const rclcp
   current_observation_.time += period.seconds();
 }
 
-} // namespace quadruped_controller
+} // namespace quad_control
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS(quadruped_controller::QuadController, controller_interface::ControllerInterface)
+PLUGINLIB_EXPORT_CLASS(quad_control::QuadController, controller_interface::ControllerInterface)

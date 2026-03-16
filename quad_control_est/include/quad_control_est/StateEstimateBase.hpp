@@ -52,7 +52,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_legged_robot/gait/MotionPhaseDefinition.h>
 #include <ocs2_pinocchio_interface/PinocchioEndEffectorKinematics.h>
 
-namespace quadruped_estimate {
+namespace quad_control {
 
 using namespace ocs2;
 using namespace legged_robot;
@@ -128,4 +128,4 @@ Eigen::Matrix<SCALAR_T, 3, 1> quatToZyx(const Eigen::Quaternion<SCALAR_T>& q) {
   return zyx;
 }
 
-} // namespace quadruped_estimate
+} // namespace quad_control

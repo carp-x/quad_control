@@ -34,7 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_robotic_tools/common/RotationDerivativesTransforms.h>
 #include "quad_control_est/LinearKalmanFilter.hpp"
 
-namespace quadruped_estimate {
+namespace quad_control {
 
 LinearKalmanFilter::LinearKalmanFilter(std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_ptr,
                                        PinocchioInterface pinocchio_interface,
@@ -203,4 +203,4 @@ nav_msgs::msg::Odometry LinearKalmanFilter::getOdomMsg() {
   return odom;
 }
 
-} // namespace quadruped_estimate
+} // namespace quad_control

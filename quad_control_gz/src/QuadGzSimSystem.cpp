@@ -57,7 +57,7 @@
 #define GZ_MSGS_NAMESPACE gz::msgs::
 /******************************************************************************************************/
 
-namespace quadruped_gazebo {
+namespace quad_control {
 
 struct jointData
 {
@@ -816,8 +816,8 @@ hardware_interface::return_type QuadGzSimSystem::write(
 
   return hardware_interface::return_type::OK;
 }
-}  // namespace quadruped_gazebo
+}  // namespace quad_control
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(
-  quadruped_gazebo::QuadGzSimSystem, gz_ros2_control::GazeboSimSystemInterface)
+  quad_control::QuadGzSimSystem, gz_ros2_control::GazeboSimSystemInterface)

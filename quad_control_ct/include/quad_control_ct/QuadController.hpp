@@ -58,10 +58,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_mpc/LeggedRobotInterface.h"
 #include "quad_control_ros/gait/GaitReceiver.h"
 
-namespace quadruped_controller {
+namespace quad_control {
 using namespace ocs2;
 using namespace quad_robot;
-using namespace quadruped_estimate;
 
 struct JointHandle {
   std::string name;
@@ -191,4 +190,4 @@ class QuadController : public controller_interface::ControllerInterface {
   benchmark::RepeatedTimer mpc_timer_;
 };
 
-}  // namespace quadruped_controller
+}  // namespace quad_control
