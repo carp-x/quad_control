@@ -110,8 +110,8 @@ class QuadController : public controller_interface::ControllerInterface {
   controller_interface::CallbackReturn on_activate(const rclcpp_lifecycle::State& previous_state) override;
   controller_interface::CallbackReturn on_deactivate(const rclcpp_lifecycle::State& previous_state) override;
 
-  controller_interface::InterfaceConfiguration command_interface_configuration() const override;
   controller_interface::InterfaceConfiguration state_interface_configuration() const override;
+  controller_interface::InterfaceConfiguration command_interface_configuration() const override;
 
   controller_interface::return_type update(const rclcpp::Time& time, const rclcpp::Duration& period) override;
 
@@ -142,7 +142,9 @@ class QuadController : public controller_interface::ControllerInterface {
   void commandIfConfig(controller_interface::InterfaceConfiguration& config) const;
   void printStateCommand();
   void declareSensorParams(rclcpp_lifecycle::LifecycleNode& node);
+  void declareFileParams(rclcpp_lifecycle::LifecycleNode& node);
   bool loadSensorParams(rclcpp_lifecycle::LifecycleNode& node);
+  bool loadFileParams(rclcpp_lifecycle::LifecycleNode& node);
   bool setupJointHandles();
   bool setupIMUHandles();
   bool setupFTHandles();
@@ -166,11 +168,19 @@ class QuadController : public controller_interface::ControllerInterface {
                                   const std::string& reference_file);
   virtual void setupMpc();
   virtual void setupMrt();
+  virtual void activateMrt();
   virtual void setupStateEstimation(const std::string& task_file);
   virtual void updateStateEstimation(const rclcpp::Time& time, 
                                      const rclcpp::Duration& period);
+  virtual void setupRbd();
+  virtual void setupSub();
+  virtual void setupPub();
+  virtual void setupVisualization();
+
+  std::string task_file_, urdf_file_, reference_file_;
 
   std::shared_ptr<LeggedRobotInterface> quad_interface_;
+  std::shared_ptr<CentroidalModelPinocchioMapping>  pinocchio_mapping_ptr_;
   std::shared_ptr<PinocchioEndEffectorKinematics> ee_kinematics_ptr_;
 
   std::shared_ptr<MPC_BASE> mpc_;
@@ -187,8 +197,8 @@ class QuadController : public controller_interface::ControllerInterface {
 
  private:
   const std::string robot_name_ = "quad_robot";
-  rclcpp::Node::SharedPtr node_;
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_ptr_;
+  rclcpp::Node::SharedPtr node_;
 
   std::thread mpc_thread_;
   std::atomic_bool controller_running_{}, mpc_running_{};
