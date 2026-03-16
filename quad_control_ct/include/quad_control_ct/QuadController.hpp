@@ -59,6 +59,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_ros/gait/GaitReceiver.h"
 #include "quad_control_ros/visualization/LeggedRobotVisualizer.h"
 #include "quad_control_se/LinearKalmanFilter.hpp"
+#include "quad_control_se/FromTopiceEstimate.hpp"
 
 #include "quad_control_ct/HardwareInterfaceHandles.hpp"
 
@@ -162,14 +163,19 @@ class QuadController : public controller_interface::ControllerInterface {
   std::shared_ptr<LeggedRobotVisualizer> robot_visualizer_;
   // std::shared_ptr<LeggedSelfCollisionVisualization> self_collision_visualization_;
 
- private:
   const std::string robot_name_ = "quad_robot";
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_lifecycle_;
   rclcpp::Node::SharedPtr node_base_;
 
+ private:
   std::thread mpc_thread_;
   std::atomic_bool controller_running_{}, mpc_running_{};
   benchmark::RepeatedTimer mpc_timer_;
+};
+
+class QuadCheaterController : public QuadController {
+ protected:
+  void setupStateEstimation(const std::string& task_file) override;
 };
 
 }  // namespace quad_control

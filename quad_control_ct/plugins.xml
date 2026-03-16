@@ -6,4 +6,11 @@
       TODO...
     </description>
   </class>
+  <class name="quad_control/QuadCheaterController" 
+         type="quad_control::QuadCheaterController" 
+         base_class_type="controller_interface::ControllerInterface">
+    <description>
+      TODO...
+    </description>
+  </class>
 </library>

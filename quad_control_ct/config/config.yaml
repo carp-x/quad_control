@@ -1,6 +1,6 @@
 quad_controller:
   ros__parameters:
-    type: quad_control/QuadController
+    type: quad_control/QuadCheaterController
     joints: 
       - LF_HAA_LF_HIP
       - LF_HFE_LF_THIGH

@@ -595,7 +595,19 @@ void QuadController::updateStateEstimation(const rclcpp::Time& time,
 }
 
 
+void QuadCheaterController::setupStateEstimation(const std::string& task_file) {
+  state_estimate_ = std::make_shared<FromTopicStateEstimate>(node_lifecycle_,
+                                                            quad_interface_->getPinocchioInterface(),
+                                                            quad_interface_->getCentroidalModelInfo(), 
+                                                            *ee_kinematics_ptr_);
+  current_observation_.time = 0.0;
+
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadCheaterController setupStateEstimation succeed.");
+}
+
+
 } // namespace quad_control
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(quad_control::QuadController, controller_interface::ControllerInterface)
+PLUGINLIB_EXPORT_CLASS(quad_control::QuadCheaterController, controller_interface::ControllerInterface)
