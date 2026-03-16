@@ -60,45 +60,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_ros/visualization/LeggedRobotVisualizer.h"
 #include "quad_control_se/LinearKalmanFilter.hpp"
 
+#include "quad_control_ct/HardwareInterfaceHandles.hpp"
+
 
 namespace quad_control {
 using namespace ocs2;
 using namespace quad_robot;
-
-struct JointHandle {
-  std::string name;
-  // Read
-  std::reference_wrapper<const hardware_interface::LoanedStateInterface> position;
-  std::reference_wrapper<const hardware_interface::LoanedStateInterface> velocity;
-  std::reference_wrapper<const hardware_interface::LoanedStateInterface> effort;
-  // Write
-  std::reference_wrapper<hardware_interface::LoanedCommandInterface> pos_des;
-  std::reference_wrapper<hardware_interface::LoanedCommandInterface> vel_des;
-  std::reference_wrapper<hardware_interface::LoanedCommandInterface> ff;
-  std::reference_wrapper<hardware_interface::LoanedCommandInterface> kp;
-  std::reference_wrapper<hardware_interface::LoanedCommandInterface> kd;
-};
-
-struct ImuHandle {
-  std::string name;
-  // Read
-  std::array<std::reference_wrapper<const hardware_interface::LoanedStateInterface>, 4> ori;
-  std::array<std::reference_wrapper<const hardware_interface::LoanedStateInterface>, 9> ori_cov;
-  std::array<std::reference_wrapper<const hardware_interface::LoanedStateInterface>, 3> angular_vel;
-  std::array<std::reference_wrapper<const hardware_interface::LoanedStateInterface>, 9> angular_vel_cov;
-  std::array<std::reference_wrapper<const hardware_interface::LoanedStateInterface>, 3> linear_acc;
-  std::array<std::reference_wrapper<const hardware_interface::LoanedStateInterface>, 9> linear_acc_cov;
-};
-
-struct ForceTorqueHandle {
-  std::string name;
-  // Read
-  std::reference_wrapper<const hardware_interface::LoanedStateInterface> contact;
-
-  bool incontact() const {
-    return contact.get().get_optional<double>().value_or(0.0) > 0.99;
-  }
-};
 
 class QuadController : public controller_interface::ControllerInterface {
  public:
