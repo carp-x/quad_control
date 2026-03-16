@@ -30,9 +30,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sched.h>
 #include <pthread.h>
 #include <chrono>
-#include <angles/angles.h>
 
 #include "quad_control_ct/QuadController.hpp"
+
 
 namespace quad_control {
 

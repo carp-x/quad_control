@@ -36,6 +36,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <atomic>
 #include <thread>
 
+#include <angles/angles.h>
+#include <ocs2_msgs/msg/mpc_observation.hpp>
+
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
 #include <controller_interface/controller_interface.hpp>
@@ -49,14 +52,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ocs2_pinocchio_interface/PinocchioEndEffectorKinematics.h>
 #include <ocs2_centroidal_model/CentroidalModelRbdConversions.h>
-
-#include <ocs2_msgs/msg/mpc_observation.hpp>
 #include <ocs2_ros_interfaces/synchronized_module/RosReferenceManager.h>
+#include <ocs2_ros_interfaces/synchronized_module/SolverObserverRosCallbacks.h>
 
-#include "quad_control_se/LinearKalmanFilter.hpp"
-#include "quad_control_ros/visualization/LeggedRobotVisualizer.h"
 #include "quad_control_mpc/LeggedRobotInterface.h"
 #include "quad_control_ros/gait/GaitReceiver.h"
+#include "quad_control_ros/visualization/LeggedRobotVisualizer.h"
+#include "quad_control_se/LinearKalmanFilter.hpp"
+
 
 namespace quad_control {
 using namespace ocs2;

@@ -15,26 +15,27 @@
   <depend>eigen3_cmake_module</depend>
   <depend>boost</depend>
 
+  <depend>angles</depend>
+  <depend>ocs2_msgs</depend>
+
   <depend>rclcpp</depend>
   <depend>rclcpp_lifecycle</depend>
   <depend>controller_interface</depend>
   <depend>hardware_interface</depend>
-  <depend>pluginlib</depend>
-
-  <depend>angles</depend>
 
   <depend>ocs2_core</depend>
-  <!-- <depend>ocs2_oc</depend> -->
   <depend>ocs2_mpc</depend>
   <depend>ocs2_sqp</depend>
+
   <depend>ocs2_pinocchio_interface</depend>
   <depend>ocs2_centroidal_model</depend>
+  <depend>ocs2_ros_interfaces</depend>
 
-  <depend>ocs2_msgs</depend>
-
-  <depend>quad_control_se</depend>
-  <depend>quad_control_ros</depend>
   <depend>quad_control_mpc</depend>
+  <depend>quad_control_ros</depend>
+  <depend>quad_control_se</depend>
+
+  <depend>pluginlib</depend>
 
   <export>
     <build_type>ament_cmake</build_type>
