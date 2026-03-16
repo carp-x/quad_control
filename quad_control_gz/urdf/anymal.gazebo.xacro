@@ -14,6 +14,7 @@
             <tf_topic>/tf</tf_topic>
             <odom_frame>world</odom_frame>
             <robot_base_frame>base</robot_base_frame>
+            <dimensions>3</dimensions>
             <update_rate>500</update_rate>
         </plugin>
     </gazebo>
