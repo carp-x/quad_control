@@ -33,7 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <realtime_tools/realtime_buffer.hpp>
 
-namespace quad_robot {
+namespace quadruped_estimate {
 
 class FromTopicStateEstimate : public StateEstimateBase {
  public:
@@ -51,4 +51,4 @@ class FromTopicStateEstimate : public StateEstimateBase {
   realtime_tools::RealtimeBuffer<nav_msgs::msg::Odometry> buffer_;
 };
 
-} // namespace quad_robot
+} // namespace quadruped_estimate

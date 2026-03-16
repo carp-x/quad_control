@@ -27,7 +27,7 @@
 #include "rclcpp_lifecycle/state.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 
-namespace quad_robot {
+namespace quadruped_gazebo {
 
 using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
@@ -91,4 +91,4 @@ private:
   std::unique_ptr<QuadGzSimSystemPrivate> dataPtr;
 };
 
-}  // namespace quad_robot
+}  // namespace quadruped_gazebo

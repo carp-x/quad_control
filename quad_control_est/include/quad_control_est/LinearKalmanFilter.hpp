@@ -31,7 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "quad_control_est/StateEstimateBase.hpp"
 
-namespace quad_robot {
+namespace quadruped_estimate {
 
 class LinearKalmanFilter : public StateEstimateBase {
  public:
@@ -74,4 +74,4 @@ class LinearKalmanFilter : public StateEstimateBase {
   vector_t x_hat_, u_, z_;
 };
 
-} // namespace quad_robot
+} // namespace quadruped_estimate

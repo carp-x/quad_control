@@ -27,14 +27,14 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#include <pthread.h>
 #include <sched.h>
+#include <pthread.h>
 #include <chrono>
 #include <angles/angles.h>
 
 #include "quad_control_ct/QuadController.hpp"
 
-namespace quad_robot {
+namespace quadruped_controller {
 
 QuadController::~QuadController() = default;
 
@@ -338,12 +338,13 @@ void QuadController::setupQuadrupedInterface(const std::string& task_file, const
 }
 
 void QuadController::setupMpc() {
+
   auto ros_reference_manager_ptr = std::make_shared<RosReferenceManager>(
-      node_ptr_, quadruped_interface_->getReferenceManagerPtr(), robot_name_);
-  ros_reference_manager_ptr->subscribe(*node_ptr_);
+      robot_name_, quadruped_interface_->getReferenceManagerPtr());
+  ros_reference_manager_ptr->subscribe(node_);
 
   auto gait_receiver_ptr = std::make_shared<GaitReceiver>(
-      node_ptr_, quadruped_interface_->getSwitchedModelReferenceManagerPtr()->getGaitSchedule(), robot_name_);
+      node_, quadruped_interface_->getSwitchedModelReferenceManagerPtr()->getGaitSchedule(), robot_name_);
   
   mpc_ = std::make_shared<SqpMpc>(quadruped_interface_->mpcSettings(), 
                                   quadruped_interface_->sqpSettings(),
@@ -356,7 +357,7 @@ void QuadController::setupMpc() {
       quadruped_interface_->getPinocchioInterface(),
       quadruped_interface_->getCentroidalModelInfo());  
 
-  observation_publisher_ = node_ptr_->create_publisher<SystemObservation>(
+  observation_publisher_ = node_ptr_->create_publisher<ocs2_msgs::msg::MpcObservation>(
       robot_name_ + "_mpc_observation", rclcpp::SystemDefaultsQoS());
 }
 
@@ -381,7 +382,7 @@ void QuadController::setupMrt() {
         if (mpc_running_) {
           mpc_timer_.startTimer();
           mpc_mrt_interface_->advanceMpc();
-          mpc_timer_.stopTimer();
+          mpc_timer_.endTimer();
         }
       } catch (const std::exception& e) {
         controller_running_ = false;
@@ -422,24 +423,24 @@ void QuadController::updateStateEstimation(const rclcpp::Time& time, const rclcp
   matrix3_t ori_cov, angular_vel_cov, linear_acc_cov;
 
   for (size_t i = 0; i < joint_handles_.size(); ++i) {
-    joint_pos(i) = joint_handles_[i].position.get().get_value();
-    joint_vel(i) = joint_handles_[i].velocity.get().get_value();
+    joint_pos(i) = joint_handles_[i].position.get().get_optional().value();
+    joint_vel(i) = joint_handles_[i].velocity.get().get_optional().value();
   }
   for (size_t i = 0; i < ft_handles_.size(); ++i) {
     contact_flag[i] = ft_handles_[i].incontact();
   }
   auto& ih = imu_handles_[0];
   for (size_t i = 0; i < 4; ++i) {
-    quat.coeffs()(i) = ih.ori[i].get().get_value();
+    quat.coeffs()(i) = ih.ori[i].get().get_optional().value();
   }
   for (size_t i = 0; i < 3; ++i) {
-    angular_vel(i) = ih.angular_vel[i].get().get_value();
-    linear_acc(i) = ih.linear_acc[i].get().get_value();
+    angular_vel(i) = ih.angular_vel[i].get().get_optional().value();
+    linear_acc(i) = ih.linear_acc[i].get().get_optional().value();
   }
   for (size_t i = 0; i < 9; ++i) {
-    ori_cov(i) = ih.ori_cov[i].get().get_value();
-    angular_vel_cov(i) = ih.angular_vel_cov[i].get().get_value();
-    linear_acc_cov(i) = ih.linear_acc_cov[i].get().get_value();
+    ori_cov(i) = ih.ori_cov[i].get().get_optional().value();
+    angular_vel_cov(i) = ih.angular_vel_cov[i].get().get_optional().value();
+    linear_acc_cov(i) = ih.linear_acc_cov[i].get().get_optional().value();
   }
 
   state_estimate_->updateJointStates(joint_pos, joint_vel);
@@ -454,7 +455,7 @@ void QuadController::updateStateEstimation(const rclcpp::Time& time, const rclcp
   current_observation_.time += period.seconds();
 }
 
-} // namespace quad_robot
+} // namespace quadruped_controller
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS(quad_robot::QuadController, controller_interface::ControllerInterface)
+PLUGINLIB_EXPORT_CLASS(quadruped_controller::QuadController, controller_interface::ControllerInterface)

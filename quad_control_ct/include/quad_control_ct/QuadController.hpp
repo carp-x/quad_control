@@ -36,28 +36,32 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <atomic>
 #include <thread>
 
-#include <controller_interface/controller_interface.hpp>
-#include <hardware_interface/handle.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
+#include <controller_interface/controller_interface.hpp>
+#include <hardware_interface/handle.hpp>
 
 #include <ocs2_core/Types.h>
 #include <ocs2_core/misc/Benchmark.h>
-#include <ocs2_mpc/MPC_Base.h>
+#include <ocs2_mpc/MPC_BASE.h>
 #include <ocs2_mpc/MPC_MRT_Interface.h>
 #include <ocs2_sqp/SqpMpc.h>
 
 #include <ocs2_pinocchio_interface/PinocchioEndEffectorKinematics.h>
 #include <ocs2_centroidal_model/CentroidalModelRbdConversions.h>
 
-#include "quad_control_est/StateEstimateBase.hpp"
+#include <ocs2_msgs/msg/mpc_observation.hpp>
+#include <ocs2_ros_interfaces/synchronized_module/RosReferenceManager.h>
+
+#include "quad_control_est/LinearKalmanFilter.hpp"
 #include "quad_control_ros/visualization/LeggedRobotVisualizer.h"
 #include "quad_control_mpc/LeggedRobotInterface.h"
-#include "quad_control_mpc/gait/GaitSchedule.h"
+#include "quad_control_ros/gait/GaitReceiver.h"
 
-namespace quad_robot {
+namespace quadruped_controller {
 using namespace ocs2;
-using namespace legged_robot;
+using namespace quad_robot;
+using namespace quadruped_estimate;
 
 struct JointHandle {
   std::string name;
@@ -173,12 +177,13 @@ class QuadController : public controller_interface::ControllerInterface {
   std::shared_ptr<StateEstimateBase> state_estimate_;
   std::shared_ptr<CentroidalModelRbdConversions> rbd_conversions_;
 
-  rclcpp::Publisher<SystemObservation>::SharedPtr observation_publisher_;
+  rclcpp::Publisher<ocs2_msgs::msg::MpcObservation>::SharedPtr observation_publisher_;
   std::shared_ptr<LeggedRobotVisualizer> robot_visualizer_;
   // std::shared_ptr<LeggedSelfCollisionVisualization> self_collision_visualization_;
 
  private:
   const std::string robot_name_ = "quad_robot";
+  rclcpp::Node::SharedPtr node_;
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_ptr_;
 
   std::thread mpc_thread_;
@@ -186,4 +191,4 @@ class QuadController : public controller_interface::ControllerInterface {
   benchmark::RepeatedTimer mpc_timer_;
 };
 
-}  // namespace quad_robot
+}  // namespace quadruped_controller

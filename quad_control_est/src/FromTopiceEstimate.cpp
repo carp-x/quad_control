@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "quad_control_est/FromTopiceEstimate.hpp"
 
-namespace quad_robot {
+namespace quadruped_estimate {
 
 FromTopicStateEstimate::FromTopicStateEstimate(std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_ptr,
                                                PinocchioInterface pinocchio_interface, 
@@ -65,4 +65,4 @@ vector_t FromTopicStateEstimate::update(const rclcpp::Time& /*time*/, const rclc
   return rbd_state_;
 }
 
-} // namespace quad_robot
+} // namespace quadruped_estimate
