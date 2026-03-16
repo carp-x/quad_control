@@ -94,8 +94,8 @@ controller_interface::return_type QuadController::update(const rclcpp::Time&, co
 }
 
 void QuadController::printStateCommand() {
-  auto logger = node_ptr_->get_logger();
-  auto& clock = *(node_ptr_->get_clock());
+  auto logger = node_lifecycle_->get_logger();
+  auto& clock = *(node_lifecycle_->get_clock());
   
   // Lambda
   auto get_v = [](const auto& iface) -> double {
@@ -158,41 +158,41 @@ void QuadController::printStateCommand() {
 
 controller_interface::CallbackReturn QuadController::on_init() {
   try {
-    node_ptr_ = get_node();
-    if (!node_ptr_) {
+    node_lifecycle_ = get_node();
+    if (!node_lifecycle_) {
       RCLCPP_ERROR(rclcpp::get_logger("QuadController"), "Failed to get lifecycle node pointer.");
       return controller_interface::CallbackReturn::ERROR;
     }
 
-    declareSensorParams(*node_ptr_);
-    declareFileParams(*node_ptr_);
+    declareSensorParams();
+    declareFileParams();
 
   } catch (const std::exception& e) {
-    RCLCPP_ERROR(node_ptr_->get_logger(), "Exception in on_init: %s", e.what());
+    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Exception in on_init: %s", e.what());
     return controller_interface::CallbackReturn::ERROR;
   }
   
-  RCLCPP_INFO(node_ptr_->get_logger(), "QuadController on_init succeed.");
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController on_init succeed.");
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
-void QuadController::declareSensorParams(rclcpp_lifecycle::LifecycleNode& node) {
-  node.declare_parameter<std::vector<std::string>>("joints", std::vector<std::string>());
-  node.declare_parameter<std::vector<std::string>>("imus", std::vector<std::string>());
-  node.declare_parameter<std::vector<std::string>>("feet", std::vector<std::string>());
+void QuadController::declareSensorParams() {
+  node_lifecycle_->declare_parameter<std::vector<std::string>>("joints", std::vector<std::string>());
+  node_lifecycle_->declare_parameter<std::vector<std::string>>("imus", std::vector<std::string>());
+  node_lifecycle_->declare_parameter<std::vector<std::string>>("feet", std::vector<std::string>());
 }
 
-void QuadController::declareFileParams(rclcpp_lifecycle::LifecycleNode& node) {
-  node.declare_parameter<std::string>("task_file", "");
-  node.declare_parameter<std::string>("urdf_file", "");
-  node.declare_parameter<std::string>("reference_file", "");
+void QuadController::declareFileParams() {
+  node_lifecycle_->declare_parameter<std::string>("task_file", "");
+  node_lifecycle_->declare_parameter<std::string>("urdf_file", "");
+  node_lifecycle_->declare_parameter<std::string>("reference_file", "");
 }
 
 controller_interface::CallbackReturn QuadController::on_configure(const rclcpp_lifecycle::State&) {
   node_base_ = std::make_shared<rclcpp::Node>(robot_name_);
 
-  if (!loadSensorParams(*node_ptr_)) return controller_interface::CallbackReturn::ERROR;
-  if (!loadFileParams(*node_ptr_)) return controller_interface::CallbackReturn::ERROR;
+  if (!loadSensorParams()) return controller_interface::CallbackReturn::ERROR;
+  if (!loadFileParams()) return controller_interface::CallbackReturn::ERROR;
 
   try {
     setupQuadInterface(task_file_, urdf_file_, reference_file_);
@@ -204,48 +204,48 @@ controller_interface::CallbackReturn QuadController::on_configure(const rclcpp_l
     setupPub();
     setupVisualization();
   } catch (const std::exception& e) {
-    RCLCPP_ERROR(node_ptr_->get_logger(), "Failed to setup QuadController: %s", e.what());
+    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Failed to setup QuadController: %s", e.what());
     return controller_interface::CallbackReturn::ERROR;
   }
 
-  RCLCPP_INFO(node_ptr_->get_logger(), "QuadController on_configure succeed.");
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController on_configure succeed.");
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
-bool QuadController::loadSensorParams(rclcpp_lifecycle::LifecycleNode& node) {
-  if (!node.get_parameter("joints", joint_names_) || joint_names_.empty()) {
-    RCLCPP_ERROR(node.get_logger(), "Failed to load 'joints' parameter or the list is empty.");
+bool QuadController::loadSensorParams() {
+  if (!node_lifecycle_->get_parameter("joints", joint_names_) || joint_names_.empty()) {
+    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Failed to load 'joints' parameter or the list is empty.");
     return false;
   }
-  if (!node.get_parameter("imus", imu_names_) || imu_names_.empty()) {
-    RCLCPP_ERROR(node.get_logger(), "Failed to load 'imus' parameter or the list is empty.");
+  if (!node_lifecycle_->get_parameter("imus", imu_names_) || imu_names_.empty()) {
+    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Failed to load 'imus' parameter or the list is empty.");
     return false;
   }
-  if (!node.get_parameter("feet", foot_names_) || foot_names_.empty()) {
-    RCLCPP_ERROR(node.get_logger(), "Failed to load 'feet' parameter or the list is empty.");
+  if (!node_lifecycle_->get_parameter("feet", foot_names_) || foot_names_.empty()) {
+    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Failed to load 'feet' parameter or the list is empty.");
     return false;
   }
-  RCLCPP_INFO(node.get_logger(), 
+  RCLCPP_INFO(node_lifecycle_->get_logger(), 
               "Parameters loaded successfully: %zu joints, %zu IMUs, %zu feet sensors.", 
               joint_names_.size(), imu_names_.size(), foot_names_.size());
   return true;
 }
 
-bool QuadController::loadFileParams(rclcpp_lifecycle::LifecycleNode& node) {
-  if (!node.get_parameter("task_file", task_file_) || task_file_.empty()) {
-    RCLCPP_ERROR(node.get_logger(), "Failed to load 'task_file' parameter or the path is empty.");
+bool QuadController::loadFileParams() {
+  if (!node_lifecycle_->get_parameter("task_file", task_file_) || task_file_.empty()) {
+    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Failed to load 'task_file' parameter or the path is empty.");
     return false;
   }
-  if (!node.get_parameter("urdf_file", urdf_file_) || urdf_file_.empty()) {
-    RCLCPP_ERROR(node.get_logger(), "Failed to load 'urdf_file' parameter or the path is empty.");
+  if (!node_lifecycle_->get_parameter("urdf_file", urdf_file_) || urdf_file_.empty()) {
+    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Failed to load 'urdf_file' parameter or the path is empty.");
     return false;
   }
-  if (!node.get_parameter("reference_file", reference_file_) || reference_file_.empty()) {
-    RCLCPP_ERROR(node.get_logger(), "Failed to load 'reference_file' parameter or the path is empty.");
+  if (!node_lifecycle_->get_parameter("reference_file", reference_file_) || reference_file_.empty()) {
+    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Failed to load 'reference_file' parameter or the path is empty.");
     return false;
   }
 
-  RCLCPP_INFO(node.get_logger(), "Loaded files:\nTask: %s\nURDF: %s\nRef: %s", 
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "Loaded files:\nTask: %s\nURDF: %s\nRef: %s", 
               task_file_.c_str(), urdf_file_.c_str(), reference_file_.c_str());
   return true;
 }
@@ -258,7 +258,7 @@ controller_interface::CallbackReturn QuadController::on_activate(const rclcpp_li
   activateMrt();
 
   printHandlesCfg();
-  RCLCPP_INFO(node_ptr_->get_logger(), "QuadController on_activate succeed.");
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController on_activate succeed.");
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
@@ -334,7 +334,7 @@ bool QuadController::setupFTHandles() {
 }
 
 void QuadController::printHandlesCfg() {
-  auto logger = node_ptr_->get_logger();
+  auto logger = node_lifecycle_->get_logger();
   RCLCPP_INFO(logger, "--------------------------------------------------");
 
   RCLCPP_INFO(logger, ">> [Joint Handles]");
@@ -394,7 +394,7 @@ controller_interface::CallbackReturn QuadController::on_deactivate(const rclcpp_
   ft_handles_.clear();
   imu_handles_.clear();
 
-  RCLCPP_INFO(node_ptr_->get_logger(), "Controller deactivated.");
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "Controller deactivated.");
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
@@ -411,7 +411,7 @@ void QuadController::setupQuadInterface(const std::string& task_file,
       *pinocchio_mapping_ptr_,
       quad_interface_->modelSettings().contactNames3DoF);
   
-  RCLCPP_INFO(node_ptr_->get_logger(), "QuadController setupQuadInterface succeed.");
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController setupQuadInterface succeed.");
 }
 
 void QuadController::setupMpc() {
@@ -429,7 +429,7 @@ void QuadController::setupMpc() {
   mpc_->getSolverPtr()->setReferenceManager(ros_reference_manager_ptr);
   mpc_->getSolverPtr()->addSynchronizedModule(gait_receiver_ptr);
 
-  RCLCPP_INFO(node_ptr_->get_logger(), "QuadController setupMpc succeed.");
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController setupMpc succeed.");
 }
 
 void QuadController::setupMrt() {
@@ -437,7 +437,7 @@ void QuadController::setupMrt() {
   mpc_mrt_interface_->initRollout(&quad_interface_->getRollout());
   mpc_timer_.reset();
 
-  RCLCPP_INFO(node_ptr_->get_logger(), "QuadController setupMrt succeed.");
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController setupMrt succeed.");
 }
 
 void QuadController::activateMrt() {
@@ -461,7 +461,7 @@ void QuadController::activateMrt() {
         }
       } catch (const std::exception& e) {
         controller_running_ = false;
-        RCLCPP_ERROR(node_ptr_->get_logger(), "[OCS2 MPC thread] Error: %s", e.what());
+        RCLCPP_ERROR(node_lifecycle_->get_logger(), "[OCS2 MPC thread] Error: %s", e.what());
       }
       auto end = std::chrono::steady_clock::now();
       auto elapsed = end - start;
@@ -476,23 +476,23 @@ void QuadController::activateMrt() {
     struct sched_param param;
     param.sched_priority = priority;
     if (pthread_setschedparam(mpc_thread_.native_handle(), SCHED_FIFO, &param) != 0) {
-      RCLCPP_WARN(node_ptr_->get_logger(), "Failed to set MPC thread priority to %d", priority);
+      RCLCPP_WARN(node_lifecycle_->get_logger(), "Failed to set MPC thread priority to %d", priority);
     } else {
-      RCLCPP_INFO(node_ptr_->get_logger(), "Successfully set MPC thread priority to %d", priority);
+      RCLCPP_INFO(node_lifecycle_->get_logger(), "Successfully set MPC thread priority to %d", priority);
     }
   }
 
-  RCLCPP_INFO(node_ptr_->get_logger(), "QuadController activateMrt succeed.");
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController activateMrt succeed.");
 }
 
 void QuadController::setupStateEstimation(const std::string& task_file) {
-  state_estimate_ = std::make_shared<LinearKalmanFilter>(node_ptr_,
+  state_estimate_ = std::make_shared<LinearKalmanFilter>(node_lifecycle_,
                                                          quad_interface_->getPinocchioInterface(),
                                                          quad_interface_->getCentroidalModelInfo(), 
                                                          *ee_kinematics_ptr_);
   current_observation_.time = 0.0;
 
-  RCLCPP_INFO(node_ptr_->get_logger(), "QuadController setupStateEstimation succeed.");
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController setupStateEstimation succeed.");
 }
 
 void QuadController::setupRbd() {
@@ -500,7 +500,7 @@ void QuadController::setupRbd() {
       quad_interface_->getPinocchioInterface(),
       quad_interface_->getCentroidalModelInfo());
   
-  RCLCPP_INFO(node_ptr_->get_logger(), "QuadController setupRbd succeed.");
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController setupRbd succeed.");
 }
 
 void QuadController::setupSub() {
@@ -508,11 +508,11 @@ void QuadController::setupSub() {
 }
 
 void QuadController::setupPub() {
-  observation_publisher_ = node_ptr_->create_publisher<ocs2_msgs::msg::MpcObservation>(
+  observation_publisher_ = node_lifecycle_->create_publisher<ocs2_msgs::msg::MpcObservation>(
       robot_name_ + "_mpc_observation", 
       rclcpp::SystemDefaultsQoS());
   
-  RCLCPP_INFO(node_ptr_->get_logger(), "QuadController setupPub succeed.");
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController setupPub succeed.");
 }
 
 void QuadController::setupVisualization() {
@@ -521,7 +521,7 @@ void QuadController::setupVisualization() {
       quad_interface_->getCentroidalModelInfo(),
       *ee_kinematics_ptr_, node_base_);
   
-  RCLCPP_INFO(node_ptr_->get_logger(), "QuadController setupVisualization succeed.");
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController setupVisualization succeed.");
 }
 
 void QuadController::updateStateEstimation(const rclcpp::Time& time, 

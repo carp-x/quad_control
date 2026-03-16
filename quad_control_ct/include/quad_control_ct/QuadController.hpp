@@ -141,10 +141,10 @@ class QuadController : public controller_interface::ControllerInterface {
   void stateIfConfig(controller_interface::InterfaceConfiguration& config) const;
   void commandIfConfig(controller_interface::InterfaceConfiguration& config) const;
   void printStateCommand();
-  void declareSensorParams(rclcpp_lifecycle::LifecycleNode& node);
-  void declareFileParams(rclcpp_lifecycle::LifecycleNode& node);
-  bool loadSensorParams(rclcpp_lifecycle::LifecycleNode& node);
-  bool loadFileParams(rclcpp_lifecycle::LifecycleNode& node);
+  void declareSensorParams();
+  void declareFileParams();
+  bool loadSensorParams();
+  bool loadFileParams();
   bool setupJointHandles();
   bool setupIMUHandles();
   bool setupFTHandles();
@@ -197,7 +197,7 @@ class QuadController : public controller_interface::ControllerInterface {
 
  private:
   const std::string robot_name_ = "quad_robot";
-  std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_ptr_;
+  std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_lifecycle_;
   rclcpp::Node::SharedPtr node_base_;
 
   std::thread mpc_thread_;
