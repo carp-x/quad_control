@@ -1,9 +1,9 @@
 <library path="quad_control_ct">
-  <class name="quad_robot/QuadController" 
-         type="quad_robot::QuadController" 
+  <class name="quad_control/QuadController" 
+         type="quad_control::QuadController" 
          base_class_type="controller_interface::ControllerInterface">
     <description>
-      ...
+      TODO...
     </description>
   </class>
 </library>

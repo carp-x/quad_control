@@ -4,7 +4,7 @@
     type="quad_control::QuadGzSimSystem"
     base_class_type="gz_ros2_control::GazeboSimSystemInterface">
     <description>
-      Custom ros2_control hardware component to be loaded by the gazebo plugin.
+      TODO...
     </description>
   </class>
 </library>
