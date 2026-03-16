@@ -9,6 +9,13 @@
         </plugin>
         <plugin filename="libgz-sim8-forcetorque-system.so" name="gz::sim::systems::ForceTorque">
         </plugin>
+        <plugin filename="gz-sim-odometry-publisher-system" name="gz::sim::systems::OdometryPublisher">
+            <odom_topic>/ground_truth/state</odom_topic>
+            <tf_topic>/tf</tf_topic>
+            <odom_frame>world</odom_frame>
+            <robot_base_frame>base</robot_base_frame>
+            <update_rate>500</update_rate>
+        </plugin>
     </gazebo>
 
     <xacro:macro name="preserve_fixed_joint" params="joint_name">

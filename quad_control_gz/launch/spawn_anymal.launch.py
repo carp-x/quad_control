@@ -94,8 +94,12 @@ def generate_launch_description():
     bridge_clock = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',
-        arguments=['/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock'],
-        output='screen',
+        arguments=[
+            '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
+            '/ground_truth/state@nav_msgs/msg/Odometry[gz.msgs.Odometry',
+            '/tf@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V',
+        ],
+        parameters=[{'use_sim_time': True}],
     )
 
     return LaunchDescription([
