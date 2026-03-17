@@ -2,9 +2,10 @@
 // Created by qiayuan on 22-12-23.
 //
 
+#include <qpOASES.hpp>
+
 #include "quad_control_wbc/WeightedWbc.h"
 
-#include <qpOASES.hpp>
 
 namespace legged {
 

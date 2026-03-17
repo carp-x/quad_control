@@ -7,9 +7,10 @@
 
 #pragma once
 
+#include <utility>
+
 #include <ocs2_core/Types.h>
 
-#include <utility>
 
 namespace legged {
 using namespace ocs2;

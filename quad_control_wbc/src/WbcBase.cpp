@@ -1,17 +1,20 @@
 //
 // Created by qiayuan on 2022/7/1.
 //
+
+#include <utility>
+
 #include <pinocchio/fwd.hpp>  // forward declarations must be included first.
-
-#include "quad_control_wbc/WbcBase.h"
-
-#include <ocs2_centroidal_model/AccessHelperFunctions.h>
-#include <ocs2_centroidal_model/ModelHelperFunctions.h>
 #include <pinocchio/algorithm/centroidal.hpp>
 #include <pinocchio/algorithm/crba.hpp>
 #include <pinocchio/algorithm/frames.hpp>
 #include <pinocchio/algorithm/rnea.hpp>
-#include <utility>
+
+#include <ocs2_centroidal_model/AccessHelperFunctions.h>
+#include <ocs2_centroidal_model/ModelHelperFunctions.h>
+
+#include "quad_control_wbc/WbcBase.h"
+
 
 namespace legged {
 WbcBase::WbcBase(const PinocchioInterface& pinocchioInterface, CentroidalModelInfo info, const PinocchioEndEffectorKinematics& eeKinematics)

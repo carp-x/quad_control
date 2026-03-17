@@ -4,6 +4,7 @@
 
 #include "quad_control_wbc/WbcBase.h"
 
+
 namespace legged {
 
 class WeightedWbc : public WbcBase {

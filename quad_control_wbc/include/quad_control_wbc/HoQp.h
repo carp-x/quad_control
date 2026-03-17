@@ -7,9 +7,10 @@
 
 #pragma once
 
+#include <memory>
+
 #include "quad_control_wbc/Task.h"
 
-#include <memory>
 
 namespace legged {
 // Hierarchical Optimization Quadratic Program

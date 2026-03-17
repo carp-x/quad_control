@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "quad_control_wbc/Task.h"
-
 #include <ocs2_pinocchio_interface/PinocchioEndEffectorKinematics.h>
 #include <ocs2_centroidal_model/PinocchioCentroidalDynamics.h>
-#include <quad_control_mpc/gait/MotionPhaseDefinition.h>
+
+#include "quad_control_mpc/gait/MotionPhaseDefinition.h"
+#include "quad_control_wbc/Task.h"
 
 
 namespace legged {

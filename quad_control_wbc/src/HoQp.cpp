@@ -4,10 +4,11 @@
 // Ref: https://github.com/bernhardpg/quadruped_locomotion
 //
 
+#include <utility>
+#include <qpOASES.hpp>
+
 #include "quad_control_wbc/HoQp.h"
 
-#include <qpOASES.hpp>
-#include <utility>
 
 namespace legged {
 

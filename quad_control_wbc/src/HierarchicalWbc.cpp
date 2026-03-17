@@ -2,9 +2,9 @@
 // Created by qiayuan on 22-12-23.
 //
 
+#include "quad_control_wbc/HoQp.h"
 #include "quad_control_wbc/HierarchicalWbc.h"
 
-#include "quad_control_wbc/HoQp.h"
 
 namespace legged {
 vector_t HierarchicalWbc::update(const vector_t& stateDesired, const vector_t& inputDesired, const vector_t& rbdStateMeasured, size_t mode,
