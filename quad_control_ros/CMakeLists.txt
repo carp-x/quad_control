@@ -26,6 +26,7 @@ find_package(ocs2_centroidal_model REQUIRED)
 find_package(ocs2_robotic_assets REQUIRED)
 find_package(ocs2_msgs REQUIRED)
 find_package(ocs2_ros_interfaces REQUIRED)
+find_package(ocs2_self_collision_visualization REQUIRED)
 find_package(quad_control_mpc REQUIRED)
 
 find_package(pinocchio REQUIRED)
