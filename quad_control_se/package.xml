@@ -2,7 +2,7 @@
 <package format="3">
   <name>quad_control_se</name>
   <version>0.0.0</version>
-  <description>Quadrped Robot State Estimation with Linear Kalman Filter</description>
+  <description>The quad_control_se package</description>
   <maintainer email="liyuxin_2016@163.com">Yuxin Li</maintainer>
 
   <license>BSD-3</license>
@@ -13,18 +13,16 @@
   <depend>pinocchio</depend>
   <depend>eigen3_cmake_module</depend>
   <depend>boost</depend>
-
   <depend>nav_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_lifecycle</depend>
   <depend>realtime_tools</depend>
-
   <depend>ocs2_core</depend>
   <depend>ocs2_pinocchio_interface</depend>
   <depend>ocs2_centroidal_model</depend>
-  <depend>ocs2_legged_robot</depend>
   <depend>ocs2_robotic_tools</depend>
+  <depend>quad_control_mpc</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

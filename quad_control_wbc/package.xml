@@ -13,7 +13,6 @@
   <depend>pinocchio</depend>
   <depend>eigen3_cmake_module</depend>
   <depend>boost</depend>
-
   <depend>rclcpp</depend>
   <depend>quad_control_mpc</depend>
 
