@@ -69,7 +69,6 @@ ament_export_dependencies(
   Eigen3
   Boost
 )
-ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 
 ament_export_libraries(${QPOASES_LIBRARIES})
 ament_export_include_directories(include ${QPOASES_INCLUDE_DIRS})
