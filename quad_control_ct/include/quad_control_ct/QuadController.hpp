@@ -145,6 +145,8 @@ class QuadController : public controller_interface::ControllerInterface {
   virtual void setupPub();
   virtual void setupVisualization();
 
+  bool on_configure_succeed_ = false;
+
   std::string task_file_, urdf_file_, reference_file_;
 
   std::shared_ptr<LeggedRobotInterface> quad_interface_;

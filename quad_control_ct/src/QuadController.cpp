@@ -65,7 +65,10 @@ controller_interface::CallbackReturn QuadController::on_init() {
 
 
 controller_interface::CallbackReturn QuadController::on_configure(const rclcpp_lifecycle::State&) {
-  node_base_ = std::make_shared<rclcpp::Node>(robot_name_);
+  if (on_configure_succeed_)
+    return controller_interface::CallbackReturn::SUCCESS;
+  if (!node_base_)
+    node_base_ = std::make_shared<rclcpp::Node>(robot_name_);
 
   if (!loadSensorParams()) return controller_interface::CallbackReturn::ERROR;
   if (!loadFileParams()) return controller_interface::CallbackReturn::ERROR;
@@ -84,6 +87,7 @@ controller_interface::CallbackReturn QuadController::on_configure(const rclcpp_l
     return controller_interface::CallbackReturn::ERROR;
   }
 
+  on_configure_succeed_ = true;
   RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController on_configure succeed.");
   return controller_interface::CallbackReturn::SUCCESS;
 }
@@ -168,8 +172,8 @@ controller_interface::return_type QuadController::update(const rclcpp::Time& tim
     (void)joint_handles_[i].pos_des.get().set_value(pos_des(i));
     (void)joint_handles_[i].vel_des.get().set_value(vel_des(i));
     (void)joint_handles_[i].ff.get().set_value(ff(i));
-    (void)joint_handles_[i].kp.get().set_value(30.0);
-    (void)joint_handles_[i].kd.get().set_value(3.0);
+    (void)joint_handles_[i].kp.get().set_value(0.0);
+    (void)joint_handles_[i].kd.get().set_value(0.0);
   }
 
   auto observation_msg = ros_msg_conversions::createObservationMsg(current_observation_);

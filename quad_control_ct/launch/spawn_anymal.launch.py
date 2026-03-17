@@ -23,7 +23,8 @@ def generate_launch_description():
     executable="spawner",
     arguments=[
       "quad_controller",
-      "--controller-manager-timeout", "60",
+      "--service-call-timeout", "60",
+      "--switch-timeout", "60",
       "--param-file", config_path,
       f"--controller-ros-args=-p task_file:={task_file} -p urdf_file:={urdf_file} -p reference_file:={reference_file}",
     ],
