@@ -81,6 +81,7 @@ pluginlib_export_plugin_description_file(controller_interface plugins.xml)
 install(DIRECTORY
   launch
   config
+  rviz
   DESTINATION share/${PROJECT_NAME}/
 )
 install(DIRECTORY include/${PROJECT_NAME}/

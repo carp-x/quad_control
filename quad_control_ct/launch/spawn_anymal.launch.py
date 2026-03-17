@@ -3,6 +3,10 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.actions import Node
 
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
+from launch.conditions import IfCondition
+
 def generate_launch_description():
 
   pkg_robot = get_package_share_directory('ocs2_robotic_assets')
@@ -11,6 +15,11 @@ def generate_launch_description():
   urdf_file = os.path.join(pkg_robot, 'resources', 'anymal_c', 'urdf', 'anymal.urdf')
   task_file = os.path.join(pkg_mpc, 'config', 'mpc', 'task.info')
   reference_file = os.path.join(pkg_mpc, 'config', 'command', 'reference.info')
+
+  declare_rviz_arg = DeclareLaunchArgument(
+      'rviz', default_value='true', description='Whether to start RViz2')
+  rviz_config_file = os.path.join(
+      get_package_share_directory('quad_control_ct'), 'rviz', 'quad_robot.rviz')
 
   config_path = os.path.join(
     get_package_share_directory('quad_control_ct'),
@@ -33,6 +42,18 @@ def generate_launch_description():
     }],
   )
 
+  quad_controller_rviz = Node(
+    package='rviz2',
+    executable='rviz2',
+    condition=IfCondition(LaunchConfiguration('rviz')),
+    arguments=['-d', rviz_config_file],
+    parameters=[{
+        'use_sim_time': True,
+    }],
+  )
+
   return LaunchDescription([
-    quad_controller_spawner
+    quad_controller_spawner,
+    declare_rviz_arg,
+    quad_controller_rviz,
   ])

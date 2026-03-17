@@ -168,13 +168,13 @@ controller_interface::return_type QuadController::update(const rclcpp::Time& tim
   vector_t pos_des = centroidal_model::getJointAngles(optimized_state, quad_interface_->getCentroidalModelInfo());
   vector_t vel_des = centroidal_model::getJointVelocities(optimized_input, quad_interface_->getCentroidalModelInfo());
 
-  for (size_t i = 0; i < quad_interface_->getCentroidalModelInfo().actuatedDofNum; ++i) {
-    (void)joint_handles_[i].pos_des.get().set_value(pos_des(i));
-    (void)joint_handles_[i].vel_des.get().set_value(vel_des(i));
-    (void)joint_handles_[i].ff.get().set_value(ff(i));
-    (void)joint_handles_[i].kp.get().set_value(0.0);
-    (void)joint_handles_[i].kd.get().set_value(0.0);
-  }
+  // for (size_t i = 0; i < quad_interface_->getCentroidalModelInfo().actuatedDofNum; ++i) {
+  //   (void)joint_handles_[i].pos_des.get().set_value(pos_des(i));
+  //   (void)joint_handles_[i].vel_des.get().set_value(vel_des(i));
+  //   (void)joint_handles_[i].ff.get().set_value(ff(i));
+  //   (void)joint_handles_[i].kp.get().set_value(50.0);
+  //   (void)joint_handles_[i].kd.get().set_value(1.0);
+  // }
 
   auto observation_msg = ros_msg_conversions::createObservationMsg(current_observation_);
   observation_msg.time = time.seconds();
