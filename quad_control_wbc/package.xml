@@ -14,7 +14,6 @@
   <depend>eigen3_cmake_module</depend>
   <depend>boost</depend>
 
-  <depend>qpoases</depend>
   <depend>rclcpp</depend>
   <depend>quad_control_mpc</depend>
 

@@ -8,7 +8,6 @@ find_package(ament_cmake REQUIRED)
 find_package(pinocchio REQUIRED)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(Boost REQUIRED COMPONENTS system filesystem log_setup log)
-
 find_package(rclcpp REQUIRED)
 find_package(quad_control_mpc REQUIRED)
 
@@ -31,13 +30,14 @@ target_include_directories(${PROJECT_NAME}
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
     $<INSTALL_INTERFACE:include>
-    ${EIGEN3_INCLUDE_DIRS}
     ${pinocchio_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
     ${QPOASES_INCLUDE_DIRS}
 )
 target_link_libraries(${PROJECT_NAME}
   pinocchio::pinocchio
-  Eigen3::Eigen
+  Eigen3::Eigen 
   Boost::filesystem
   Boost::system
   ${QPOASES_LIBRARIES} 
@@ -46,8 +46,6 @@ target_link_libraries(${PROJECT_NAME}
 ament_target_dependencies(${PROJECT_NAME}
   rclcpp
   quad_control_mpc
-  Eigen3
-  Boost
 )
 
 ######
@@ -61,16 +59,20 @@ install(TARGETS ${PROJECT_NAME}
 install(DIRECTORY include/
   DESTINATION include
 )
+
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
-ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
-
 ament_export_dependencies(
-  pinocchio 
-  Boost
   rclcpp
   quad_control_mpc
+  pinocchio
+  Eigen3
+  Boost
 )
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+
+ament_export_libraries(${QPOASES_LIBRARIES})
+ament_export_include_directories(include ${QPOASES_INCLUDE_DIRS})
 
 ######
 
