@@ -14,7 +14,7 @@ def generate_launch_description():
     robot_description_config = xacro.process_file(urdf_file)
     robot_desc = robot_description_config.toxml()
 
-    pkg_meshes = get_package_share_directory('ocs2_robotic_assets')
+    pkg_meshes = get_package_share_directory('quad_control_gz')
     mesh_file = os.path.dirname(pkg_meshes)
     set_gz_resource_path = SetEnvironmentVariable(
         name='GZ_SIM_RESOURCE_PATH',
@@ -107,7 +107,7 @@ def generate_launch_description():
         node_robot_state_publisher,  # 发布模型
         gz_sim,                      # 开仿真器
         gz_spawn_entity,             # 生成实体
-        joint_state_spawner,
+        # joint_state_spawner,
         imu_sensor_spawner,
         # lf_ft_sensor_spawner,
         # rf_ft_sensor_spawner,

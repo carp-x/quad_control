@@ -83,18 +83,18 @@ class testEndEffectorLinearConstraint : public ::testing::Test {
     x(10) = 0.0;  // theta_base_y
     x(11) = 0.0;  // theta_base_x
 
-    x(12) = -0.25;  // LF_HAA
-    x(13) = 0.6;    // LF_HFE
-    x(14) = -0.85;  // LF_KFE
-    x(15) = -0.25;  // LH_HAA
-    x(16) = -0.6;   // LH_HFE
-    x(17) = 0.85;   // LH_KFE
-    x(18) = 0.25;   // RF_HAA
-    x(19) = 0.6;    // RF_HFE
-    x(20) = -0.85;  // RF_KFE
-    x(21) = 0.25;   // RH_HAA
-    x(22) = -0.6;   // RH_HFE
-    x(23) = 0.85;   // RH_KFE
+    x(12) = -0.25;  // LF_HAA_LF_HIP
+    x(13) = 0.6;    // LF_HFE_LF_THIGH
+    x(14) = -0.85;  // LF_KFE_LF_SHANK
+    x(15) = -0.25;  // LH_HAA_LH_HIP
+    x(16) = -0.6;   // LH_HFE_LH_THIGH
+    x(17) = 0.85;   // LH_KFE_LH_SHANK
+    x(18) = 0.25;   // RF_HAA_RF_HIP
+    x(19) = 0.6;    // RF_HFE_RF_THIGH
+    x(20) = -0.85;  // RF_KFE_RF_SHANK
+    x(21) = 0.25;   // RH_HAA_RH_HIP
+    x(22) = -0.6;   // RH_HFE_RH_THIGH
+    x(23) = 0.85;   // RH_KFE_RH_SHANK
 
     u = vector_t::Random(centroidalModelInfo.inputDim);
 

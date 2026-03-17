@@ -11,11 +11,11 @@
         </plugin>
         <plugin filename="gz-sim-odometry-publisher-system" name="gz::sim::systems::OdometryPublisher">
             <odom_topic>/ground_truth/state</odom_topic>
-            <tf_topic>/tf</tf_topic>
-            <odom_frame>world</odom_frame>
-            <robot_base_frame>base</robot_base_frame>
             <dimensions>3</dimensions>
             <update_rate>500</update_rate>
+            <!-- <tf_topic>/tf</tf_topic>
+            <odom_frame>odom</odom_frame>
+            <robot_base_frame>base</robot_base_frame> -->
         </plugin>
     </gazebo>
 

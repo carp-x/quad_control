@@ -9,10 +9,10 @@ from launch.conditions import IfCondition
 
 def generate_launch_description():
 
-  pkg_robot = get_package_share_directory('ocs2_robotic_assets')
+  pkg_robot = get_package_share_directory('quad_control_gz')
   pkg_mpc = get_package_share_directory('quad_control_mpc')
 
-  urdf_file = os.path.join(pkg_robot, 'resources', 'anymal_c', 'urdf', 'anymal.urdf')
+  urdf_file = os.path.join(pkg_robot, 'urdf', 'anymal_c', 'urdf', 'anymal.urdf')
   task_file = os.path.join(pkg_mpc, 'config', 'mpc', 'task.info')
   reference_file = os.path.join(pkg_mpc, 'config', 'command', 'reference.info')
 

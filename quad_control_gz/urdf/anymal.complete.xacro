@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org" name="anymal">    
-    <xacro:include filename="$(find quad_control_gz)/urdf/anymal.urdf" />
+    <xacro:include filename="$(find quad_control_gz)/urdf/anymal_c/urdf/anymal.urdf" />
     <xacro:include filename="$(find quad_control_gz)/urdf/anymal.gazebo.xacro" />
     <xacro:include filename="$(find quad_control_gz)/urdf/anymal.ros2_control.xacro" />
 </robot>

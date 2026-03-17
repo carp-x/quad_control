@@ -38,7 +38,7 @@ def generate_launch_description():
         launch.actions.DeclareLaunchArgument(
             name='urdfFile',
             default_value=get_package_share_directory(
-                'ocs2_robotic_assets') + '/resources/anymal_c/urdf/anymal.urdf'
+                'quad_control_gz') + '/urdf/anymal_c/urdf/anymal.urdf'
         ),
         launch.actions.DeclareLaunchArgument(
             name='gaitCommandFile',
