@@ -23,12 +23,12 @@
         <xacro:hybrid_joint_interface name="LF_HAA_LF_HIP"/>
         <xacro:hybrid_joint_interface name="LF_HFE_LF_THIGH"/>
         <xacro:hybrid_joint_interface name="LF_KFE_LF_SHANK"/>
-        <xacro:hybrid_joint_interface name="RF_HAA_RF_HIP"/>
-        <xacro:hybrid_joint_interface name="RF_HFE_RF_THIGH"/>
-        <xacro:hybrid_joint_interface name="RF_KFE_RF_SHANK"/>
         <xacro:hybrid_joint_interface name="LH_HAA_LH_HIP"/>
         <xacro:hybrid_joint_interface name="LH_HFE_LH_THIGH"/>
         <xacro:hybrid_joint_interface name="LH_KFE_LH_SHANK"/>
+        <xacro:hybrid_joint_interface name="RF_HAA_RF_HIP"/>
+        <xacro:hybrid_joint_interface name="RF_HFE_RF_THIGH"/>
+        <xacro:hybrid_joint_interface name="RF_KFE_RF_SHANK"/>
         <xacro:hybrid_joint_interface name="RH_HAA_RH_HIP"/>
         <xacro:hybrid_joint_interface name="RH_HFE_RH_THIGH"/>
         <xacro:hybrid_joint_interface name="RH_KFE_RH_SHANK"/>
