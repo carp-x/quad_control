@@ -580,7 +580,6 @@ void QuadController::setupMrt() {
 void QuadController::activateMrt() {
 
   const auto time = node_lifecycle_->now();
-  current_observation_.time = time.seconds();
 
   current_observation_.state.setZero(quad_interface_->getCentroidalModelInfo().stateDim);
   current_observation_.input.setZero(quad_interface_->getCentroidalModelInfo().inputDim);
@@ -708,7 +707,7 @@ void QuadController::updateStateEstimation(const rclcpp::Time& time,
   current_observation_.state = rbd_conversions_->computeCentroidalStateFromRbdModel(measured_rbd_state_);
   current_observation_.state(9) = yaw_last + angles::shortest_angular_distance(yaw_last, current_observation_.state(9));
   current_observation_.mode = state_estimate_->getMode();
-  current_observation_.time = time.seconds();
+  current_observation_.time += period.seconds();
 }
 
 
