@@ -59,12 +59,13 @@ install(TARGETS
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION include/${PROJECT_NAME}
+install(DIRECTORY
+  include/
+  DESTINATION include
 )
 install(DIRECTORY
-  launch
   config
+  launch
   urdf
   worlds
   DESTINATION share/${PROJECT_NAME}/

@@ -56,8 +56,13 @@ install(TARGETS ${PROJECT_NAME}
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
-install(DIRECTORY include/
+install(DIRECTORY
+  include/
   DESTINATION include
+)
+install(DIRECTORY
+  config
+  DESTINATION share/${PROJECT_NAME}/
 )
 
 ament_export_include_directories(include)

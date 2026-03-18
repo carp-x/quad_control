@@ -72,21 +72,22 @@ pluginlib_export_plugin_description_file(controller_interface plugins.xml)
 
 #########
 
-install(DIRECTORY
-  launch
-  config
-  rviz
-  DESTINATION share/${PROJECT_NAME}/
-)
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION include/${PROJECT_NAME}
-)
 install(TARGETS
   ${PROJECT_NAME}
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
+)
+install(DIRECTORY
+  include/
+  DESTINATION include
+)
+install(DIRECTORY
+  launch
+  config
+  rviz
+  DESTINATION share/${PROJECT_NAME}/
 )
 
 ament_package()
