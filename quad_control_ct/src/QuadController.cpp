@@ -77,6 +77,8 @@ controller_interface::CallbackReturn QuadController::on_configure(const rclcpp_l
     setupQuadInterface(task_file_, urdf_file_, reference_file_);
     setupMpc();
     setupMrt();
+    setupWbc();
+    setupSafetyChecker();
     setupStateEstimation(task_file_);
     setupRbd();
     setupSub();
@@ -579,6 +581,20 @@ void QuadController::activateMrt() {
 }
 
 
+void QuadController::setupWbc() {
+  wbc_ = std::make_shared<WeightedWbc>(quad_interface_->getPinocchioInterface(), 
+                                       quad_interface_->getCentroidalModelInfo(),
+                                       *ee_kinematics_ptr_);
+  bool verbose = false;
+  wbc_->loadTasksSetting(task_file_, verbose);
+}
+
+
+void QuadController::setupSafetyChecker() {
+  safety_checker_ = std::make_shared<SafetyChecker>(quad_interface_->getCentroidalModelInfo());
+}
+
+
 void QuadController::setupStateEstimation(const std::string& task_file) {
   state_estimate_ = std::make_shared<LinearKalmanFilter>(node_lifecycle_,
                                                          quad_interface_->getPinocchioInterface(),
@@ -619,6 +635,11 @@ void QuadController::setupVisualization() {
       quad_interface_->getCentroidalModelInfo(),
       *ee_kinematics_ptr_, node_base_);
   
+  self_collision_visualization_.reset(new LeggedSelfCollisionVisualization(
+      quad_interface_->getPinocchioInterface(),
+      quad_interface_->getGeometryInterface(), 
+      *pinocchio_mapping_ptr_));
+
   RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController setupVisualization succeed.");
 }
 

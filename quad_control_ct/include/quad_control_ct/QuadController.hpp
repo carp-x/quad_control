@@ -62,6 +62,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_se/LinearKalmanFilter.hpp"
 #include "quad_control_se/FromTopiceEstimate.hpp"
 #include "quad_control_wbc/WbcBase.h"
+#include "quad_control_wbc/WeightedWbc.h"
+#include "quad_control_wbc/HierarchicalWbc.h"
 
 #include "quad_control_ct/HardwareInterfaceHandles.hpp"
 #include "quad_control_ct/SafetyChecker.hpp"
@@ -140,6 +142,7 @@ class QuadController : public controller_interface::ControllerInterface {
   virtual void setupMrt();
   virtual void activateMrt();
   virtual void setupWbc();
+  virtual void setupSafetyChecker();
   virtual void setupStateEstimation(const std::string& task_file);
   virtual void updateStateEstimation(const rclcpp::Time& time, 
                                      const rclcpp::Duration& period);
