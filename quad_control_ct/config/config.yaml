@@ -20,6 +20,6 @@ quad_controller:
     
     feet:
       - LF_ft
-      - LH_ft
       - RF_ft
+      - LH_ft
       - RH_ft
