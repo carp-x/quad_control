@@ -141,7 +141,7 @@ class QuadController : public controller_interface::ControllerInterface {
   virtual void setupMpc();
   virtual void setupMrt();
   virtual void activateMrt();
-  virtual void setupWbc();
+  virtual void setupWbc(const std::string& task_file_wbc);
   virtual void setupSafetyChecker();
   virtual void setupStateEstimation(const std::string& task_file);
   virtual void updateStateEstimation(const rclcpp::Time& time, 
@@ -154,6 +154,7 @@ class QuadController : public controller_interface::ControllerInterface {
   bool on_configure_succeed_ = false;
 
   std::string task_file_, urdf_file_, reference_file_;
+  std::string task_file_wbc_;
 
   std::shared_ptr<LeggedRobotInterface> quad_interface_;
   std::shared_ptr<CentroidalModelPinocchioMapping>  pinocchio_mapping_ptr_;

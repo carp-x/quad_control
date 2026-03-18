@@ -11,10 +11,12 @@ def generate_launch_description():
 
   pkg_robot = get_package_share_directory('quad_control_gz')
   pkg_mpc = get_package_share_directory('quad_control_mpc')
+  pkg_wbc = get_package_share_directory('quad_control_wbc')
 
   urdf_file = os.path.join(pkg_robot, 'urdf', 'anymal_c', 'urdf', 'anymal.urdf')
   task_file = os.path.join(pkg_mpc, 'config', 'mpc', 'task.info')
   reference_file = os.path.join(pkg_mpc, 'config', 'command', 'reference.info')
+  task_file_wbc = os.path.join(pkg_wbc, 'config', 'wbc', 'task.info')
 
   declare_rviz_arg = DeclareLaunchArgument(
       'rviz', default_value='true', description='Whether to start RViz2')
@@ -36,6 +38,7 @@ def generate_launch_description():
       "--switch-timeout", "60",
       "--param-file", config_path,
       f"--controller-ros-args=-p task_file:={task_file} -p urdf_file:={urdf_file} -p reference_file:={reference_file}",
+      f"--controller-ros-args=-p task_file_wbc:={task_file_wbc}",
     ],
     parameters=[{
       'use_sim_time': True,

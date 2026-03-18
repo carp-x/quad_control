@@ -77,7 +77,7 @@ controller_interface::CallbackReturn QuadController::on_configure(const rclcpp_l
     setupQuadInterface(task_file_, urdf_file_, reference_file_);
     setupMpc();
     setupMrt();
-    setupWbc();
+    setupWbc(task_file_wbc_);
     setupSafetyChecker();
     setupStateEstimation(task_file_);
     setupRbd();
@@ -310,6 +310,7 @@ void QuadController::declareFileParams() {
   node_lifecycle_->declare_parameter<std::string>("task_file", "");
   node_lifecycle_->declare_parameter<std::string>("urdf_file", "");
   node_lifecycle_->declare_parameter<std::string>("reference_file", "");
+  node_lifecycle_->declare_parameter<std::string>("task_file_wbc", "");
 }
 
 
@@ -344,6 +345,10 @@ bool QuadController::loadFileParams() {
   }
   if (!node_lifecycle_->get_parameter("reference_file", reference_file_) || reference_file_.empty()) {
     RCLCPP_ERROR(node_lifecycle_->get_logger(), "Failed to load 'reference_file' parameter or the path is empty.");
+    return false;
+  }
+  if (!node_lifecycle_->get_parameter("task_file_wbc", task_file_wbc_) || task_file_wbc_.empty()) {
+    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Failed to load 'task_file_wbc' parameter or the path is empty.");
     return false;
   }
 
@@ -593,12 +598,12 @@ void QuadController::activateMrt() {
 }
 
 
-void QuadController::setupWbc() {
+void QuadController::setupWbc(const std::string& task_file_wbc) {
   wbc_ = std::make_shared<WeightedWbc>(quad_interface_->getPinocchioInterface(), 
                                        quad_interface_->getCentroidalModelInfo(),
                                        *ee_kinematics_ptr_);
   bool verbose = false;
-  wbc_->loadTasksSetting(task_file_, verbose);
+  wbc_->loadTasksSetting(task_file_wbc, verbose);
 }
 
 
