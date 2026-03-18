@@ -31,6 +31,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <pthread.h>
 #include <chrono>
 
+#include <pinocchio/multibody/model.hpp>
+#include <pinocchio/algorithm/model.hpp>
+
 #include <ocs2_centroidal_model/AccessHelperFunctions.h>
 #include <ocs2_ros_interfaces/common/RosMsgConversions.h>
 
@@ -84,6 +87,7 @@ controller_interface::CallbackReturn QuadController::on_configure(const rclcpp_l
     setupSub();
     setupPub();
     setupVisualization();
+    printPinocchioMapping();
   } catch (const std::exception& e) {
     RCLCPP_ERROR(node_lifecycle_->get_logger(), "Failed to setup QuadController: %s", e.what());
     return controller_interface::CallbackReturn::ERROR;
@@ -241,70 +245,6 @@ void QuadController::commandIfConfig(controller_interface::InterfaceConfiguratio
       config.names.push_back(joint + "/" + interface);
     }
   }
-}
-
-
-void QuadController::printStateCommand() {
-  auto logger = node_lifecycle_->get_logger();
-  auto& clock = *(node_lifecycle_->get_clock());
-  
-  // Lambda
-  auto get_v = [](const auto& iface) -> double {
-    return iface.get().template get_optional<double>().value_or(-1.0);
-  };
-
-  std::stringstream ss;
-  ss << "\n==================== QUAD ROBOT STATE MONITOR ====================\n";
-
-  // Joints data
-  ss << "[JOINT STATES & COMMANDS]\n";
-  ss << "  NAME            | POS    | VEL    | EFF    | P_DES  | KP    | KD\n";
-  ss << "  ----------------|--------|--------|--------|--------|-------|-------\n";
-  for (const auto& jh : joint_handles_) {
-    char buf[256];
-    snprintf(buf, sizeof(buf), "  %-15s | %6.2f | %6.2f | %6.2f | %6.2f | %5.1f | %5.1f\n",
-             jh.name.c_str(), get_v(jh.position), get_v(jh.velocity), get_v(jh.effort),
-             get_v(jh.pos_des), get_v(jh.kp), get_v(jh.kd));
-    ss << buf;
-  }
-
-  // IMU data
-  for (const auto& ih : imu_handles_) {
-    ss << "\n[IMU STATE: " << ih.name << "]\n";
-    
-    char base_buf[256];
-    snprintf(base_buf, sizeof(base_buf), 
-             "  Orientation (x,y,z,w): [%.3f, %.3f, %.3f, %.3f]\n"
-             "  Angular Vel (x,y,z)  : [%.3f, %.3f, %.3f]\n"
-             "  Linear Acc  (x,y,z)  : [%.3f, %.3f, %.3f]\n",
-             get_v(ih.ori[0]), get_v(ih.ori[1]), get_v(ih.ori[2]), get_v(ih.ori[3]),
-             get_v(ih.angular_vel[0]), get_v(ih.angular_vel[1]), get_v(ih.angular_vel[2]),
-             get_v(ih.linear_acc[0]), get_v(ih.linear_acc[1]), get_v(ih.linear_acc[2]));
-    ss << base_buf;
-
-    auto append_cov = [&](const std::string& label, const auto& cov_arr) {
-      ss << "  " << label << ": [";
-      for (size_t i = 0; i < 9; ++i) {
-        ss << (i > 0 ? ", " : "") << std::fixed << std::setprecision(4) << get_v(cov_arr[i]);
-      }
-      ss << "]\n";
-    };
-    append_cov("OriCov", ih.ori_cov);
-    append_cov("AngCov", ih.angular_vel_cov);
-    append_cov("LinCov", ih.linear_acc_cov);
-  }
-
-  // FT data
-  ss << "\n[FOOT CONTACTS]\n";
-  for (const auto& fh : ft_handles_) {
-    double val = get_v(fh.contact);
-    ss << "  " << fh.name << ": " << (val > 0.99 ? "CONTACT" : "AIR") << " (raw: " << val << ")\n";
-  }
-
-  ss << "==================================================================\n";
-
-  // print once every 1000ms
-  RCLCPP_INFO_THROTTLE(logger, clock, 1000, "%s", ss.str().c_str());
 }
 
 
@@ -491,6 +431,70 @@ void QuadController::printHandlesCfg() {
 }
 
 
+void QuadController::printStateCommand() {
+  auto logger = node_lifecycle_->get_logger();
+  auto& clock = *(node_lifecycle_->get_clock());
+  
+  // Lambda
+  auto get_v = [](const auto& iface) -> double {
+    return iface.get().template get_optional<double>().value_or(-1.0);
+  };
+
+  std::stringstream ss;
+  ss << "\n==================== QUAD ROBOT STATE MONITOR ====================\n";
+
+  // Joints data
+  ss << "[JOINT STATES & COMMANDS]\n";
+  ss << "  NAME            | POS    | VEL    | EFF    | P_DES  | KP    | KD\n";
+  ss << "  ----------------|--------|--------|--------|--------|-------|-------\n";
+  for (const auto& jh : joint_handles_) {
+    char buf[256];
+    snprintf(buf, sizeof(buf), "  %-15s | %6.2f | %6.2f | %6.2f | %6.2f | %5.1f | %5.1f\n",
+             jh.name.c_str(), get_v(jh.position), get_v(jh.velocity), get_v(jh.effort),
+             get_v(jh.pos_des), get_v(jh.kp), get_v(jh.kd));
+    ss << buf;
+  }
+
+  // IMU data
+  for (const auto& ih : imu_handles_) {
+    ss << "\n[IMU STATE: " << ih.name << "]\n";
+    
+    char base_buf[256];
+    snprintf(base_buf, sizeof(base_buf), 
+             "  Orientation (x,y,z,w): [%.3f, %.3f, %.3f, %.3f]\n"
+             "  Angular Vel (x,y,z)  : [%.3f, %.3f, %.3f]\n"
+             "  Linear Acc  (x,y,z)  : [%.3f, %.3f, %.3f]\n",
+             get_v(ih.ori[0]), get_v(ih.ori[1]), get_v(ih.ori[2]), get_v(ih.ori[3]),
+             get_v(ih.angular_vel[0]), get_v(ih.angular_vel[1]), get_v(ih.angular_vel[2]),
+             get_v(ih.linear_acc[0]), get_v(ih.linear_acc[1]), get_v(ih.linear_acc[2]));
+    ss << base_buf;
+
+    auto append_cov = [&](const std::string& label, const auto& cov_arr) {
+      ss << "  " << label << ": [";
+      for (size_t i = 0; i < 9; ++i) {
+        ss << (i > 0 ? ", " : "") << std::fixed << std::setprecision(4) << get_v(cov_arr[i]);
+      }
+      ss << "]\n";
+    };
+    append_cov("OriCov", ih.ori_cov);
+    append_cov("AngCov", ih.angular_vel_cov);
+    append_cov("LinCov", ih.linear_acc_cov);
+  }
+
+  // FT data
+  ss << "\n[FOOT CONTACTS]\n";
+  for (const auto& fh : ft_handles_) {
+    double val = get_v(fh.contact);
+    ss << "  " << fh.name << ": " << (val > 0.99 ? "CONTACT" : "AIR") << " (raw: " << val << ")\n";
+  }
+
+  ss << "==================================================================\n";
+
+  // print once every 1000ms
+  RCLCPP_INFO_THROTTLE(logger, clock, 1000, "%s", ss.str().c_str());
+}
+
+
 void QuadController::setupQuadInterface(const std::string& task_file, 
                                         const std::string& urdf_file, 
                                         const std::string& reference_file) {
@@ -631,44 +635,6 @@ void QuadController::setupStateEstimation(const std::string& task_file) {
 }
 
 
-void QuadController::setupRbd() {
-  rbd_conversions_ = std::make_shared<CentroidalModelRbdConversions>(
-      quad_interface_->getPinocchioInterface(),
-      quad_interface_->getCentroidalModelInfo());
-  
-  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController setupRbd succeed.");
-}
-
-
-void QuadController::setupSub() {
-
-}
-
-
-void QuadController::setupPub() {
-  observation_publisher_ = node_lifecycle_->create_publisher<ocs2_msgs::msg::MpcObservation>(
-      robot_name_ + "_mpc_observation", 
-      rclcpp::SystemDefaultsQoS());
-  
-  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController setupPub succeed.");
-}
-
-
-void QuadController::setupVisualization() {
-  robot_visualizer_ = std::make_shared<LeggedRobotVisualizer>(
-      quad_interface_->getPinocchioInterface(), 
-      quad_interface_->getCentroidalModelInfo(),
-      *ee_kinematics_ptr_, node_base_);
-  
-  self_collision_visualization_.reset(new LeggedSelfCollisionVisualization(
-      quad_interface_->getPinocchioInterface(),
-      quad_interface_->getGeometryInterface(), 
-      *pinocchio_mapping_ptr_));
-
-  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController setupVisualization succeed.");
-}
-
-
 void QuadController::updateStateEstimation(const rclcpp::Time& time, 
                                            const rclcpp::Duration& period) {
   vector_t joint_pos(joint_handles_.size()), joint_vel(joint_handles_.size());
@@ -708,6 +674,61 @@ void QuadController::updateStateEstimation(const rclcpp::Time& time,
   current_observation_.state(9) = yaw_last + angles::shortest_angular_distance(yaw_last, current_observation_.state(9));
   current_observation_.mode = state_estimate_->getMode();
   current_observation_.time += period.seconds();
+}
+
+
+void QuadController::setupRbd() {
+  rbd_conversions_ = std::make_shared<CentroidalModelRbdConversions>(
+      quad_interface_->getPinocchioInterface(),
+      quad_interface_->getCentroidalModelInfo());
+  
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController setupRbd succeed.");
+}
+
+
+void QuadController::setupSub() {
+
+}
+
+
+void QuadController::setupPub() {
+  observation_publisher_ = node_lifecycle_->create_publisher<ocs2_msgs::msg::MpcObservation>(
+      robot_name_ + "_mpc_observation", 
+      rclcpp::SystemDefaultsQoS());
+  
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController setupPub succeed.");
+}
+
+
+void QuadController::setupVisualization() {
+  robot_visualizer_ = std::make_shared<LeggedRobotVisualizer>(
+      quad_interface_->getPinocchioInterface(), 
+      quad_interface_->getCentroidalModelInfo(),
+      *ee_kinematics_ptr_, node_base_);
+  
+  self_collision_visualization_.reset(new LeggedSelfCollisionVisualization(
+      quad_interface_->getPinocchioInterface(),
+      quad_interface_->getGeometryInterface(), 
+      *pinocchio_mapping_ptr_));
+
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController setupVisualization succeed.");
+}
+
+
+void QuadController::printPinocchioMapping() {
+  auto logger = node_lifecycle_->get_logger();
+
+  const auto& model = quad_interface_->getPinocchioInterface().getModel();
+
+  RCLCPP_INFO(logger, "--------------------------------------------------");
+  RCLCPP_INFO(logger, ">> [Pinocchio Generalized Coordinates (q)]");
+  for (size_t i = 0; i < model.joints.size(); ++i) {
+      RCLCPP_INFO(logger, "Joint ID: %ld, Name: %s, nq: %d", 
+                  i, 
+                  model.names[i].c_str(), 
+                  model.joints[i].nq());
+  }
+  RCLCPP_INFO(logger, "--------------------------------------------------");
 }
 
 

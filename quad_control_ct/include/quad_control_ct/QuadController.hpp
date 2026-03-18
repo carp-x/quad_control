@@ -112,7 +112,6 @@ class QuadController : public controller_interface::ControllerInterface {
  private:
   void stateIfConfig(controller_interface::InterfaceConfiguration& config) const;
   void commandIfConfig(controller_interface::InterfaceConfiguration& config) const;
-  void printStateCommand();
   void declareSensorParams();
   void declareFileParams();
   bool loadSensorParams();
@@ -121,6 +120,7 @@ class QuadController : public controller_interface::ControllerInterface {
   bool setupIMUHandles();
   bool setupFTHandles();
   void printHandlesCfg();
+  void printStateCommand();
   
   template <typename T>
   T* find_interface(std::vector<T>& interfaces, 
@@ -150,6 +150,7 @@ class QuadController : public controller_interface::ControllerInterface {
   virtual void setupSub();
   virtual void setupPub();
   virtual void setupVisualization();
+  virtual void printPinocchioMapping();
 
   bool on_configure_succeed_ = false;
 
