@@ -13,7 +13,7 @@ model_settings
   phaseTransitionStanceTime     0.4
 
   verboseCppAd                  true
-  recompileLibrariesCppAd       false
+  recompileLibrariesCppAd       true
   modelFolderCppAd              /tmp/ocs2
 }
 
@@ -259,14 +259,14 @@ selfCollision
   ; Self Collision pairs
   collisionLinkPairs
   {
-    [0] "LF_shank_fixed, RF_shank_fixed"
-    [1] "LH_shank_fixed, RH_shank_fixed"
-    [2] "LF_shank_fixed, LH_shank_fixed"
-    [3] "RF_shank_fixed, RH_shank_fixed"
-    [4] "LF_FOOT, RF_FOOT"
-    [5] "LH_FOOT, RH_FOOT"
-    [6] "LF_FOOT, LH_FOOT"
-    [7] "RF_FOOT, RH_FOOT"
+    ; [0] "LF_shank_fixed, RF_shank_fixed"
+    ; [1] "LH_shank_fixed, RH_shank_fixed"
+    ; [2] "LF_shank_fixed, LH_shank_fixed"
+    ; [3] "RF_shank_fixed, RH_shank_fixed"
+    ; [4] "LF_FOOT, RF_FOOT"
+    ; [5] "LH_FOOT, RH_FOOT"
+    ; [6] "LF_FOOT, LH_FOOT"
+    ; [7] "RF_FOOT, RH_FOOT"
   }
 
   ; Self Collision raw object pairs
