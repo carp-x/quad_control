@@ -157,31 +157,43 @@ controller_interface::return_type QuadController::update(const rclcpp::Time& tim
                                      optimized_input,
                                      planned_mode);
   if (!optimized_state.allFinite() || !optimized_input.allFinite()) {
-      RCLCPP_ERROR(get_node()->get_logger(), "NaN x/u, stop QuadController.");
-      return controller_interface::return_type::ERROR;
+    RCLCPP_ERROR(node_lifecycle_->get_logger(), "NaN x/u, stop QuadController.");
+    return controller_interface::return_type::ERROR;
   }
   current_observation_.input = optimized_input;
 
-  vector_t joint_acc = vector_t::Zero(quad_interface_->getCentroidalModelInfo().actuatedDofNum);
-  vector_t rbd_torque = rbd_conversions_->computeRbdTorqueFromCentroidalModel(optimized_state, 
-                                                                              optimized_input,
-                                                                              joint_acc);
+  if (!safety_checker_->check(current_observation_, optimized_state, optimized_input)) {
+    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Safety check failed, stop QuadController.");
+    return controller_interface::return_type::ERROR;
+  }
+
+    /*
+    vector_t joint_acc = vector_t::Zero(quad_interface_->getCentroidalModelInfo().actuatedDofNum);
+    vector_t rbd_torque = rbd_conversions_->computeRbdTorqueFromCentroidalModel(optimized_state, 
+                                                                                optimized_input,
+                                                                                joint_acc);
+    */
+
+  wbc_timer_.startTimer();
+  vector_t rbd_torque = wbc_->update(optimized_state, optimized_input, measured_rbd_state_, planned_mode, period.seconds());
+  wbc_timer_.endTimer();
+
   vector_t ff = rbd_torque.tail(12);
   vector_t pos_des = centroidal_model::getJointAngles(optimized_state, quad_interface_->getCentroidalModelInfo());
   vector_t vel_des = centroidal_model::getJointVelocities(optimized_input, quad_interface_->getCentroidalModelInfo());
-
-  // for (size_t i = 0; i < quad_interface_->getCentroidalModelInfo().actuatedDofNum; ++i) {
-  //   (void)joint_handles_[i].pos_des.get().set_value(pos_des(i));
-  //   (void)joint_handles_[i].vel_des.get().set_value(vel_des(i));
-  //   (void)joint_handles_[i].ff.get().set_value(ff(i));
-  //   (void)joint_handles_[i].kp.get().set_value(50.0);
-  //   (void)joint_handles_[i].kd.get().set_value(1.0);
-  // }
+  for (size_t i = 0; i < quad_interface_->getCentroidalModelInfo().actuatedDofNum; ++i) {
+    (void)joint_handles_[i].pos_des.get().set_value(pos_des(i));
+    (void)joint_handles_[i].vel_des.get().set_value(vel_des(i));
+    (void)joint_handles_[i].ff.get().set_value(ff(i));
+    (void)joint_handles_[i].kp.get().set_value(0.0);
+    (void)joint_handles_[i].kd.get().set_value(0.0);
+  }  
 
   auto observation_msg = ros_msg_conversions::createObservationMsg(current_observation_);
   observation_msg.time = time.seconds();
   observation_publisher_->publish(observation_msg);
   robot_visualizer_->update(current_observation_, mpc_mrt_interface_->getPolicy(), mpc_mrt_interface_->getCommand());
+  self_collision_visualization_->update(current_observation_);
   
   printStateCommand();
   return controller_interface::return_type::OK;
