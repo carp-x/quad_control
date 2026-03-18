@@ -39,6 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_mpc/MPC_Settings.h>
 #include <ocs2_oc/rollout/TimeTriggeredRollout.h>
 #include <ocs2_pinocchio_interface/PinocchioInterface.h>
+#include <ocs2_self_collision/PinocchioGeometryInterface.h>
 #include <ocs2_robotic_tools/common/RobotInterface.h>
 #include <ocs2_robotic_tools/end_effector/EndEffectorKinematics.h>
 #include <ocs2_sqp/SqpSettings.h>
@@ -83,6 +84,7 @@ class LeggedRobotInterface final : public RobotInterface {
   const vector_t& getInitialState() const { return initialState_; }
   const RolloutBase& getRollout() const { return *rolloutPtr_; }
   PinocchioInterface& getPinocchioInterface() { return *pinocchioInterfacePtr_; }
+  PinocchioGeometryInterface& getGeometryInterface() { return *geometryInterfacePtr_; }
   const CentroidalModelInfo& getCentroidalModelInfo() const { return centroidalModelInfo_; }
   std::shared_ptr<SwitchedModelReferenceManager> getSwitchedModelReferenceManagerPtr() const { return referenceManagerPtr_; }
 
@@ -106,6 +108,10 @@ class LeggedRobotInterface final : public RobotInterface {
                                                                   size_t contactPointIndex, bool useAnalyticalGradients);
   std::unique_ptr<StateInputConstraint> getNormalVelocityConstraint(const EndEffectorKinematics<scalar_t>& eeKinematics,
                                                                     size_t contactPointIndex, bool useAnalyticalGradients);
+  std::unique_ptr<StateCost> getSelfCollisionConstraint(const PinocchioInterface& pinocchioInterface, 
+                                                        const std::string& taskFile,
+                                                        const std::string& prefix,
+                                                        bool verbose);
 
   ModelSettings modelSettings_;
   ddp::Settings ddpSettings_;
@@ -115,6 +121,7 @@ class LeggedRobotInterface final : public RobotInterface {
   const bool useHardFrictionConeConstraint_;
 
   std::unique_ptr<PinocchioInterface> pinocchioInterfacePtr_;
+  std::unique_ptr<PinocchioGeometryInterface> geometryInterfacePtr_;
   CentroidalModelInfo centroidalModelInfo_;
 
   std::unique_ptr<OptimalControlProblem> problemPtr_;

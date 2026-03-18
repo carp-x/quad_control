@@ -15,6 +15,7 @@ find_package(ocs2_robotic_tools REQUIRED)
 find_package(ocs2_pinocchio_interface REQUIRED)
 find_package(ocs2_centroidal_model REQUIRED)
 find_package(ocs2_robotic_assets REQUIRED)
+find_package(ocs2_self_collision REQUIRED)
 find_package(pinocchio REQUIRED)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(Boost REQUIRED COMPONENTS system filesystem log_setup log)
@@ -71,6 +72,7 @@ ament_target_dependencies(${PROJECT_NAME}
   ocs2_pinocchio_interface
   ocs2_centroidal_model
   ocs2_robotic_assets
+  ocs2_self_collision
 )
 target_compile_options(${PROJECT_NAME} PUBLIC ${OCS2_PINOCCHIO_FLAGS})
 
@@ -114,6 +116,7 @@ ament_export_dependencies(
   ocs2_pinocchio_interface
   ocs2_centroidal_model
   ocs2_robotic_assets
+  ocs2_self_collision
   pinocchio
   Eigen3
   Boost
