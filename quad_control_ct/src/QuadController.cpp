@@ -591,12 +591,18 @@ void QuadController::activateMrt() {
 
   const rclcpp::Duration period = rclcpp::Duration::from_seconds(1.0 / static_cast<double>(get_update_rate()));
   updateStateEstimation(time, period);
-  TargetTrajectories target_trajectories({current_observation_.time}, 
-                                         {current_observation_.state}, 
-                                         {current_observation_.input});
+
+  SystemObservation init_observation;
+  init_observation.state = quad_interface_->getInitialState();
+  init_observation.input =
+      vector_t::Zero(quad_interface_->getCentroidalModelInfo().inputDim);
+  init_observation.mode = ModeNumber::STANCE;
+  TargetTrajectories init_target_rajectories({0.0}, 
+                                             {init_observation.state},
+                                             {init_observation.input});
 
   mpc_mrt_interface_->setCurrentObservation(current_observation_);
-  mpc_mrt_interface_->getReferenceManager().setTargetTrajectories(target_trajectories);
+  mpc_mrt_interface_->getReferenceManager().setTargetTrajectories(init_target_rajectories);
 
   RCLCPP_INFO(node_lifecycle_->get_logger(), "Waiting for the initial policy ...");
   while (rclcpp::ok() && !mpc_mrt_interface_->initialPolicyReceived()) {
