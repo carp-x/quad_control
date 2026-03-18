@@ -120,6 +120,15 @@ controller_interface::CallbackReturn QuadController::on_deactivate(const rclcpp_
   ft_handles_.clear();
   imu_handles_.clear();
 
+  std::cerr << "########################################################################";
+  std::cerr << "\n### MPC Benchmarking";
+  std::cerr << "\n###   Maximum : " << mpc_timer_.getMaxIntervalInMilliseconds() << "[ms].";
+  std::cerr << "\n###   Average : " << mpc_timer_.getAverageInMilliseconds() << "[ms]." << std::endl;
+  std::cerr << "########################################################################";
+  std::cerr << "\n### WBC Benchmarking";
+  std::cerr << "\n###   Maximum : " << wbc_timer_.getMaxIntervalInMilliseconds() << "[ms].";
+  std::cerr << "\n###   Average : " << wbc_timer_.getAverageInMilliseconds() << "[ms].";
+
   RCLCPP_INFO(node_lifecycle_->get_logger(), "Controller deactivated.");
   return controller_interface::CallbackReturn::SUCCESS;
 }
