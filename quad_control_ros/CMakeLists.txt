@@ -69,6 +69,7 @@ ament_target_dependencies(${PROJECT_NAME}
   ocs2_robotic_assets
   ocs2_msgs
   ocs2_ros_interfaces
+  ocs2_self_collision_visualization
   quad_control_mpc
 )
 target_compile_options(${PROJECT_NAME} PUBLIC ${OCS2_PINOCCHIO_FLAGS})
@@ -167,6 +168,7 @@ ament_export_dependencies(
   ocs2_robotic_assets
   ocs2_msgs
   ocs2_ros_interfaces
+  ocs2_self_collision_visualization
   quad_control_mpc
   pinocchio
   Eigen3

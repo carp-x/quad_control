@@ -16,7 +16,7 @@
 #include "quad_control_wbc/WbcBase.h"
 
 
-namespace legged {
+namespace quad_control {
 WbcBase::WbcBase(const PinocchioInterface& pinocchioInterface, CentroidalModelInfo info, const PinocchioEndEffectorKinematics& eeKinematics)
     : pinocchioInterfaceMeasured_(pinocchioInterface),
       pinocchioInterfaceDesired_(pinocchioInterface),
@@ -270,4 +270,4 @@ void WbcBase::loadTasksSetting(const std::string& taskFile, bool verbose) {
   loadData::loadPtreeValue(pt, swingKd_, prefix + "kd", verbose);
 }
 
-}  // namespace legged
+}  // namespace quad_control

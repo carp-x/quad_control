@@ -12,7 +12,7 @@
 #include <ocs2_core/Types.h>
 
 
-namespace legged {
+namespace quad_control {
 using namespace ocs2;
 
 class Task {
@@ -66,4 +66,4 @@ class Task {
   }
 };
 
-}  // namespace legged
+}  // namespace quad_control

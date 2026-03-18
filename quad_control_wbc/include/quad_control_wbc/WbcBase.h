@@ -11,7 +11,7 @@
 #include "quad_control_wbc/Task.h"
 
 
-namespace legged {
+namespace quad_control {
 using namespace ocs2;
 using namespace quad_robot;
 
@@ -59,4 +59,4 @@ class WbcBase {
   scalar_t frictionCoeff_{}, swingKp_{}, swingKd_{};
 };
 
-}  // namespace legged
+}  // namespace quad_control

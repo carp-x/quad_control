@@ -5,7 +5,7 @@
 #include "quad_control_wbc/WbcBase.h"
 
 
-namespace legged {
+namespace quad_control {
 
 class WeightedWbc : public WbcBase {
  public:
@@ -24,4 +24,4 @@ class WeightedWbc : public WbcBase {
   scalar_t weightSwingLeg_, weightBaseAccel_, weightContactForce_;
 };
 
-}  // namespace legged
+}  // namespace quad_control

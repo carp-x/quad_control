@@ -10,7 +10,7 @@
 #include "quad_control_wbc/HoQp.h"
 
 
-namespace legged {
+namespace quad_control {
 
 HoQp::HoQp(Task task, HoQp::HoQpPtr higherProblem) : task_(std::move(task)), higherProblem_(std::move(higherProblem)) {
   initVars();
@@ -160,4 +160,4 @@ void HoQp::stackSlackSolutions() {
   }
 }
 
-}  // namespace legged
+}  // namespace quad_control

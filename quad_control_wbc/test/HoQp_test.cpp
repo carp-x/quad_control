@@ -5,7 +5,7 @@
 
 #include "quad_control_wbc/HoQp.h"
 
-using namespace legged;
+using namespace quad_control;
 
 TEST(HoQP, twoTask) {
   srand(0);

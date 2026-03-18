@@ -7,7 +7,7 @@
 #include "quad_control_wbc/WeightedWbc.h"
 
 
-namespace legged {
+namespace quad_control {
 
 vector_t WeightedWbc::update(const vector_t& stateDesired, const vector_t& inputDesired, const vector_t& rbdStateMeasured, size_t mode,
                              scalar_t period) {
@@ -72,4 +72,4 @@ void WeightedWbc::loadTasksSetting(const std::string& taskFile, bool verbose) {
   loadData::loadPtreeValue(pt, weightContactForce_, prefix + "contactForce", verbose);
 }
 
-}  // namespace legged
+}  // namespace quad_control

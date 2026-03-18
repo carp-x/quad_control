@@ -12,7 +12,7 @@
 #include "quad_control_wbc/Task.h"
 
 
-namespace legged {
+namespace quad_control {
 // Hierarchical Optimization Quadratic Program
 class HoQp {
  public:
@@ -68,4 +68,4 @@ class HoQp {
   matrix_t zeroNvNx_;
 };
 
-}  // namespace legged
+}  // namespace quad_control

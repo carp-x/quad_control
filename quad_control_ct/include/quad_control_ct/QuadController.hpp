@@ -58,11 +58,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_mpc/LeggedRobotInterface.h"
 #include "quad_control_ros/gait/GaitReceiver.h"
 #include "quad_control_ros/visualization/LeggedRobotVisualizer.h"
+#include "quad_control_ros/visualization/LeggedSelfCollisionVisualization.h"
 #include "quad_control_se/LinearKalmanFilter.hpp"
 #include "quad_control_se/FromTopiceEstimate.hpp"
+#include "quad_control_wbc/WbcBase.h"
 
 #include "quad_control_ct/HardwareInterfaceHandles.hpp"
-
+#include "quad_control_ct/SafetyChecker.hpp"
 
 namespace quad_control {
 using namespace ocs2;
@@ -137,6 +139,7 @@ class QuadController : public controller_interface::ControllerInterface {
   virtual void setupMpc();
   virtual void setupMrt();
   virtual void activateMrt();
+  virtual void setupWbc();
   virtual void setupStateEstimation(const std::string& task_file);
   virtual void updateStateEstimation(const rclcpp::Time& time, 
                                      const rclcpp::Duration& period);
@@ -156,6 +159,9 @@ class QuadController : public controller_interface::ControllerInterface {
   std::shared_ptr<MPC_BASE> mpc_;
   std::shared_ptr<MPC_MRT_Interface> mpc_mrt_interface_;
 
+  std::shared_ptr<WbcBase> wbc_;
+  std::shared_ptr<SafetyChecker> safety_checker_;
+
   SystemObservation current_observation_;
   vector_t measured_rbd_state_;
   std::shared_ptr<StateEstimateBase> state_estimate_;
@@ -163,7 +169,7 @@ class QuadController : public controller_interface::ControllerInterface {
 
   rclcpp::Publisher<ocs2_msgs::msg::MpcObservation>::SharedPtr observation_publisher_;
   std::shared_ptr<LeggedRobotVisualizer> robot_visualizer_;
-  // std::shared_ptr<LeggedSelfCollisionVisualization> self_collision_visualization_;
+  std::shared_ptr<LeggedSelfCollisionVisualization> self_collision_visualization_;
 
   const std::string robot_name_ = "quad_robot";
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_lifecycle_;
@@ -173,6 +179,7 @@ class QuadController : public controller_interface::ControllerInterface {
   std::thread mpc_thread_;
   std::atomic_bool controller_running_{}, mpc_running_{};
   benchmark::RepeatedTimer mpc_timer_;
+  benchmark::RepeatedTimer wbc_timer_;
 };
 
 class QuadCheaterController : public QuadController {

@@ -7,7 +7,7 @@
 #include "quad_control_wbc/WbcBase.h"
 
 
-namespace legged {
+namespace quad_control {
 
 class HierarchicalWbc : public WbcBase {
  public:
@@ -17,4 +17,4 @@ class HierarchicalWbc : public WbcBase {
                   scalar_t period) override;
 };
 
-}  // namespace legged
+}  // namespace quad_control

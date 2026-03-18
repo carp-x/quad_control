@@ -6,7 +6,7 @@
 #include "quad_control_wbc/HierarchicalWbc.h"
 
 
-namespace legged {
+namespace quad_control {
 vector_t HierarchicalWbc::update(const vector_t& stateDesired, const vector_t& inputDesired, const vector_t& rbdStateMeasured, size_t mode,
                                  scalar_t period) {
   WbcBase::update(stateDesired, inputDesired, rbdStateMeasured, mode, period);
@@ -19,4 +19,4 @@ vector_t HierarchicalWbc::update(const vector_t& stateDesired, const vector_t& i
   return hoQp.getSolutions();
 }
 
-}  // namespace legged
+}  // namespace quad_control
