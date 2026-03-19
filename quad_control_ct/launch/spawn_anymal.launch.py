@@ -58,5 +58,5 @@ def generate_launch_description():
   return LaunchDescription([
     quad_controller_spawner,
     declare_rviz_arg,
-    # quad_controller_rviz,
+    quad_controller_rviz,
   ])
