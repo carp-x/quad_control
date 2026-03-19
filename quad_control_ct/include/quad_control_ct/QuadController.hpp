@@ -188,6 +188,10 @@ class QuadController : public controller_interface::ControllerInterface {
   std::atomic_bool controller_running_{}, mpc_running_{};
   benchmark::RepeatedTimer mpc_timer_;
   benchmark::RepeatedTimer wbc_timer_;
+
+  bool delay_expired_;
+  rclcpp::Time start_time_;
+  double delay_duration_ = 10.0;
 };
 
 class QuadCheaterController : public QuadController {

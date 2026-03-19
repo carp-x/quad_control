@@ -106,6 +106,8 @@ controller_interface::CallbackReturn QuadController::on_activate(const rclcpp_li
 
   activateMrt();
 
+  delay_expired_ = false;
+  start_time_ = node_lifecycle_->get_clock()->now();
   printHandlesCfg();
   RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController on_activate succeed.");
   return controller_interface::CallbackReturn::SUCCESS;
@@ -157,6 +159,11 @@ controller_interface::InterfaceConfiguration QuadController::command_interface_c
 
 
 controller_interface::return_type QuadController::update(const rclcpp::Time& time, const rclcpp::Duration& period) {
+  if (!delay_expired_) {
+    auto current_time = node_lifecycle_->get_clock()->now();
+    if ((current_time - start_time_).seconds() > delay_duration_)
+      delay_expired_ = true;
+  }
 
   updateStateEstimation(time, period);
   mpc_mrt_interface_->setCurrentObservation(current_observation_);
@@ -194,13 +201,15 @@ controller_interface::return_type QuadController::update(const rclcpp::Time& tim
   vector_t ff = rbd_torque.tail(12);
   vector_t pos_des = centroidal_model::getJointAngles(optimized_state, quad_interface_->getCentroidalModelInfo());
   vector_t vel_des = centroidal_model::getJointVelocities(optimized_input, quad_interface_->getCentroidalModelInfo());
-  // for (size_t i = 0; i < quad_interface_->getCentroidalModelInfo().actuatedDofNum; ++i) {
-  //   (void)joint_handles_[i].pos_des.get().set_value(pos_des(i));
-  //   (void)joint_handles_[i].vel_des.get().set_value(vel_des(i));
-  //   (void)joint_handles_[i].ff.get().set_value(ff(i));
-  //   (void)joint_handles_[i].kp.get().set_value(3.0);
-  //   (void)joint_handles_[i].kd.get().set_value(1.0);
-  // }  
+  if (delay_expired_) {
+    for (size_t i = 0; i < quad_interface_->getCentroidalModelInfo().actuatedDofNum; ++i) {
+      (void)joint_handles_[i].pos_des.get().set_value(pos_des(i));
+      (void)joint_handles_[i].vel_des.get().set_value(vel_des(i));
+      (void)joint_handles_[i].ff.get().set_value(ff(i));
+      (void)joint_handles_[i].kp.get().set_value(0.0);
+      (void)joint_handles_[i].kd.get().set_value(0.0);
+    }  
+  }
 
   auto observation_msg = ros_msg_conversions::createObservationMsg(current_observation_);
   observation_msg.time = time.seconds();
