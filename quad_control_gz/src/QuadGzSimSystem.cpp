@@ -677,7 +677,7 @@ CallbackReturn QuadGzSimSystem::on_activate(const rclcpp_lifecycle::State & prev
     joint.joint_pos_des = joint.joint_position; 
     joint.joint_vel_des = 0.0;
     joint.joint_ff      = 0.0;
-    joint.joint_kp      = 50.0;
+    joint.joint_kp      = 150.0;
     joint.joint_kd      = 1.0;
   }
   /******************************************************************************************************/
