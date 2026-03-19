@@ -120,7 +120,7 @@ class QuadController : public controller_interface::ControllerInterface {
   bool setupIMUHandles();
   bool setupFTHandles();
   void printHandlesCfg();
-  void printStateCommand();
+  void printStateCommand(int period_ms);
   
   template <typename T>
   T* find_interface(std::vector<T>& interfaces, 
@@ -151,6 +151,9 @@ class QuadController : public controller_interface::ControllerInterface {
   virtual void setupPub();
   virtual void setupVisualization();
   virtual void printPinocchioMapping();
+  void printMpcOptimizedState(const vector_t& optimized_state, int period_ms);
+  void printMpcOptimizedCInput(const vector_t& optimized_input, int period_ms);
+  void printWbcOptimizedToque(const vector_t& ff, int period_ms);
 
   bool on_configure_succeed_ = false;
 

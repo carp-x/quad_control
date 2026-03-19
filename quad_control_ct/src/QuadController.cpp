@@ -207,8 +207,12 @@ controller_interface::return_type QuadController::update(const rclcpp::Time& tim
   observation_publisher_->publish(observation_msg);
   robot_visualizer_->update(current_observation_, mpc_mrt_interface_->getPolicy(), mpc_mrt_interface_->getCommand());
   self_collision_visualization_->update(current_observation_);
-  
-  printStateCommand();
+
+  int period_ms = 1000;
+  printStateCommand(period_ms);
+  printMpcOptimizedState(optimized_state, period_ms);
+  printMpcOptimizedCInput(optimized_input, period_ms);
+  printWbcOptimizedToque(ff, period_ms);
   return controller_interface::return_type::OK;
 }
 
@@ -431,7 +435,7 @@ void QuadController::printHandlesCfg() {
 }
 
 
-void QuadController::printStateCommand() {
+void QuadController::printStateCommand(int period_ms) {
   auto logger = node_lifecycle_->get_logger();
   auto& clock = *(node_lifecycle_->get_clock());
   
@@ -491,7 +495,7 @@ void QuadController::printStateCommand() {
   ss << "==================================================================\n";
 
   // print once every 1000ms
-  RCLCPP_INFO_THROTTLE(logger, clock, 1000, "%s", ss.str().c_str());
+  RCLCPP_INFO_THROTTLE(logger, clock, period_ms, "%s", ss.str().c_str());
 }
 
 
@@ -735,6 +739,68 @@ void QuadController::printPinocchioMapping() {
                   model.joints[i].nq());
   }
   RCLCPP_INFO(logger, "--------------------------------------------------");
+}
+
+
+void QuadController::printMpcOptimizedState(const vector_t& optimized_state, int period_ms) {
+  auto logger = node_lifecycle_->get_logger();
+  auto& clock = *(node_lifecycle_->get_clock());
+
+  std::stringstream ss;
+  ss << "\n--- MPC OPTIMIZED STATE ------------------------\n";
+
+  char buf[256];
+  for (int i = 0; i < optimized_state.size(); ++i) {
+    snprintf(buf, sizeof(buf), "%8.3f ", optimized_state[i]);
+    ss << buf;
+    if ((i + 1) % 6 == 0) ss << "\n"; 
+    else if ((i + 1) % 3 == 0) ss << " | ";
+  }
+
+  ss << "\n------------------------------------------------";
+  RCLCPP_INFO_THROTTLE(logger, clock, period_ms, "%s", ss.str().c_str());
+}
+
+
+void QuadController::printMpcOptimizedCInput(const vector_t& optimized_input, int period_ms) {
+  auto logger = node_lifecycle_->get_logger();
+  auto& clock = *(node_lifecycle_->get_clock());
+
+  std::stringstream ss;
+  ss << "\n--- MPC OPTIMIZED INPUT --------------------\n";
+
+  char buf[256];
+  for (int i = 0; i < optimized_input.size(); ++i) {
+    snprintf(buf, sizeof(buf), "%8.3f ", optimized_input[i]);
+    ss << buf;
+    if ((i + 1) % 6 == 0) ss << "\n"; 
+    else if ((i + 1) % 3 == 0) ss << " | ";
+  }
+
+  ss << "\n--------------------------------------------";
+  RCLCPP_INFO_THROTTLE(logger, clock, period_ms, "%s", ss.str().c_str());
+}
+
+
+void QuadController::printWbcOptimizedToque(const vector_t& ff, int period_ms) {
+  auto logger = node_lifecycle_->get_logger();
+  auto& clock = *(node_lifecycle_->get_clock());
+
+  std::stringstream ss;
+  ss << "\n--- WBC OPTIMIZED TORQUE ------\n";
+  
+  char buf[512];
+  int pos = 0;
+  for (int i = 0; i < ff.size(); ++i) {
+    snprintf(buf, sizeof(buf), "%8.3f ", ff[i]);
+    ss << buf;
+    if ((i + 1) % 6 == 0) ss << "\n"; 
+    else if ((i + 1) % 3 == 0) ss << " | ";
+  }
+
+  ss << "---------------------------------";
+
+  RCLCPP_INFO_THROTTLE(logger, clock, period_ms, "%s", ss.str().c_str());
 }
 
 
