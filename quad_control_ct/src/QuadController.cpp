@@ -194,13 +194,13 @@ controller_interface::return_type QuadController::update(const rclcpp::Time& tim
   vector_t ff = rbd_torque.tail(12);
   vector_t pos_des = centroidal_model::getJointAngles(optimized_state, quad_interface_->getCentroidalModelInfo());
   vector_t vel_des = centroidal_model::getJointVelocities(optimized_input, quad_interface_->getCentroidalModelInfo());
-  for (size_t i = 0; i < quad_interface_->getCentroidalModelInfo().actuatedDofNum; ++i) {
-    (void)joint_handles_[i].pos_des.get().set_value(pos_des(i));
-    (void)joint_handles_[i].vel_des.get().set_value(vel_des(i));
-    (void)joint_handles_[i].ff.get().set_value(ff(i));
-    (void)joint_handles_[i].kp.get().set_value(0.0);
-    (void)joint_handles_[i].kd.get().set_value(0.0);
-  }  
+  // for (size_t i = 0; i < quad_interface_->getCentroidalModelInfo().actuatedDofNum; ++i) {
+  //   (void)joint_handles_[i].pos_des.get().set_value(pos_des(i));
+  //   (void)joint_handles_[i].vel_des.get().set_value(vel_des(i));
+  //   (void)joint_handles_[i].ff.get().set_value(ff(i));
+  //   (void)joint_handles_[i].kp.get().set_value(3.0);
+  //   (void)joint_handles_[i].kd.get().set_value(1.0);
+  // }  
 
   auto observation_msg = ros_msg_conversions::createObservationMsg(current_observation_);
   observation_msg.time = time.seconds();
@@ -445,13 +445,13 @@ void QuadController::printStateCommand() {
 
   // Joints data
   ss << "[JOINT STATES & COMMANDS]\n";
-  ss << "  NAME            | POS    | VEL    | EFF    | P_DES  | KP    | KD\n";
-  ss << "  ----------------|--------|--------|--------|--------|-------|-------\n";
+  ss << "  NAME            | POS    | VEL    | EFF    | P_DES  | V_DES  | FF    | KP    | KD\n";
+  ss << "  ----------------|--------|--------|--------|--------|--------|-------|-------|-------\n";
   for (const auto& jh : joint_handles_) {
     char buf[256];
-    snprintf(buf, sizeof(buf), "  %-15s | %6.2f | %6.2f | %6.2f | %6.2f | %5.1f | %5.1f\n",
+    snprintf(buf, sizeof(buf), "  %-15s | %6.2f | %6.2f | %6.2f | %6.2f | %6.2f | %5.1f | %5.1f | %5.1f\n",
              jh.name.c_str(), get_v(jh.position), get_v(jh.velocity), get_v(jh.effort),
-             get_v(jh.pos_des), get_v(jh.kp), get_v(jh.kd));
+             get_v(jh.pos_des), get_v(jh.vel_des), get_v(jh.ff), get_v(jh.kp), get_v(jh.kd));
     ss << buf;
   }
 
