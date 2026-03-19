@@ -21,25 +21,27 @@ def generate_launch_description():
         value=[mesh_file + ':' + os.path.join(pkg_project, 'share')]
     )
 
-    node_robot_state_publisher = Node(
-        package='robot_state_publisher',
-        executable='robot_state_publisher',
-        output='both',
-        parameters=[{
-            'robot_description': robot_desc,
-            'use_sim_time': True
-        }],
-    )
-
     gz_sim = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory('ros_gz_sim'), 'launch', 'gz_sim.launch.py')]),
         launch_arguments={'gz_args': '-r empty.sdf'}.items(),
     )
 
+    quad_robot_state_publisher = Node(
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        name='quad_robot_state_publisher',
+        output='screen',
+        parameters=[{
+            'robot_description': robot_desc,
+            'use_sim_time': True
+        }],
+    )
+
     gz_spawn_entity = Node(
         package='ros_gz_sim',
         executable='create',
+        name='gz_spawn_entity',
         output='screen',
         arguments=[
             '-topic', 'robot_description',
@@ -94,6 +96,8 @@ def generate_launch_description():
     bridge_clock = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',
+        name='bridge_clock',
+        output='screen',
         arguments=[
             '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
             '/ground_truth/state@nav_msgs/msg/Odometry[gz.msgs.Odometry',
@@ -104,8 +108,8 @@ def generate_launch_description():
 
     return LaunchDescription([
         set_gz_resource_path,        # 先设路径
-        node_robot_state_publisher,  # 发布模型
         gz_sim,                      # 开仿真器
+        quad_robot_state_publisher,  # 发布模型
         gz_spawn_entity,             # 生成实体
         # joint_state_spawner,
         imu_sensor_spawner,

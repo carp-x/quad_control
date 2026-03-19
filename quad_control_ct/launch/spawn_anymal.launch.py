@@ -48,6 +48,8 @@ def generate_launch_description():
   quad_controller_rviz = Node(
     package='rviz2',
     executable='rviz2',
+    name='quad_controller_rviz',
+    output='screen',
     condition=IfCondition(LaunchConfiguration('rviz')),
     arguments=['-d', rviz_config_file],
     parameters=[{
