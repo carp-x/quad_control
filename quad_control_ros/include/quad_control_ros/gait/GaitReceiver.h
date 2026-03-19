@@ -58,6 +58,8 @@ class GaitReceiver : public SolverSynchronizedModule {
 
   void postSolverRun(const PrimalSolution& primalSolution) override{};
 
+  void updateGait(const ocs2_msgs::msg::ModeSchedule::ConstSharedPtr& msg);
+
  private:
   void mpcModeSequenceCallback(
       const ocs2_msgs::msg::ModeSchedule::ConstSharedPtr& msg);

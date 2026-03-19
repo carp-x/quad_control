@@ -71,7 +71,7 @@ controller_interface::CallbackReturn QuadController::on_configure(const rclcpp_l
   if (on_configure_succeed_)
     return controller_interface::CallbackReturn::SUCCESS;
   if (!node_base_)
-    node_base_ = std::make_shared<rclcpp::Node>(robot_name_);
+    node_base_ = rclcpp::Node::make_shared(robot_name_);
 
   if (!loadSensorParams()) return controller_interface::CallbackReturn::ERROR;
   if (!loadFileParams()) return controller_interface::CallbackReturn::ERROR;
@@ -217,11 +217,11 @@ controller_interface::return_type QuadController::update(const rclcpp::Time& tim
   robot_visualizer_->update(current_observation_, mpc_mrt_interface_->getPolicy(), mpc_mrt_interface_->getCommand());
   self_collision_visualization_->update(current_observation_);
 
-  int period_ms = 1000;
-  printStateCommand(period_ms);
-  printMpcOptimizedState(optimized_state, period_ms);
-  printMpcOptimizedCInput(optimized_input, period_ms);
-  printWbcOptimizedToque(ff, period_ms);
+  // int period_ms = 1000;
+  // printStateCommand(period_ms);
+  // printMpcOptimizedState(optimized_state, period_ms);
+  // printMpcOptimizedCInput(optimized_input, period_ms);
+  // printWbcOptimizedToque(ff, period_ms);
   return controller_interface::return_type::OK;
 }
 
@@ -530,7 +530,7 @@ void QuadController::setupMpc() {
       robot_name_, quad_interface_->getReferenceManagerPtr());
   ros_reference_manager_ptr->subscribe(node_base_);
 
-  auto gait_receiver_ptr = std::make_shared<GaitReceiver>(
+  gait_receiver_ptr_ = std::make_shared<GaitReceiver>(
       node_base_, quad_interface_->getSwitchedModelReferenceManagerPtr()->getGaitSchedule(), robot_name_);
   
   mpc_ = std::make_shared<SqpMpc>(quad_interface_->mpcSettings(), 
@@ -538,7 +538,7 @@ void QuadController::setupMpc() {
                                   quad_interface_->getOptimalControlProblem(), 
                                   quad_interface_->getInitializer());
   mpc_->getSolverPtr()->setReferenceManager(ros_reference_manager_ptr);
-  mpc_->getSolverPtr()->addSynchronizedModule(gait_receiver_ptr);
+  mpc_->getSolverPtr()->addSynchronizedModule(gait_receiver_ptr_);
 
   RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController setupMpc succeed.");
 }
@@ -706,7 +706,27 @@ void QuadController::setupRbd() {
 
 
 void QuadController::setupSub() {
+  gait_subscriber_ = node_lifecycle_->create_subscription<ocs2_msgs::msg::ModeSchedule>(
+    "quad_robot_mpc_mode_schedule", 10,
+    [this](const ocs2_msgs::msg::ModeSchedule::SharedPtr msg) {
+      if (gait_receiver_ptr_) {
+        gait_receiver_ptr_->updateGait(msg);
+        RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController gait updated.");
+      }
+      else {
+        RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController gait_receiver_ptr_ released.");
+      }
+    });
 
+  target_trajectories_subscriber_ = node_lifecycle_->create_subscription<ocs2_msgs::msg::MpcTargetTrajectories>(
+    "quad_robot_mpc_target", 10,
+    [this](const ocs2_msgs::msg::MpcTargetTrajectories::SharedPtr msg) {
+      auto target_trajectories = ros_msg_conversions::readTargetTrajectoriesMsg(*msg);
+      mpc_mrt_interface_->getReferenceManager().setTargetTrajectories(std::move(target_trajectories));
+      RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController target trajectories updated.");
+    });
+
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController setupSub succeed.");
 }
 
 

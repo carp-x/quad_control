@@ -71,6 +71,15 @@ void GaitReceiver::preSolverRun(
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
+void GaitReceiver::updateGait(const ocs2_msgs::msg::ModeSchedule::ConstSharedPtr& msg) {
+  std::lock_guard<std::mutex> lock(receivedGaitMutex_);
+  receivedGait_ = readModeSequenceTemplateMsg(*msg);
+  gaitUpdated_ = true;
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
 void GaitReceiver::mpcModeSequenceCallback(
     const ocs2_msgs::msg::ModeSchedule::ConstSharedPtr& msg) {
   std::lock_guard<std::mutex> lock(receivedGaitMutex_);

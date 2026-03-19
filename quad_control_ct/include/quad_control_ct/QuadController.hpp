@@ -38,6 +38,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <angles/angles.h>
 #include <ocs2_msgs/msg/mpc_observation.hpp>
+#include <ocs2_msgs/msg/mode_schedule.hpp>
+#include <ocs2_msgs/msg/mpc_target_trajectories.hpp>
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
@@ -178,6 +180,10 @@ class QuadController : public controller_interface::ControllerInterface {
   rclcpp::Publisher<ocs2_msgs::msg::MpcObservation>::SharedPtr observation_publisher_;
   std::shared_ptr<LeggedRobotVisualizer> robot_visualizer_;
   std::shared_ptr<LeggedSelfCollisionVisualization> self_collision_visualization_;
+
+  std::shared_ptr<GaitReceiver> gait_receiver_ptr_;
+  rclcpp::Subscription<ocs2_msgs::msg::ModeSchedule>::SharedPtr gait_subscriber_;
+  rclcpp::Subscription<ocs2_msgs::msg::MpcTargetTrajectories>::SharedPtr target_trajectories_subscriber_;
 
   const std::string robot_name_ = "quad_robot";
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_lifecycle_;
