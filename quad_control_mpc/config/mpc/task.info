@@ -155,24 +155,24 @@ initialState
    ;; Base Pose: [position, orientation] ;;
    (6,0)  0.0     ; p_base_x
    (7,0)  0.0     ; p_base_y
-   (8,0)  0.575   ; p_base_z
+   (8,0)  0.61    ; p_base_z
    (9,0)  0.0     ; theta_base_z
    (10,0) 0.0     ; theta_base_y
    (11,0) 0.0     ; theta_base_x
 
    ;; Leg Joint Positions: [LF, LH, RF, RH] ;;
-   (12,0) -0.25   ; LF_HAA_LF_HIP
-   (13,0)  0.60   ; LF_HFE_LF_THIGH
-   (14,0) -0.85   ; LF_KFE_LF_SHANK
-   (15,0) -0.25   ; LH_HAA_LH_HIP
-   (16,0) -0.60   ; LH_HFE_LH_THIGH
-   (17,0)  0.85   ; LH_KFE_LH_SHANK
-   (18,0)  0.25   ; RF_HAA_RF_HIP
-   (19,0)  0.60   ; RF_HFE_RF_THIGH
-   (20,0) -0.85   ; RF_KFE_RF_SHANK
-   (21,0)  0.25   ; RH_HAA_RH_HIP
-   (22,0) -0.60   ; RH_HFE_RH_THIGH
-   (23,0)  0.85   ; RH_KFE_RH_SHANK
+   (12,0)  0.0   ; LF_HAA_LF_HIP
+   (13,0)  0.0   ; LF_HFE_LF_THIGH
+   (14,0)  0.0   ; LF_KFE_LF_SHANK
+   (15,0)  0.0   ; LH_HAA_LH_HIP
+   (16,0)  0.0   ; LH_HFE_LH_THIGH
+   (17,0)  0.0   ; LH_KFE_LH_SHANK
+   (18,0)  0.0   ; RF_HAA_RF_HIP
+   (19,0)  0.0   ; RF_HFE_RF_THIGH
+   (20,0)  0.0   ; RF_KFE_RF_SHANK
+   (21,0)  0.0   ; RH_HAA_RH_HIP
+   (22,0)  0.0   ; RH_HFE_RH_THIGH
+   (23,0)  0.0   ; RH_KFE_RH_SHANK
 }
 
 ; standard state weight matrix
