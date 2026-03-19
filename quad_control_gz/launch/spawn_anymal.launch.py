@@ -63,33 +63,33 @@ def generate_launch_description():
         parameters=[{'use_sim_time': True}],
     )
 
-    # lf_ft_sensor_spawner = Node(
-    #     package="controller_manager",
-    #     executable="spawner",
-    #     arguments=["lf_ft_sensor_broadcaster"],
-    #     parameters=[{'use_sim_time': True}],
-    # )
+    lf_ft_sensor_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["lf_ft_sensor_broadcaster"],
+        parameters=[{'use_sim_time': True}],
+    )
 
-    # rf_ft_sensor_spawner = Node(
-    #     package="controller_manager",
-    #     executable="spawner",
-    #     arguments=["rf_ft_sensor_broadcaster"],
-    #     parameters=[{'use_sim_time': True}],
-    # )
+    rf_ft_sensor_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["rf_ft_sensor_broadcaster"],
+        parameters=[{'use_sim_time': True}],
+    )
 
-    # lh_ft_sensor_spawner = Node(
-    #     package="controller_manager",
-    #     executable="spawner",
-    #     arguments=["lh_ft_sensor_broadcaster"],
-    #     parameters=[{'use_sim_time': True}],
-    # )
+    lh_ft_sensor_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["lh_ft_sensor_broadcaster"],
+        parameters=[{'use_sim_time': True}],
+    )
 
-    # rh_ft_sensor_spawner = Node(
-    #     package="controller_manager",
-    #     executable="spawner",
-    #     arguments=["rh_ft_sensor_broadcaster"],
-    #     parameters=[{'use_sim_time': True}],
-    # )
+    rh_ft_sensor_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["rh_ft_sensor_broadcaster"],
+        parameters=[{'use_sim_time': True}],
+    )
 
     bridge_clock = Node(
         package='ros_gz_bridge',
@@ -109,9 +109,9 @@ def generate_launch_description():
         gz_spawn_entity,             # 生成实体
         # joint_state_spawner,
         imu_sensor_spawner,
-        # lf_ft_sensor_spawner,
-        # rf_ft_sensor_spawner,
-        # lh_ft_sensor_spawner,
-        # rh_ft_sensor_spawner,
+        lf_ft_sensor_spawner,
+        rf_ft_sensor_spawner,
+        lh_ft_sensor_spawner,
+        rh_ft_sensor_spawner,
         bridge_clock,
     ])
