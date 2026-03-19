@@ -109,9 +109,9 @@ def generate_launch_description():
         gz_spawn_entity,             # 生成实体
         # joint_state_spawner,
         imu_sensor_spawner,
-        lf_ft_sensor_spawner,
-        rf_ft_sensor_spawner,
-        lh_ft_sensor_spawner,
-        rh_ft_sensor_spawner,
+        # lf_ft_sensor_spawner,
+        # rf_ft_sensor_spawner,
+        # lh_ft_sensor_spawner,
+        # rh_ft_sensor_spawner,
         bridge_clock,
     ])
