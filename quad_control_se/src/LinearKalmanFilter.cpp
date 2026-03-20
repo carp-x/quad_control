@@ -39,10 +39,10 @@ namespace quad_control {
 
 LinearKalmanFilter::LinearKalmanFilter(std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_ptr,
                                        PinocchioInterface pinocchio_interface,
-                                       CentroidalModelInfo info,
+                                       CentroidalModelInfo cm_info,
                                        const PinocchioEndEffectorKinematics& ee_kinematics)
-    : StateEstimateBase(node_ptr, std::move(pinocchio_interface), std::move(info), ee_kinematics),
-      num_contacts_(info_.numThreeDofContacts),
+    : StateEstimateBase(node_ptr, std::move(pinocchio_interface), std::move(cm_info), ee_kinematics),
+      num_contacts_(cm_info_.numThreeDofContacts),
       dim_contacts_(3 * num_contacts_),
       num_state_(6 + dim_contacts_),
       num_observe_(2 * dim_contacts_ + num_contacts_) {
@@ -125,15 +125,15 @@ void LinearKalmanFilter::updateObserve(vector_t& z) {
   auto& model = pinocchio_interface_.getModel();
   auto& data = pinocchio_interface_.getData();
 
-  vector_t q_pino = vector_t::Zero(info_.generalizedCoordinatesNum);
-  vector_t v_pino = vector_t::Zero(info_.generalizedCoordinatesNum);
+  vector_t q_pino = vector_t::Zero(cm_info_.generalizedCoordinatesNum);
+  vector_t v_pino = vector_t::Zero(cm_info_.generalizedCoordinatesNum);
 
   q_pino.segment<3>(3) = rbd_state_.head<3>(); // Only set orientation, let position in origin.
-  q_pino.tail(info_.actuatedDofNum) = rbd_state_.segment(6, info_.actuatedDofNum);
+  q_pino.tail(cm_info_.actuatedDofNum) = rbd_state_.segment(6, cm_info_.actuatedDofNum);
   v_pino.segment<3>(3) = getEulerAnglesZyxDerivativesFromGlobalAngularVelocity<scalar_t>(
                           q_pino.segment<3>(3),
-                          rbd_state_.segment<3>(info_.generalizedCoordinatesNum)); // Only set angular velocity, let linear velocity be zero
-  v_pino.tail(info_.actuatedDofNum) = rbd_state_.segment(6 + info_.generalizedCoordinatesNum, info_.actuatedDofNum);
+                          rbd_state_.segment<3>(cm_info_.generalizedCoordinatesNum)); // Only set angular velocity, let linear velocity be zero
+  v_pino.tail(cm_info_.actuatedDofNum) = rbd_state_.segment(6 + cm_info_.generalizedCoordinatesNum, cm_info_.actuatedDofNum);
 
   pinocchio::forwardKinematics(model, data, q_pino, v_pino);
   pinocchio::updateFramePlacements(model, data);

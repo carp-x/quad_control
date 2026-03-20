@@ -62,19 +62,19 @@ class StateEstimateBase {
                     const PinocchioEndEffectorKinematics& ee_kinematics);
   
   virtual ~StateEstimateBase() = default;
+
+  virtual vector_t update(const rclcpp::Time& time, const rclcpp::Duration& period) = 0;
   
-  virtual void updateJointStates(const vector_t& joint_pos, const vector_t& joint_vel);
+  void updateJointStates(const vector_t& joint_pos, const vector_t& joint_vel);
   
-  virtual void updateContact(contact_flag_t contact_flag) { contact_flag_ = std::move(contact_flag); }
+  void updateContact(contact_flag_t contact_flag) { contact_flag_ = std::move(contact_flag); }
   
-  virtual void updateImu(const Eigen::Quaternion<scalar_t>& quat, 
-                         const vector3_t& angular_vel, 
+  void updateImu(const Eigen::Quaternion<scalar_t>& quat,
+                         const vector3_t& angular_vel,
                          const vector3_t& linear_acc,
-                         const matrix3_t& ori_cov, 
+                         const matrix3_t& ori_cov,
                          const matrix3_t& angular_vel_cov,
                          const matrix3_t& linear_acc_cov);
-  
-  virtual vector_t update(const rclcpp::Time& time, const rclcpp::Duration& period) = 0;
   
   size_t getMode() { return stanceLeg2ModeNumber(contact_flag_); }
   
@@ -88,7 +88,7 @@ class StateEstimateBase {
   
   // OCS2 and Kinematics
   PinocchioInterface pinocchio_interface_;
-  CentroidalModelInfo info_;
+  CentroidalModelInfo cm_info_;
   std::unique_ptr<PinocchioEndEffectorKinematics> ee_kinematics_;
   
   // Internal States
@@ -108,7 +108,7 @@ class StateEstimateBase {
   
   std::shared_ptr<OdomPublisher> odom_pub_;
   std::shared_ptr<PosePublisher> pose_pub_;
-  const scalar_t publish_rate_ = 200.0;
+  const scalar_t publish_rate_ = 500.0;
   rclcpp::Time last_pub_;
 };
 

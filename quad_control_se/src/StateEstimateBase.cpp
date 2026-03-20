@@ -33,13 +33,13 @@ namespace quad_control {
 
 StateEstimateBase::StateEstimateBase(std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_ptr,
                                      PinocchioInterface pinocchio_interface, 
-                                     CentroidalModelInfo info,
+                                     CentroidalModelInfo cm_info,
                                      const PinocchioEndEffectorKinematics& ee_kinematics)
     : node_ptr_(node_ptr),
       pinocchio_interface_(std::move(pinocchio_interface)),
-      info_(std::move(info)),
+      cm_info_(std::move(cm_info)),
       ee_kinematics_(ee_kinematics.clone()),
-      rbd_state_(vector_t::Zero(2 * info_.generalizedCoordinatesNum)) {
+      rbd_state_(vector_t::Zero(2 * cm_info_.generalizedCoordinatesNum)) {
   
   odom_pub_ = std::make_shared<OdomPublisher>(node_ptr_->create_publisher<nav_msgs::msg::Odometry>("odom", 10));
   pose_pub_ = std::make_shared<PosePublisher>(node_ptr_->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>("pose", 10));
@@ -47,8 +47,8 @@ StateEstimateBase::StateEstimateBase(std::shared_ptr<rclcpp_lifecycle::Lifecycle
 }
 
 void StateEstimateBase::updateJointStates(const vector_t& joint_pos, const vector_t& joint_vel) {
-  rbd_state_.segment(6, info_.actuatedDofNum) = joint_pos;
-  rbd_state_.segment(6 + info_.generalizedCoordinatesNum, info_.actuatedDofNum) = joint_vel;
+  rbd_state_.segment(6, cm_info_.actuatedDofNum) = joint_pos;
+  rbd_state_.segment(6 + cm_info_.generalizedCoordinatesNum, cm_info_.actuatedDofNum) = joint_vel;
 }
 
 void StateEstimateBase::updateImu(const Eigen::Quaternion<scalar_t>& quat, 
@@ -67,12 +67,12 @@ void StateEstimateBase::updateImu(const Eigen::Quaternion<scalar_t>& quat,
 
 void StateEstimateBase::updateAngular(const vector3_t& zyx, const vector_t& angular_vel) {
   rbd_state_.segment<3>(0) = zyx;
-  rbd_state_.segment<3>(info_.generalizedCoordinatesNum) = angular_vel;
+  rbd_state_.segment<3>(cm_info_.generalizedCoordinatesNum) = angular_vel;
 }
 
 void StateEstimateBase::updateLinear(const vector_t& pos, const vector_t& linear_vel) {
   rbd_state_.segment<3>(3) = pos;
-  rbd_state_.segment<3>(info_.generalizedCoordinatesNum + 3) = linear_vel;
+  rbd_state_.segment<3>(cm_info_.generalizedCoordinatesNum + 3) = linear_vel;
 }
 
 void StateEstimateBase::publishMsgs(const nav_msgs::msg::Odometry& odom) {
