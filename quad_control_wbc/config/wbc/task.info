@@ -8,7 +8,7 @@ torqueLimitsTask
 
 frictionConeTask
 {
-  frictionCoefficient    0.3
+  frictionCoefficient    0.5
 }
 
 swingLegTask

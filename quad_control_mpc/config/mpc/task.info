@@ -14,7 +14,7 @@ model_settings
 
   verboseCppAd                  true
   recompileLibrariesCppAd       false
-  modelFolderCppAd              /tmp/ocs2
+  modelFolderCppAd              /tmp/quad_robot/anymal
 }
 
 swing_trajectory_config
