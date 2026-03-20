@@ -536,6 +536,11 @@ void QuadController::setupMpc() {
                                   quad_interface_->sqpSettings(),
                                   quad_interface_->getOptimalControlProblem(), 
                                   quad_interface_->getInitializer());
+    // mpc_ = std::make_shared<GaussNewtonDDP_MPC>(quad_interface_->mpcSettings(), 
+    //                                             quad_interface_->ddpSettings(),
+    //                                             quad_interface_->getRollout(),
+    //                                             quad_interface_->getOptimalControlProblem(), 
+    //                                             quad_interface_->getInitializer());
   mpc_->getSolverPtr()->setReferenceManager(ros_reference_manager_ptr);
   mpc_->getSolverPtr()->addSynchronizedModule(gait_receiver_ptr_);
 
@@ -579,6 +584,7 @@ void QuadController::setupMrt() {
   });
 
   int priority = quad_interface_->sqpSettings().threadPriority;
+  // int priority = quad_interface_->ddpSettings().threadPriority_;
   if (priority > 0) {
     struct sched_param param;
     param.sched_priority = priority;

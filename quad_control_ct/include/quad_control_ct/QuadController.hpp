@@ -51,6 +51,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_mpc/MPC_BASE.h>
 #include <ocs2_mpc/MPC_MRT_Interface.h>
 #include <ocs2_sqp/SqpMpc.h>
+#include <ocs2_ddp/GaussNewtonDDP_MPC.h>
 
 #include <ocs2_pinocchio_interface/PinocchioEndEffectorKinematics.h>
 #include <ocs2_centroidal_model/CentroidalModelRbdConversions.h>
