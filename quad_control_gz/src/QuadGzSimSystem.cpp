@@ -103,7 +103,8 @@ struct jointData
   sim::Entity sim_joint;
 
   /// damping_frequency for a first-order low pass
-  std::unique_ptr<control_toolbox::LowPassFilter<double>> lpf;
+  std::unique_ptr<control_toolbox::LowPassFilter<double>> lpf_vel_state;
+  std::unique_ptr<control_toolbox::LowPassFilter<double>> lpf_vel_cmd;
 };
 
 /******************************************************************************************************/
@@ -326,6 +327,26 @@ bool QuadGzSimSystem::initSim(
           &this->dataPtr->joints_[j].joint_velocity);
         initial_velocity = get_initial_value(joint_info.state_interfaces[i]);
         this->dataPtr->joints_[j].joint_velocity = initial_velocity;
+        // lpf_vel_state
+        auto it = joint_info.state_interfaces[i].parameters.find("damping_frequency");
+        if (it != joint_info.state_interfaces[i].parameters.end()) {
+          double damping_frequency = stod(it->second);
+          RCLCPP_INFO(
+            this->nh_->get_logger(), "\t\t\t with damping_frequency %.2fs.",
+            damping_frequency);
+          double damping_intensity = 1.0;
+          auto it2 = joint_info.state_interfaces[i].parameters.find("damping_intensity");
+          if (it2 != joint_info.state_interfaces[i].parameters.end()) {
+            damping_intensity = stod(it2->second);
+          }
+          RCLCPP_INFO(
+            this->nh_->get_logger(), "\t\t\t with damping_intensity %.2fs.",
+            damping_intensity);
+          this->dataPtr->joints_[j].lpf_vel_state =
+            std::make_unique<control_toolbox::LowPassFilter<double>>(
+            update_rate, damping_frequency, damping_intensity);
+          this->dataPtr->joints_[j].lpf_vel_state->configure();
+        }
       }
       if (joint_info.state_interfaces[i].name == "effort") {
         RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t effort");
@@ -372,6 +393,26 @@ bool QuadGzSimSystem::initSim(
         if (!std::isnan(initial_vel_des)) {
           this->dataPtr->joints_[j].joint_vel_des = initial_vel_des;
         }
+        // lpf_vel_cmd
+        auto it = joint_info.command_interfaces[i].parameters.find("damping_frequency");
+        if (it != joint_info.command_interfaces[i].parameters.end()) {
+          double damping_frequency = stod(it->second);
+          RCLCPP_INFO(
+            this->nh_->get_logger(), "\t\t\t with damping_frequency %.2fs.",
+            damping_frequency);
+          double damping_intensity = 1.0;
+          auto it2 = joint_info.command_interfaces[i].parameters.find("damping_intensity");
+          if (it2 != joint_info.command_interfaces[i].parameters.end()) {
+            damping_intensity = stod(it2->second);
+          }
+          RCLCPP_INFO(
+            this->nh_->get_logger(), "\t\t\t with damping_intensity %.2fs.",
+            damping_intensity);
+          this->dataPtr->joints_[j].lpf_vel_cmd =
+            std::make_unique<control_toolbox::LowPassFilter<double>>(
+            update_rate, damping_frequency, damping_intensity);
+          this->dataPtr->joints_[j].lpf_vel_cmd->configure();
+        }
       }
       if (joint_info.command_interfaces[i].name == "ff") {
         RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t ff");
@@ -404,25 +445,6 @@ bool QuadGzSimSystem::initSim(
         }
       }
       /******************************************************************************************************/
-      auto it = joint_info.command_interfaces[i].parameters.find("damping_frequency");
-      if (it != joint_info.command_interfaces[i].parameters.end()) {
-        double damping_frequency = stod(it->second);
-        RCLCPP_INFO(
-          this->nh_->get_logger(), "\t\t\t with damping_frequency %.2fs.",
-          damping_frequency);
-        double damping_intensity = 1.0;
-        auto it2 = joint_info.command_interfaces[i].parameters.find("damping_intensity");
-        if (it2 != joint_info.command_interfaces[i].parameters.end()) {
-          damping_intensity = stod(it2->second);
-        }
-        RCLCPP_INFO(
-          this->nh_->get_logger(), "\t\t\t with damping_intensity %.2fs.",
-          damping_intensity);
-        this->dataPtr->joints_[j].lpf =
-          std::make_unique<control_toolbox::LowPassFilter<double>>(
-          update_rate, damping_frequency, damping_intensity);
-        this->dataPtr->joints_[j].lpf->configure();
-      }
       // independently of existence of command interface set initial value if defined
       if (!std::isnan(initial_position)) {
         this->dataPtr->joints_[j].joint_position = initial_position;
@@ -700,6 +722,11 @@ hardware_interface::return_type QuadGzSimSystem::read(
       continue;
     }
 
+    // Get the joint position
+    const auto * jointPositions =
+      this->dataPtr->ecm->Component<sim::components::JointPosition>(
+      this->dataPtr->joints_[i].sim_joint);    
+
     // Get the joint velocity
     const auto * jointVelocity =
       this->dataPtr->ecm->Component<sim::components::JointVelocity>(
@@ -710,13 +737,12 @@ hardware_interface::return_type QuadGzSimSystem::read(
       this->dataPtr->ecm->Component<sim::components::JointTransmittedWrench>(
       this->dataPtr->joints_[i].sim_joint);
 
-    // Get the joint position
-    const auto * jointPositions =
-      this->dataPtr->ecm->Component<sim::components::JointPosition>(
-      this->dataPtr->joints_[i].sim_joint);
-
     this->dataPtr->joints_[i].joint_position = jointPositions->Data()[0];
     this->dataPtr->joints_[i].joint_velocity = jointVelocity->Data()[0];
+    if (this->dataPtr->joints_[i].lpf_vel_state && this->dataPtr->joints_[i].lpf_vel_state->is_configured()) {
+      this->dataPtr->joints_[i].lpf_vel_state->update(jointVelocity->Data()[0], 
+                                                      this->dataPtr->joints_[i].joint_velocity);
+    };
     gz::physics::Vector3d force_or_torque;
     if (this->dataPtr->joints_[i].joint_type == sdf::JointType::PRISMATIC) {
       force_or_torque = {jointWrench->Data().force().x(),
@@ -771,20 +797,7 @@ hardware_interface::return_type QuadGzSimSystem::write(
     if (this->dataPtr->joints_[i].sim_joint == sim::kNullEntity) {
       continue;
     }
-    /******************************************************************************************************/
-    /*
-    double vel_cmd;
-    if (this->dataPtr->joints_[i].lpf && this->dataPtr->joints_[i].lpf->is_configured()) {
-      this->dataPtr->joints_[i].lpf->update(this->dataPtr->joints_[i].joint_vel_des, vel_cmd);
-    } else {
-      vel_cmd = this->dataPtr->joints_[i].joint_vel_des;
-    }
-    this->dataPtr->ecm->SetComponentData<sim::components::JointVelocityCmd>(
-      this->dataPtr->joints_[i].sim_joint,
-      {vel_cmd});
-    */
-    
-    // /*
+    /******************************************************************************************************/   
     if (std::isnan(this->dataPtr->joints_[i].joint_pos_des) || 
         std::isnan(this->dataPtr->joints_[i].joint_vel_des) || 
         std::isnan(this->dataPtr->joints_[i].joint_ff) ||
@@ -801,18 +814,18 @@ hardware_interface::return_type QuadGzSimSystem::write(
     double kp      = this->dataPtr->joints_[i].joint_kp;
     double kd      = this->dataPtr->joints_[i].joint_kd;
 
-    double tau_cmd = ff + kp * (pos_des - pos_cur) + kd * (vel_des - vel_cur);
-    double filtered_tau;
-    if (this->dataPtr->joints_[i].lpf && this->dataPtr->joints_[i].lpf->is_configured()) {
-      this->dataPtr->joints_[i].lpf->update(tau_cmd, filtered_tau);
-    } else {
-      filtered_tau = tau_cmd;
-    }
-
+    double vel_cmd = vel_des;
+    if (this->dataPtr->joints_[i].lpf_vel_cmd && this->dataPtr->joints_[i].lpf_vel_cmd->is_configured()) {
+      this->dataPtr->joints_[i].lpf_vel_cmd->update(vel_des, vel_cmd);
+    };
+      // this->dataPtr->ecm->SetComponentData<sim::components::JointVelocityCmd>(
+      //   this->dataPtr->joints_[i].sim_joint,
+      //   {vel_cmd});
+    
+    double tau_cmd = ff + kp * (pos_des - pos_cur) + kd * (vel_cmd - vel_cur);
     this->dataPtr->ecm->SetComponentData<sim::components::JointForceCmd>(
       this->dataPtr->joints_[i].sim_joint,
-      {filtered_tau});
-    // */
+      {tau_cmd});
     /******************************************************************************************************/
   }
 
