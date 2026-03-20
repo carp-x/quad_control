@@ -46,6 +46,7 @@ LinearKalmanFilter::LinearKalmanFilter(std::shared_ptr<rclcpp_lifecycle::Lifecyc
       dim_contacts_(3 * num_contacts_),
       num_state_(6 + dim_contacts_),
       num_observe_(2 * dim_contacts_ + num_contacts_) {
+  ee_kinematics_->setPinocchioInterface(pinocchio_interface_);
   
   // [base_pos(3), base_vel(3), ee_pos_1(3), ..., ee_pos_4(3)]^T 
   x_hat_.setZero(num_state_);
@@ -152,8 +153,8 @@ void LinearKalmanFilter::updateObserve(vector_t& z) {
 }
 
 void LinearKalmanFilter::updateFilter(vector_t& x_hat, matrix_t& P) {
-  auto Q = Q_;
-  auto R = R_;
+  matrix_t Q = Q_;
+  matrix_t R = R_;
 
   Q.block<3, 3>(0, 0) *= q_base_pos_;
   Q.block<3, 3>(3, 3) *= q_base_vel_;
@@ -180,8 +181,8 @@ void LinearKalmanFilter::updateFilter(vector_t& x_hat, matrix_t& P) {
   x_hat = A_ * x_hat + B_ * u_;
   P = A_ * P * A_.transpose() + Q;
 
-  auto S = C_ * P * C_.transpose() + R;
-  auto K = P * C_.transpose() * S.lu().solve(matrix_t::Identity(num_observe_, num_observe_));
+  matrix_t S = C_ * P * C_.transpose() + R;
+  matrix_t K = P * C_.transpose() * S.lu().solve(matrix_t::Identity(num_observe_, num_observe_));
 
   x_hat += K * (z_ - C_ * x_hat);
   P = (matrix_t::Identity(num_state_, num_state_) - K * C_) * P;
