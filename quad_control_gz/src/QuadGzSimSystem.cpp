@@ -772,7 +772,7 @@ hardware_interface::return_type QuadGzSimSystem::write(
       continue;
     }
     /******************************************************************************************************/
-    // /*
+    /*
     double vel_cmd;
     if (this->dataPtr->joints_[i].lpf && this->dataPtr->joints_[i].lpf->is_configured()) {
       this->dataPtr->joints_[i].lpf->update(this->dataPtr->joints_[i].joint_vel_des, vel_cmd);
@@ -782,9 +782,9 @@ hardware_interface::return_type QuadGzSimSystem::write(
     this->dataPtr->ecm->SetComponentData<sim::components::JointVelocityCmd>(
       this->dataPtr->joints_[i].sim_joint,
       {vel_cmd});
-    // */
+    */
     
-    /*
+    // /*
     if (std::isnan(this->dataPtr->joints_[i].joint_pos_des) || 
         std::isnan(this->dataPtr->joints_[i].joint_vel_des) || 
         std::isnan(this->dataPtr->joints_[i].joint_ff) ||
@@ -812,7 +812,7 @@ hardware_interface::return_type QuadGzSimSystem::write(
     this->dataPtr->ecm->SetComponentData<sim::components::JointForceCmd>(
       this->dataPtr->joints_[i].sim_joint,
       {filtered_tau});
-    */
+    // */
     /******************************************************************************************************/
   }
 
