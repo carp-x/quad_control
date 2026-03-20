@@ -584,7 +584,7 @@ void QuadController::setupMrt() {
   });
 
   int priority = quad_interface_->sqpSettings().threadPriority;
-  // int priority = quad_interface_->ddpSettings().threadPriority_;
+    // int priority = quad_interface_->ddpSettings().threadPriority_;
   if (priority > 0) {
     struct sched_param param;
     param.sched_priority = priority;
