@@ -197,7 +197,8 @@ class QuadController : public controller_interface::ControllerInterface {
 
   bool delay_expired_;
   rclcpp::Time start_time_;
-  double delay_duration_ = 10.0;
+  const double delay_duration_ = 5.0;
+  const int print_period_ms_ = 1000;
 };
 
 class QuadCheaterController : public QuadController {

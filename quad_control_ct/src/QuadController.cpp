@@ -207,7 +207,7 @@ controller_interface::return_type QuadController::update(const rclcpp::Time& tim
       (void)joint_handles_[i].vel_des.get().set_value(vel_des(i));
       (void)joint_handles_[i].ff.get().set_value(ff(i));
       (void)joint_handles_[i].kp.get().set_value(0.0);
-      (void)joint_handles_[i].kd.get().set_value(0.0);
+      (void)joint_handles_[i].kd.get().set_value(3.0);
     }  
   }
 
@@ -217,11 +217,10 @@ controller_interface::return_type QuadController::update(const rclcpp::Time& tim
   robot_visualizer_->update(current_observation_, mpc_mrt_interface_->getPolicy(), mpc_mrt_interface_->getCommand());
   self_collision_visualization_->update(current_observation_);
 
-  // int period_ms = 1000;
-  // printStateCommand(period_ms);
-  // printMpcOptimizedState(optimized_state, period_ms);
-  // printMpcOptimizedCInput(optimized_input, period_ms);
-  // printWbcOptimizedToque(ff, period_ms);
+  printStateCommand(print_period_ms_);
+  printMpcOptimizedState(optimized_state, print_period_ms_);
+  printMpcOptimizedCInput(optimized_input, print_period_ms_);
+  printWbcOptimizedToque(ff, print_period_ms_);
   return controller_interface::return_type::OK;
 }
 
