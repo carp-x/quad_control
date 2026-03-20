@@ -824,7 +824,6 @@ void QuadController::printWbcOptimizedToque(const vector_t& ff, int period_ms) {
   ss << "\n--- WBC OPTIMIZED TORQUE ------\n";
   
   char buf[512];
-  int pos = 0;
   for (int i = 0; i < ff.size(); ++i) {
     snprintf(buf, sizeof(buf), "%8.3f ", ff[i]);
     ss << buf;
