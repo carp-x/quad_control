@@ -40,7 +40,13 @@ StateEstimateBase::StateEstimateBase(std::shared_ptr<rclcpp_lifecycle::Lifecycle
       cm_info_(std::move(cm_info)),
       ee_kinematics_(ee_kinematics.clone()),
       rbd_state_(vector_t::Zero(2 * cm_info_.generalizedCoordinatesNum)) {
-  
+
+  base_quat_i_ = Eigen::Quaternion<scalar_t>(
+    Eigen::AngleAxis<scalar_t>(base_rpy_i_.z(), Eigen::Vector3d::UnitZ()) *
+    Eigen::AngleAxis<scalar_t>(base_rpy_i_.y(), Eigen::Vector3d::UnitY()) *
+    Eigen::AngleAxis<scalar_t>(base_rpy_i_.x(), Eigen::Vector3d::UnitX())
+  );
+
   odom_pub_ = std::make_shared<OdomPublisher>(node_ptr_->create_publisher<nav_msgs::msg::Odometry>("odom", 10));
   pose_pub_ = std::make_shared<PosePublisher>(node_ptr_->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>("pose", 10));
   last_pub_ = node_ptr_->get_clock()->now();
@@ -51,28 +57,31 @@ void StateEstimateBase::updateJointStates(const vector_t& joint_pos, const vecto
   rbd_state_.segment(6 + cm_info_.generalizedCoordinatesNum, cm_info_.actuatedDofNum) = joint_vel;
 }
 
-void StateEstimateBase::updateImu(const Eigen::Quaternion<scalar_t>& quat, 
-                                  const vector3_t& angular_vel, 
-                                  const vector3_t& linear_acc,
-                                  const matrix3_t& ori_cov, 
-                                  const matrix3_t& angular_vel_cov,
-                                  const matrix3_t& linear_acc_cov) {
-  quat_ = quat;
-  angular_vel_ = angular_vel;
-  linear_acc_ = linear_acc;
-  ori_cov_ = ori_cov;
-  angular_vel_cov_ = angular_vel_cov;
-  linear_acc_cov_ = linear_acc_cov;
+void StateEstimateBase::updateImu(const Eigen::Quaternion<scalar_t>& global_quat_i,
+                                  const vector3_t& imu_angular_vel_i,
+                                  const vector3_t& imu_linear_acc_i,
+                                  const matrix3_t& imu_ori_cov_i,
+                                  const matrix3_t& imu_angular_vel_cov_i,
+                                  const matrix3_t& imu_linear_acc_cov_i) {
+  global_quat_i_ = global_quat_i;
+  imu_angular_vel_i_ = imu_angular_vel_i;
+  imu_linear_acc_i_ = imu_linear_acc_i;
+  imu_ori_cov_i_ = imu_ori_cov_i;
+  imu_angular_vel_cov_i_ = imu_angular_vel_cov_i;
+  imu_linear_acc_cov_i_ = imu_linear_acc_cov_i;
+
+  global_quat_b_ = global_quat_i_ * base_quat_i_.conjugate();
+  global_quat_b_.normalize();
 }
 
-void StateEstimateBase::updateAngular(const vector3_t& zyx, const vector_t& angular_vel) {
-  rbd_state_.segment<3>(0) = zyx;
-  rbd_state_.segment<3>(cm_info_.generalizedCoordinatesNum) = angular_vel;
+void StateEstimateBase::updateAngular(const vector3_t& global_rpy_b, const vector_t& global_angular_vel_b) {
+  rbd_state_.segment<3>(0) = global_rpy_b;
+  rbd_state_.segment<3>(cm_info_.generalizedCoordinatesNum) = global_angular_vel_b;
 }
 
-void StateEstimateBase::updateLinear(const vector_t& pos, const vector_t& linear_vel) {
-  rbd_state_.segment<3>(3) = pos;
-  rbd_state_.segment<3>(cm_info_.generalizedCoordinatesNum + 3) = linear_vel;
+void StateEstimateBase::updateLinear(const vector_t& global_xyz_b, const vector_t& global_linear_vel_b) {
+  rbd_state_.segment<3>(3) = global_xyz_b;
+  rbd_state_.segment<3>(cm_info_.generalizedCoordinatesNum + 3) = global_linear_vel_b;
 }
 
 void StateEstimateBase::publishMsgs(const nav_msgs::msg::Odometry& odom) {

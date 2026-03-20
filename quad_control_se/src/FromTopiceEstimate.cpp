@@ -54,7 +54,7 @@ vector_t FromTopicStateEstimate::update(const rclcpp::Time& /*time*/, const rclc
   }
   const auto& odom = *odom_ptr;
 
-  updateAngular(quatToZyx(Eigen::Quaternion<scalar_t>(odom.pose.pose.orientation.w, odom.pose.pose.orientation.x,
+  updateAngular(quatToRpy(Eigen::Quaternion<scalar_t>(odom.pose.pose.orientation.w, odom.pose.pose.orientation.x,
                                                       odom.pose.pose.orientation.y, odom.pose.pose.orientation.z)),
                 vector3_t(odom.twist.twist.angular.x, odom.twist.twist.angular.y, odom.twist.twist.angular.z));
   updateLinear(vector3_t(odom.pose.pose.position.x, odom.pose.pose.position.y, odom.pose.pose.position.z),

@@ -91,11 +91,9 @@ vector_t LinearKalmanFilter::update(const rclcpp::Time& time, const rclcpp::Dura
   updateFilter(x_hat_, P_);
   updateLinear(x_hat_.head<3>(), x_hat_.segment<3>(3));
 
-  vector3_t zyx = quatToZyx(quat_) - zyx_offset_;
-  vector3_t angular_vel_global = getGlobalAngularVelocityFromEulerAnglesZyxDerivatives<scalar_t>(
-      zyx, 
-      getEulerAnglesZyxDerivativesFromLocalAngularVelocity<scalar_t>(quatToZyx(quat_), angular_vel_));
-  updateAngular(zyx, angular_vel_global);
+  vector3_t global_rpy_b = quatToRpy(global_quat_b_);
+  vector3_t global_angular_vel_b = global_quat_i_ * imu_angular_vel_i_;
+  updateAngular(global_rpy_b, global_angular_vel_b);
   
   auto odom = getOdomMsg();
   odom.header.stamp = time;
@@ -118,7 +116,12 @@ void LinearKalmanFilter::discretizeModel(const scalar_t dt, matrix_t& A, matrix_
 }
 
 void LinearKalmanFilter::updateInput(vector_t& u) {
-  u = getRotationMatrixFromZyxEulerAngles(quatToZyx(quat_)) * linear_acc_ + g_;
+  vector3_t base_linear_acc_i = base_quat_i_ * imu_linear_acc_i_;
+  vector3_t base_angular_vel_i = base_quat_i_ * imu_angular_vel_i_;
+  // ignore tangential acc
+  vector3_t base_centrifugal_acc_i = base_angular_vel_i.cross(base_angular_vel_i.cross(base_xyz_i_));
+  vector3_t base_linear_acc_b = base_linear_acc_i - base_centrifugal_acc_i ;
+  u = global_quat_b_ * base_linear_acc_b + g_;
 }
 
 void LinearKalmanFilter::updateObserve(vector_t& z) {
@@ -190,17 +193,29 @@ nav_msgs::msg::Odometry LinearKalmanFilter::getOdomMsg() {
   odom.pose.pose.position.x = x_hat_(0);
   odom.pose.pose.position.y = x_hat_(1);
   odom.pose.pose.position.z = x_hat_(2);
+  odom.pose.pose.orientation.x = global_quat_b_.x();
+  odom.pose.pose.orientation.y = global_quat_b_.y();
+  odom.pose.pose.orientation.z = global_quat_b_.z();
+  odom.pose.pose.orientation.w = global_quat_b_.w();
   
-  odom.pose.pose.orientation.w = quat_.w();
-  odom.pose.pose.orientation.x = quat_.x();
-  odom.pose.pose.orientation.y = quat_.y();
-  odom.pose.pose.orientation.z = quat_.z();
-  
-  vector3_t linear_vel_base = getRotationMatrixFromZyxEulerAngles(quatToZyx(quat_)).transpose() * x_hat_.segment<3>(3);
-  odom.twist.twist.linear.x = linear_vel_base.x();
-  odom.twist.twist.linear.y = linear_vel_base.y();
-  odom.twist.twist.linear.z = linear_vel_base.z();
-  
+  vector3_t base_linear_vel_b = global_quat_b_.conjugate() * x_hat_.segment<3>(3);
+  odom.twist.twist.linear.x = base_linear_vel_b.x();
+  odom.twist.twist.linear.y = base_linear_vel_b.y();
+  odom.twist.twist.linear.z = base_linear_vel_b.z();
+  vector3_t base_angular_vel_b = base_quat_i_ * imu_angular_vel_i_;
+  odom.twist.twist.angular.x = base_angular_vel_b.x();
+  odom.twist.twist.angular.y = base_angular_vel_b.y();
+  odom.twist.twist.angular.z = base_angular_vel_b.z();
+
+  matrix3_t base_linear_vel_cov_b = global_quat_b_.conjugate() * P_.block<3, 3>(3, 3) * global_quat_b_;
+  matrix3_t base_angular_vel_cov_b = base_quat_i_ * imu_angular_vel_cov_i_ * base_quat_i_.conjugate();
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 3; ++j) {
+      odom.twist.covariance[i * 6 + j] = base_linear_vel_cov_b(i, j);
+      odom.twist.covariance[(i + 3) * 6 + (j + 3)] = base_angular_vel_cov_b(i, j);
+    }
+  }
+
   return odom;
 }
 
