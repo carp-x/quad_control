@@ -50,7 +50,7 @@ Visualization Manager:
         Y: 0
         Z: 0
       Plane: XY
-      Plane Cell Count: 10
+      Plane Cell Count: 100
       Reference Frame: odom
       Value: true
     - Alpha: 0.4000000059604645
@@ -840,6 +840,13 @@ Visualization Manager:
         Value: /raisim_heightmap
       Use Rainbow: true
       Value: false
+    - Class: rviz_default_plugins/Axes
+      Enabled: true
+      Length: 1
+      Name: Axes
+      Radius: 0.10000000149011612
+      Reference Frame: <Fixed Frame>
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 238; 238; 238
@@ -883,26 +890,26 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz_default_plugins/Orbit
-      Distance: 1.4408528804779053
+      Class: rviz_default_plugins/ThirdPersonFollower
+      Distance: 14.548887252807617
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.09048306941986084
-        Y: 0.40693897008895874
-        Z: 0.4834378957748413
+        X: -0.1293657124042511
+        Y: -2.4637973308563232
+        Z: 0
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.4653983414173126
+      Pitch: 1.5697963237762451
       Target Frame: <Fixed Frame>
-      Value: Orbit (rviz_default_plugins)
-      Yaw: 2.0185961723327637
+      Value: ThirdPersonFollower (rviz_default_plugins)
+      Yaw: -1.5707963705062866
     Saved: ~
 Window Geometry:
   Displays:
