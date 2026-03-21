@@ -18,9 +18,18 @@ public:
   virtual void onInitialize() override;
 
 protected Q_SLOTS:
-  void sendStart() { sendCommand("start"); }
-  void sendStop() { sendCommand("stop"); }
-  void sendTrot() { sendCommand("trot"); }
+  void sendStance()    { sendCommand("stance"); }
+  void sendTrot()      { sendCommand("trot"); }
+  void sendSTrot()     { sendCommand("standing_trot"); }
+  void sendFTrot()     { sendCommand("flying_trot"); }
+  void sendPace()      { sendCommand("pace"); }
+  void sendSPace()     { sendCommand("standing_pace"); }
+  void sendDWalk()     { sendCommand("dynamic_walk"); }
+  void sendSWalk()     { sendCommand("static_walk"); }
+  void sendAmble()     { sendCommand("amble"); }
+  void sendLindyhop()  { sendCommand("lindyhop"); }
+  void sendSkipping()  { sendCommand("skipping"); }
+  void sendPawup()     { sendCommand("pawup"); }
 
 protected:
   void sendCommand(const std::string & cmd);
