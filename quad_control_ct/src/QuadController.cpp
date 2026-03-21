@@ -209,13 +209,7 @@ controller_interface::return_type QuadController::update(const rclcpp::Time& tim
   vector_t pos_des = centroidal_model::getJointAngles(optimized_state, quad_interface_->getCentroidalModelInfo());
   vector_t vel_des = centroidal_model::getJointVelocities(optimized_input, quad_interface_->getCentroidalModelInfo());
   if (delay_expired_) {
-    for (size_t i = 0; i < quad_interface_->getCentroidalModelInfo().actuatedDofNum; ++i) {
-      (void)joint_handles_[i].pos_des.get().set_value(pos_des(i));
-      (void)joint_handles_[i].vel_des.get().set_value(vel_des(i));
-      (void)joint_handles_[i].ff.get().set_value(ff(i));
-      (void)joint_handles_[i].kp.get().set_value(0.0);
-      (void)joint_handles_[i].kd.get().set_value(3.0);
-    }  
+    setCommand(ff, pos_des, vel_des, kp_, kd_);
   }
 
   auto observation_msg = ros_msg_conversions::createObservationMsg(current_observation_);
@@ -674,26 +668,12 @@ void QuadController::updateStateEstimation(const rclcpp::Time& time,
   vector3_t angular_vel, linear_acc;
   matrix3_t ori_cov, angular_vel_cov, linear_acc_cov;
 
-  for (size_t i = 0; i < joint_handles_.size(); ++i) {
-    joint_pos(i) = joint_handles_[i].position.get().get_optional().value();
-    joint_vel(i) = joint_handles_[i].velocity.get().get_optional().value();
-  }
-  for (size_t i = 0; i < ft_handles_.size(); ++i) {
-    contact_flag[i] = ft_handles_[i].incontact();
-  }
-  auto& ih = imu_handles_[0];
-  for (size_t i = 0; i < 4; ++i) {
-    quat.coeffs()(i) = ih.ori[i].get().get_optional().value();
-  }
-  for (size_t i = 0; i < 3; ++i) {
-    angular_vel(i) = ih.angular_vel[i].get().get_optional().value();
-    linear_acc(i) = ih.linear_acc[i].get().get_optional().value();
-  }
-  for (size_t i = 0; i < 9; ++i) {
-    ori_cov(i) = ih.ori_cov[i].get().get_optional().value();
-    angular_vel_cov(i) = ih.angular_vel_cov[i].get().get_optional().value();
-    linear_acc_cov(i) = ih.linear_acc_cov[i].get().get_optional().value();
-  }
+  getState(joint_pos, joint_vel, 
+           contact_flag, 
+           quat, 
+           angular_vel, linear_acc,
+           ori_cov, 
+           angular_vel_cov, linear_acc_cov);
 
   state_estimate_->updateJointStates(joint_pos, joint_vel);
   state_estimate_->updateContact(contact_flag);
@@ -780,6 +760,49 @@ void QuadController::printPinocchioMapping() {
                   model.joints[i].nq());
   }
   RCLCPP_INFO(logger, "--------------------------------------------------");
+}
+
+
+void QuadController::getState(
+    vector_t& joint_pos, vector_t& joint_vel, 
+    contact_flag_t& contact_flag, 
+    Eigen::Quaternion<scalar_t>& quat, 
+    vector3_t& angular_vel, vector3_t& linear_acc,
+    matrix3_t& ori_cov, 
+    matrix3_t& angular_vel_cov, matrix3_t& linear_acc_cov) {
+  //
+  for (size_t i = 0; i < joint_handles_.size(); ++i) {
+    joint_pos(i) = joint_handles_[i].position.get().get_optional().value();
+    joint_vel(i) = joint_handles_[i].velocity.get().get_optional().value();
+  }
+  for (size_t i = 0; i < ft_handles_.size(); ++i) {
+    contact_flag[i] = ft_handles_[i].incontact();
+  }
+  auto& ih = imu_handles_[0];
+  for (size_t i = 0; i < 4; ++i) {
+    quat.coeffs()(i) = ih.ori[i].get().get_optional().value();
+  }
+  for (size_t i = 0; i < 3; ++i) {
+    angular_vel(i) = ih.angular_vel[i].get().get_optional().value();
+    linear_acc(i) = ih.linear_acc[i].get().get_optional().value();
+  }
+  for (size_t i = 0; i < 9; ++i) {
+    ori_cov(i) = ih.ori_cov[i].get().get_optional().value();
+    angular_vel_cov(i) = ih.angular_vel_cov[i].get().get_optional().value();
+    linear_acc_cov(i) = ih.linear_acc_cov[i].get().get_optional().value();
+  }
+}
+
+
+void QuadController::setCommand(const vector_t& ff, const vector_t& pos_des, const vector_t& vel_des,
+                                double kp, double kd) {
+  for (size_t i = 0; i < quad_interface_->getCentroidalModelInfo().actuatedDofNum; ++i) {
+    (void)joint_handles_[i].pos_des.get().set_value(pos_des(i));
+    (void)joint_handles_[i].vel_des.get().set_value(vel_des(i));
+    (void)joint_handles_[i].ff.get().set_value(ff(i));
+    (void)joint_handles_[i].kp.get().set_value(kp);
+    (void)joint_handles_[i].kd.get().set_value(kd);
+  } 
 }
 
 

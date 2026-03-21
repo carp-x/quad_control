@@ -154,6 +154,15 @@ class QuadController : public controller_interface::ControllerInterface {
   virtual void setupPub();
   virtual void setupVisualization();
   virtual void printPinocchioMapping();
+
+  void getState(vector_t& joint_pos, vector_t& joint_vel, 
+                contact_flag_t& contact_flag, 
+                Eigen::Quaternion<scalar_t>& quat, 
+                vector3_t& angular_vel, vector3_t& linear_acc,
+                matrix3_t& ori_cov, 
+                matrix3_t& angular_vel_cov, matrix3_t& linear_acc_cov);
+  void setCommand(const vector_t& ff, const vector_t& pos_des, const vector_t& vel_des,
+                  double kp, double kd);
   void printMpcOptimizedState(const vector_t& optimized_state, int period_ms);
   void printMpcOptimizedCInput(const vector_t& optimized_input, int period_ms);
   void printWbcOptimizedToque(const vector_t& ff, int period_ms);
@@ -190,16 +199,19 @@ class QuadController : public controller_interface::ControllerInterface {
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_lifecycle_;
   rclcpp::Node::SharedPtr node_base_;
 
+  bool delay_expired_;
+  rclcpp::Time start_time_;
+  const double delay_duration_ = 5.0;
+  const int print_period_ms_ = 1000;
+
+  const double kp_ = 0.0;
+  const double kd_ = 3.0;
+
  private:
   std::thread mpc_thread_;
   std::atomic_bool controller_running_{}, mpc_running_{};
   benchmark::RepeatedTimer mpc_timer_;
   benchmark::RepeatedTimer wbc_timer_;
-
-  bool delay_expired_;
-  rclcpp::Time start_time_;
-  const double delay_duration_ = 5.0;
-  const int print_period_ms_ = 1000;
 };
 
 class QuadCheaterController : public QuadController {
