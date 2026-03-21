@@ -82,7 +82,7 @@ controller_interface::CallbackReturn QuadController::on_configure(const rclcpp_l
     setupMrt();
     setupWbc(task_file_wbc_);
     setupSafetyChecker();
-    setupStateEstimation(task_file_);
+    setupStateEstimation();
     setupRbd();
     setupSub();
     setupPub();
@@ -126,14 +126,21 @@ controller_interface::CallbackReturn QuadController::on_deactivate(const rclcpp_
   ft_handles_.clear();
   imu_handles_.clear();
 
-  std::cerr << "########################################################################";
-  std::cerr << "\n### MPC Benchmarking";
-  std::cerr << "\n###   Maximum : " << mpc_timer_.getMaxIntervalInMilliseconds() << "[ms].";
-  std::cerr << "\n###   Average : " << mpc_timer_.getAverageInMilliseconds() << "[ms]." << std::endl;
-  std::cerr << "########################################################################";
-  std::cerr << "\n### WBC Benchmarking";
-  std::cerr << "\n###   Maximum : " << wbc_timer_.getMaxIntervalInMilliseconds() << "[ms].";
-  std::cerr << "\n###   Average : " << wbc_timer_.getAverageInMilliseconds() << "[ms].";
+  RCLCPP_INFO(node_lifecycle_->get_logger(), 
+    "\n########################################################################"
+    "\n### MPC Benchmarking"
+    "\n###   Maximum : %.3f [ms]."
+    "\n###   Average : %.3f [ms]."
+    "\n########################################################################"
+    "\n### WBC Benchmarking"
+    "\n###   Maximum : %.3f [ms]."
+    "\n###   Average : %.3f [ms]."
+    "\n########################################################################",
+    mpc_timer_.getMaxIntervalInMilliseconds(),
+    mpc_timer_.getAverageInMilliseconds(),
+    wbc_timer_.getMaxIntervalInMilliseconds(),
+    wbc_timer_.getAverageInMilliseconds()
+  );
 
   RCLCPP_INFO(node_lifecycle_->get_logger(), "Controller deactivated.");
   return controller_interface::CallbackReturn::SUCCESS;
@@ -648,7 +655,7 @@ void QuadController::setupSafetyChecker() {
 }
 
 
-void QuadController::setupStateEstimation(const std::string& task_file) {
+void QuadController::setupStateEstimation() {
   state_estimate_ = std::make_shared<LinearKalmanFilter>(node_lifecycle_,
                                                          quad_interface_->getPinocchioInterface(),
                                                          quad_interface_->getCentroidalModelInfo(), 
@@ -837,7 +844,7 @@ void QuadController::printWbcOptimizedToque(const vector_t& ff, int period_ms) {
 }
 
 
-void QuadCheaterController::setupStateEstimation(const std::string& task_file) {
+void QuadCheaterController::setupStateEstimation() {
   state_estimate_ = std::make_shared<FromTopicStateEstimate>(node_lifecycle_,
                                                             quad_interface_->getPinocchioInterface(),
                                                             quad_interface_->getCentroidalModelInfo(), 

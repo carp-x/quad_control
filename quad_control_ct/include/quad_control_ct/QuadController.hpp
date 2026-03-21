@@ -146,7 +146,7 @@ class QuadController : public controller_interface::ControllerInterface {
   virtual void activateMrt();
   virtual void setupWbc(const std::string& task_file_wbc);
   virtual void setupSafetyChecker();
-  virtual void setupStateEstimation(const std::string& task_file);
+  virtual void setupStateEstimation();
   virtual void updateStateEstimation(const rclcpp::Time& time, 
                                      const rclcpp::Duration& period);
   virtual void setupRbd();
@@ -204,7 +204,7 @@ class QuadController : public controller_interface::ControllerInterface {
 
 class QuadCheaterController : public QuadController {
  protected:
-  void setupStateEstimation(const std::string& task_file) override;
+  void setupStateEstimation() override;
 };
 
 }  // namespace quad_control
