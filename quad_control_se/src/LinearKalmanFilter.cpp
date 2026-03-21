@@ -85,16 +85,16 @@ LinearKalmanFilter::LinearKalmanFilter(std::shared_ptr<rclcpp_lifecycle::Lifecyc
 }
 
 vector_t LinearKalmanFilter::update(const rclcpp::Time& time, const rclcpp::Duration& period) {
+  
+  vector3_t global_rpy_b = quatToRpy(global_quat_b_);
+  vector3_t global_angular_vel_b = global_quat_i_ * imu_angular_vel_i_;
+  updateAngular(global_rpy_b, global_angular_vel_b);
 
   discretizeModel(period.seconds(), A_, B_, Q_);
   updateInput(u_);
   updateObserve(z_);
   updateFilter(x_hat_, P_);
   updateLinear(x_hat_.head<3>(), x_hat_.segment<3>(3));
-
-  vector3_t global_rpy_b = quatToRpy(global_quat_b_);
-  vector3_t global_angular_vel_b = global_quat_i_ * imu_angular_vel_i_;
-  updateAngular(global_rpy_b, global_angular_vel_b);
   
   auto odom = getOdomMsg();
   odom.header.stamp = time;

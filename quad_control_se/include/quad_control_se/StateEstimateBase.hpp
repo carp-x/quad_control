@@ -69,7 +69,7 @@ class StateEstimateBase {
   
   void updateContact(contact_flag_t contact_flag) { contact_flag_ = std::move(contact_flag); }
   
-  void updateImu(const Eigen::Quaternion<scalar_t>& global_quat_i,
+  void updateImu(const Eigen::Quaternion<scalar_t>& global_quat,
                  const vector3_t& imu_angular_vel_i,
                  const vector3_t& imu_linear_acc_i,
                  const matrix3_t& imu_ori_cov_i,
@@ -92,8 +92,8 @@ class StateEstimateBase {
   std::unique_ptr<PinocchioEndEffectorKinematics> ee_kinematics_;
   
   // Internal States
-  const vector3_t base_rpy_i_{0.00, 0.00, 1.57};
-  const vector3_t base_xyz_i_{0.25, 0.01, 0.05};
+  const vector3_t base_rpy_i_{0.00, 0.00, 0.00};
+  const vector3_t base_xyz_i_{0.00, 0.00, 0.00};
   Eigen::Quaternion<scalar_t> base_quat_i_ = Eigen::Quaternion<scalar_t>::Identity();
   vector_t rbd_state_;
   contact_flag_t contact_flag_{};

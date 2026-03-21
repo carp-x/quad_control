@@ -57,21 +57,21 @@ void StateEstimateBase::updateJointStates(const vector_t& joint_pos, const vecto
   rbd_state_.segment(6 + cm_info_.generalizedCoordinatesNum, cm_info_.actuatedDofNum) = joint_vel;
 }
 
-void StateEstimateBase::updateImu(const Eigen::Quaternion<scalar_t>& global_quat_i,
+void StateEstimateBase::updateImu(const Eigen::Quaternion<scalar_t>& global_quat,
                                   const vector3_t& imu_angular_vel_i,
                                   const vector3_t& imu_linear_acc_i,
                                   const matrix3_t& imu_ori_cov_i,
                                   const matrix3_t& imu_angular_vel_cov_i,
                                   const matrix3_t& imu_linear_acc_cov_i) {
-  global_quat_i_ = global_quat_i;
+  global_quat_b_ = global_quat;
   imu_angular_vel_i_ = imu_angular_vel_i;
   imu_linear_acc_i_ = imu_linear_acc_i;
   imu_ori_cov_i_ = imu_ori_cov_i;
   imu_angular_vel_cov_i_ = imu_angular_vel_cov_i;
   imu_linear_acc_cov_i_ = imu_linear_acc_cov_i;
 
-  global_quat_b_ = global_quat_i_ * base_quat_i_.conjugate();
-  global_quat_b_.normalize();
+  global_quat_i_ = global_quat_b_ * base_quat_i_;
+  global_quat_i_.normalize();
 }
 
 void StateEstimateBase::updateAngular(const vector3_t& global_rpy_b, const vector_t& global_angular_vel_b) {

@@ -30,7 +30,7 @@
     <xacro:preserve_fixed_joint joint_name="LH_shank_fixed_LH_FOOT"/>
     <xacro:preserve_fixed_joint joint_name="RH_shank_fixed_RH_FOOT"/>
 
-    <gazebo reference="imu_link">
+    <gazebo reference="base">
         <sensor name="base_imu" type="imu">
             <always_on>1</always_on>
             <update_rate>500</update_rate>
