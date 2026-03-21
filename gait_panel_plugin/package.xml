@@ -4,8 +4,10 @@
   <name>gait_panel_plugin</name>
   <version>0.0.0</version>
   <description>TODO</description>
-  <maintainer email="user@todo.todo">user</maintainer>
+  <maintainer email="liyuxin_2016@163.com">Yuxin Li</maintainer>
+
   <license>BSD-3</license>
+  <author>Yuxin Li</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
