@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org" schematypens="http://www.w3.org"?>
+<package format="3">
+  <name>gait_panel_plugin</name>
+  <version>0.0.0</version>
+  <description>TODO</description>
+  <maintainer email="user@todo.todo">user</maintainer>
+  <license>BSD-3</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>rviz_common</depend>
+  <depend>pluginlib</depend>
+  <depend>std_msgs</depend>
+
+  <depend>qtbase5-dev</depend>
+  <depend>libqt6-widgets</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+    <rviz_common plugin="${prefix}/plugins.xml"/>
+  </export>
+</package>

@@ -1,0 +1,9 @@
+<library path="gait_panel_plugin">
+  <class name="gait_panel_plugin/GaitPanel"
+         type="gait_panel_plugin::GaitPanel"
+         base_class_type="rviz_common::Panel">
+    <description>
+      TODO
+    </description>
+  </class>
+</library>
