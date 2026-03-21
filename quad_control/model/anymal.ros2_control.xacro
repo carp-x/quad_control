@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org">
+
+    <ros2_control name="AnymalCGzSimHardware" type="system">
+        <hardware>
+            <plugin>quad_control/QuadGzSimSystem</plugin>
+        </hardware>
+
+        <xacro:macro name="hybrid_joint_interface" params="name">
+            <joint name="${name}">
+                <state_interface name="position"/>
+                <state_interface name="velocity">
+                    <!-- <param name="damping_frequency">100.0</param>
+                    <param name="damping_intensity">1.0</param> -->
+                </state_interface>
+                <state_interface name="effort"/>
+
+                <command_interface name="pos_des"/>
+                <command_interface name="vel_des">
+                    <!-- <param name="damping_frequency">100.0</param>
+                    <param name="damping_intensity">1.0</param> -->
+                </command_interface>
+                <command_interface name="ff"/>
+                <command_interface name="kp"/>
+                <command_interface name="kd"/>
+            </joint>
+        </xacro:macro>
+
+        <xacro:hybrid_joint_interface name="LF_HAA_LF_HIP"/>
+        <xacro:hybrid_joint_interface name="LF_HFE_LF_THIGH"/>
+        <xacro:hybrid_joint_interface name="LF_KFE_LF_SHANK"/>
+        <xacro:hybrid_joint_interface name="LH_HAA_LH_HIP"/>
+        <xacro:hybrid_joint_interface name="LH_HFE_LH_THIGH"/>
+        <xacro:hybrid_joint_interface name="LH_KFE_LH_SHANK"/>
+        <xacro:hybrid_joint_interface name="RF_HAA_RF_HIP"/>
+        <xacro:hybrid_joint_interface name="RF_HFE_RF_THIGH"/>
+        <xacro:hybrid_joint_interface name="RF_KFE_RF_SHANK"/>
+        <xacro:hybrid_joint_interface name="RH_HAA_RH_HIP"/>
+        <xacro:hybrid_joint_interface name="RH_HFE_RH_THIGH"/>
+        <xacro:hybrid_joint_interface name="RH_KFE_RH_SHANK"/>
+
+        <sensor name="base_imu">
+            <state_interface name="orientation.x"/>
+            <state_interface name="orientation.y"/>
+            <state_interface name="orientation.z"/>
+            <state_interface name="orientation.w"/>
+            <state_interface name="angular_velocity.x"/>
+            <state_interface name="angular_velocity.y"/>
+            <state_interface name="angular_velocity.z"/>
+            <state_interface name="linear_acceleration.x"/>
+            <state_interface name="linear_acceleration.y"/>
+            <state_interface name="linear_acceleration.z"/>
+
+            <xacro:macro name="covariance_generator" params="prefix">
+                <state_interface name="${prefix}.0"/>
+                <state_interface name="${prefix}.1"/>
+                <state_interface name="${prefix}.2"/>
+                <state_interface name="${prefix}.3"/>
+                <state_interface name="${prefix}.4"/>
+                <state_interface name="${prefix}.5"/>
+                <state_interface name="${prefix}.6"/>
+                <state_interface name="${prefix}.7"/>
+                <state_interface name="${prefix}.8"/>
+            </xacro:macro>
+            <xacro:covariance_generator prefix="orientation_covariance"/>
+            <xacro:covariance_generator prefix="angular_velocity_covariance"/>
+            <xacro:covariance_generator prefix="linear_acceleration_covariance"/>
+
+            <param name="orientation_covariance_diagonal">0.0012</param>
+            <param name="angular_velocity_covariance_diagonal">0.0004</param>
+            <param name="linear_acceleration_covariance_diagonal">0.01</param>
+        </sensor>
+
+        <xacro:macro name="foot_contact_interface" params="prefix">
+            <sensor name="${prefix}_ft">
+            <!-- <state_interface name="force.x"/>
+            <state_interface name="force.y"/>
+            <state_interface name="force.z"/>
+            <state_interface name="torque.x"/>
+            <state_interface name="torque.y"/>
+            <state_interface name="torque.z"/> -->
+            <state_interface name="contact"/>
+            </sensor>
+        </xacro:macro>
+        
+        <xacro:foot_contact_interface prefix="LF"/>
+        <xacro:foot_contact_interface prefix="RF"/>
+        <xacro:foot_contact_interface prefix="LH"/>
+        <xacro:foot_contact_interface prefix="RH"/>
+
+    </ros2_control>
+
+</robot>

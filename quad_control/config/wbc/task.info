@@ -1,0 +1,25 @@
+; Whole body control
+torqueLimitsTask
+{
+    (0,0)  80.0     ; HAA
+    (1,0)  80.0     ; HFE
+    (2,0)  80.0     ; KFE
+}
+
+frictionConeTask
+{
+  frictionCoefficient    0.5
+}
+
+swingLegTask
+{
+    kp                   350
+    kd                   37
+}
+
+weight
+{
+    swingLeg        100
+    baseAccel       1
+    contactForce    0.01
+}

@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org">
+
+    <gazebo>
+        <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <parameters>$(find quad_control_gz)/config/config.yaml</parameters>
+        </plugin>
+        <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu">
+        </plugin>
+        <plugin filename="libgz-sim8-forcetorque-system.so" name="gz::sim::systems::ForceTorque">
+        </plugin>
+        <plugin filename="gz-sim-odometry-publisher-system" name="gz::sim::systems::OdometryPublisher">
+            <odom_topic>/ground_truth/state</odom_topic>
+            <dimensions>3</dimensions>
+            <update_rate>500</update_rate>
+            <!-- <tf_topic>/tf</tf_topic>
+            <odom_frame>odom</odom_frame>
+            <robot_base_frame>base</robot_base_frame> -->
+        </plugin>
+    </gazebo>
+
+    <xacro:macro name="preserve_fixed_joint" params="joint_name">
+        <gazebo reference="${joint_name}">
+        <preserveFixedJoint>true</preserveFixedJoint>
+        </gazebo>
+    </xacro:macro>
+    <xacro:preserve_fixed_joint joint_name="imu_joint"/>
+    <xacro:preserve_fixed_joint joint_name="LF_shank_fixed_LF_FOOT"/>
+    <xacro:preserve_fixed_joint joint_name="RF_shank_fixed_RF_FOOT"/>
+    <xacro:preserve_fixed_joint joint_name="LH_shank_fixed_LH_FOOT"/>
+    <xacro:preserve_fixed_joint joint_name="RH_shank_fixed_RH_FOOT"/>
+
+    <gazebo reference="base">
+        <sensor name="base_imu" type="imu">
+            <always_on>1</always_on>
+            <update_rate>500</update_rate>
+            <topic>imu</topic>
+            <visualize>true</visualize>
+        </sensor>
+    </gazebo>
+
+    <xacro:macro name="foot_ft" params="prefix">
+        <gazebo reference="${prefix}">
+        <sensor name="${prefix[0:2]}_ft" type="force_torque">
+            <always_on>true</always_on>
+            <update_rate>500</update_rate>
+            <topic>${prefix[0:2]}/ft</topic>
+            <visualize>true</visualize>
+            <force_torque>
+                <frame>child</frame>
+                <measure_direction>child_to_parent</measure_direction>
+            </force_torque>
+        </sensor>
+        </gazebo>
+    </xacro:macro>
+
+    <xacro:foot_ft prefix="LF_shank_fixed_LF_FOOT"/>
+    <xacro:foot_ft prefix="RF_shank_fixed_RF_FOOT"/>
+    <xacro:foot_ft prefix="LH_shank_fixed_LH_FOOT"/>
+    <xacro:foot_ft prefix="RH_shank_fixed_RH_FOOT"/>
+
+</robot>
