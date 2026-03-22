@@ -63,12 +63,5 @@ install(DIRECTORY
   include/
   DESTINATION include
 )
-install(DIRECTORY
-  config
-  launch
-  urdf
-  worlds
-  DESTINATION share/${PROJECT_NAME}/
-)
 
 ament_package()

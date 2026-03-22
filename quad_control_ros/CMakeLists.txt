@@ -132,9 +132,6 @@ install(TARGETS
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION include/${PROJECT_NAME}
 )
-install(DIRECTORY launch rviz
-  DESTINATION share/${PROJECT_NAME}
-)
 
 install(
   EXPORT export_${PROJECT_NAME}

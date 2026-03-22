@@ -8,6 +8,7 @@ install(DIRECTORY
   rviz
   config
   model
+  worlds
   DESTINATION share/${PROJECT_NAME}
 )
 
