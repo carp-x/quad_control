@@ -3,7 +3,7 @@
 
     <gazebo>
         <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
-        <parameters>$(find quad_control_gz)/config/config.yaml</parameters>
+        <parameters>$(find quad_control)/config/gazebo/gazebo_sim.yaml</parameters>
         </plugin>
         <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu">
         </plugin>

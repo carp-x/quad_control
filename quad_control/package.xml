@@ -7,6 +7,8 @@
   <maintainer email="liyuxin_2016@163.com">l</maintainer>
   <license>TODO: License declaration</license>
 
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
   <exec_depend>gait_panel_plugin</exec_depend>
   <exec_depend>quad_control_ct</exec_depend>
   <exec_depend>quad_control_gz</exec_depend>
@@ -16,6 +18,6 @@
   <exec_depend>quad_control_wbc</exec_depend>
 
   <export>
-    <build_type>ament_python</build_type>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>

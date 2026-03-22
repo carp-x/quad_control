@@ -7,7 +7,6 @@ from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
-    rviz_config_file = get_package_share_directory('quad_control') + "/rviz/legged_robot.rviz"
     ld = launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument(
             name='terminal_prefix',

@@ -19,7 +19,7 @@ def generate_launch_description():
         ),
         launch.actions.DeclareLaunchArgument(
             name='multiplot',
-            default_value='false'
+            default_value='true'
         ),
         launch.actions.DeclareLaunchArgument(
             name='terminal_prefix',

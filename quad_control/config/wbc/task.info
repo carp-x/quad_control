@@ -13,8 +13,8 @@ frictionConeTask
 
 swingLegTask
 {
-    kp                   350
-    kd                   37
+    kp              350
+    kd              37
 }
 
 weight
