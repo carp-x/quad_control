@@ -31,12 +31,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <utility>
 #include <qpOASES.hpp>
 
-#include "quad_control_wbc/HoQp.h"
+#include "quad_control_wbc/HierarchicalQp.h"
 
 
 namespace quad_control {
 
-HoQp::HoQp(Task task, HoQp::HoQpPtr higherProblem) : task_(std::move(task)), higherProblem_(std::move(higherProblem)) {
+HierarchicalQp::HierarchicalQp(Task task, HierarchicalQp::HierarchicalQpPtr higherProblem) : task_(std::move(task)), higherProblem_(std::move(higherProblem)) {
   initVars();
   formulateProblem();
   solveProblem();
@@ -44,7 +44,7 @@ HoQp::HoQp(Task task, HoQp::HoQpPtr higherProblem) : task_(std::move(task)), hig
   stackSlackSolutions();
 }
 
-void HoQp::initVars() {
+void HierarchicalQp::initVars() {
   numSlackVars_ = task_.D().rows();
   hasEqConstraints_ = task_.A().rows() > 0;
   hasIneqConstraints_ = numSlackVars_ > 0;
@@ -74,14 +74,14 @@ void HoQp::initVars() {
   zeroNvNx_ = matrix_t::Zero(numSlackVars_, numDecisionVars_);
 }
 
-void HoQp::formulateProblem() {
+void HierarchicalQp::formulateProblem() {
   buildHMatrix();
   buildCVector();
   buildDMatrix();
   buildFVector();
 }
 
-void HoQp::solveProblem() {
+void HierarchicalQp::solveProblem() {
   auto qpProblem = qpOASES::QProblem(numDecisionVars_ + numSlackVars_, f_.size());
   qpOASES::Options options;
   options.setToMPC();
@@ -98,81 +98,83 @@ void HoQp::solveProblem() {
   slackVarsSolutions_ = qpSol.tail(numSlackVars_);
 }
 
-void HoQp::buildZMatrix() {
+void HierarchicalQp::buildZMatrix() {
   if (hasEqConstraints_) {
     assert((task_.A().cols() > 0));
     stackedZ_ = stackedZPrev_ * (task_.A() * stackedZPrev_).fullPivLu().kernel();
-  } else {
+  } 
+  else {
     stackedZ_ = stackedZPrev_;
   }
 }
 
-void HoQp::stackSlackSolutions() {
+void HierarchicalQp::stackSlackSolutions() {
   if (higherProblem_ != nullptr) {
     stackedSlackVars_ = Task::concatenateVectors(higherProblem_->getStackedSlackSolutions(), slackVarsSolutions_);
-  } else {
+  } 
+  else {
     stackedSlackVars_ = slackVarsSolutions_;
   }
 }
 
-void HoQp::buildHMatrix() {
+void HierarchicalQp::buildHMatrix() {
   matrix_t zTaTaz(numDecisionVars_, numDecisionVars_);
 
   if (hasEqConstraints_) {
-    // Make sure that all eigenvalues of A_t_A are non-negative, which could arise due to numerical issues
     matrix_t aCurrZPrev = task_.A() * stackedZPrev_;
     zTaTaz = aCurrZPrev.transpose() * aCurrZPrev + 1e-12 * matrix_t::Identity(numDecisionVars_, numDecisionVars_);
-    // This way of splitting up the multiplication is about twice as fast as multiplying 4 matrices
-  } else {
+  } 
+  else {
     zTaTaz.setZero();
   }
 
-  h_ = (matrix_t(numDecisionVars_ + numSlackVars_, numDecisionVars_ + numSlackVars_)  // clang-format off
+  h_ = (matrix_t(numDecisionVars_ + numSlackVars_, numDecisionVars_ + numSlackVars_)
             << zTaTaz, zeroNvNx_.transpose(),
-                zeroNvNx_, eyeNvNv_)  // clang-format on
+               zeroNvNx_, eyeNvNv_)
            .finished();
 }
 
-void HoQp::buildCVector() {
+void HierarchicalQp::buildCVector() {
   vector_t c = vector_t::Zero(numDecisionVars_ + numSlackVars_);
   vector_t zeroVec = vector_t::Zero(numSlackVars_);
 
   vector_t temp(numDecisionVars_);
   if (hasEqConstraints_) {
     temp = (task_.A() * stackedZPrev_).transpose() * (task_.A() * xPrev_ - task_.b());
-  } else {
+  } 
+  else {
     temp.setZero();
   }
 
   c_ = (vector_t(numDecisionVars_ + numSlackVars_) << temp, zeroVec).finished();
 }
 
-void HoQp::buildDMatrix() {
+void HierarchicalQp::buildDMatrix() {
   matrix_t stackedZero = matrix_t::Zero(numPrevSlackVars_, numSlackVars_);
 
   matrix_t dCurrZ;
   if (hasIneqConstraints_) {
     dCurrZ = task_.D() * stackedZPrev_;
-  } else {
+  } 
+  else {
     dCurrZ = matrix_t::Zero(0, numDecisionVars_);
   }
 
-  // NOTE: This is upside down compared to the paper,
-  // but more consistent with the rest of the algorithm
-  d_ = (matrix_t(2 * numSlackVars_ + numPrevSlackVars_, numDecisionVars_ + numSlackVars_)  // clang-format off
+  d_ = (matrix_t(2 * numSlackVars_ + numPrevSlackVars_, numDecisionVars_ + numSlackVars_)
             << zeroNvNx_, -eyeNvNv_,
                 stackedTasksPrev_.D() * stackedZPrev_, stackedZero,
-                dCurrZ, -eyeNvNv_)  // clang-format on
+                dCurrZ, -eyeNvNv_)
            .finished();
 }
 
-void HoQp::buildFVector() {
+void HierarchicalQp::buildFVector() {
   vector_t zeroVec = vector_t::Zero(numSlackVars_);
 
   vector_t fMinusDXPrev;
   if (hasIneqConstraints_) {
     fMinusDXPrev = task_.f() - task_.D() * xPrev_;
-  } else {
+  } 
+  else {
     fMinusDXPrev = vector_t::Zero(0);
   }
 

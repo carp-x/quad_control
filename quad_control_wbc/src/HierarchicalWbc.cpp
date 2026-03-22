@@ -28,7 +28,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#include "quad_control_wbc/HoQp.h"
+#include "quad_control_wbc/HierarchicalQp.h"
 #include "quad_control_wbc/HierarchicalWbc.h"
 
 
@@ -41,9 +41,9 @@ vector_t HierarchicalWbc::update(const vector_t& stateDesired, const vector_t& i
   Task task0 = formulateFloatingBaseEomTask() + formulateTorqueLimitsTask() + formulateFrictionConeTask() + formulateNoContactMotionTask();
   Task task1 = formulateBaseAccelTask(stateDesired, inputDesired, period) + formulateSwingLegTask();
   Task task2 = formulateContactForceTask(inputDesired);
-  HoQp hoQp(task2, std::make_shared<HoQp>(task1, std::make_shared<HoQp>(task0)));
+  HierarchicalQp hQp(task2, std::make_shared<HierarchicalQp>(task1, std::make_shared<HierarchicalQp>(task0)));
 
-  return hoQp.getSolutions();
+  return hQp.getSolutions();
 }
 
 }  // namespace quad_control

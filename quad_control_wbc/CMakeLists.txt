@@ -22,7 +22,7 @@ endif()
 add_library(${PROJECT_NAME} SHARED
   src/WbcBase.cpp
   src/WeightedWbc.cpp
-  src/HoQp.cpp
+  src/HierarchicalQp.cpp
   src/HierarchicalWbc.cpp
 )
 target_include_directories(${PROJECT_NAME}
@@ -78,7 +78,7 @@ ament_export_include_directories(include ${QPOASES_INCLUDE_DIRS})
 
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
-  ament_add_gtest(${PROJECT_NAME}_test test/HoQp_test.cpp)
+  ament_add_gtest(${PROJECT_NAME}_test test/HQp_test.cpp)
   target_link_libraries(${PROJECT_NAME}_test ${PROJECT_NAME})
 endif()
 

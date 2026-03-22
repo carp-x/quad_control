@@ -28,74 +28,44 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#pragma once
+#include <gtest/gtest.h>
 
-#include <memory>
+#include "quad_control_wbc/HierarchicalQp.h"
 
-#include "quad_control_wbc/Task.h"
+using namespace quad_control;
 
+TEST(HQP, twoTask) {
+  srand(0);
+  Task task0{matrix_t::Random(2, 4),
+             vector_t::Ones(2),  
+             matrix_t::Random(2, 4),
+             vector_t::Ones(2)};
+  Task task1{matrix_t::Ones(2, 4),
+             task0.b(),  
+             task0.D(),
+             task0.f()};
 
-namespace quad_control {
+  std::shared_ptr<HierarchicalQp> hQp0 = std::make_shared<HierarchicalQp>(task0);
+  std::shared_ptr<HierarchicalQp> hQp1 = std::make_shared<HierarchicalQp>(task1, hQp0);
 
-class HoQp {
- public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  vector_t x0 = hQp0->getSolutions(), x_1 = hQp1->getSolutions();
+  vector_t slack0 = hQp0->getStackedSlackSolutions(), slack_1 = hQp1->getStackedSlackSolutions();
 
-  using HoQpPtr = std::shared_ptr<HoQp>;
+  std::cout << x0.transpose() << std::endl;
+  std::cout << x_1.transpose() << std::endl;
+  std::cout << slack0.transpose() << std::endl;
+  std::cout << slack_1.transpose() << std::endl;
 
-  explicit HoQp(const Task& task) : HoQp(task, nullptr){};
+  scalar_t prec = 1e-6;
 
-  HoQp(Task task, HoQpPtr higherProblem);
-
-  vector_t getSolutions() const {
-    vector_t x = xPrev_ + stackedZPrev_ * decisionVarsSolutions_;
-    return x;
+  if (slack0.isApprox(vector_t::Zero(slack0.size()))) EXPECT_TRUE((task0.A() * x0).isApprox(task0.b(), prec));
+  if (slack_1.isApprox(vector_t::Zero(slack_1.size()))) {
+    EXPECT_TRUE((task1.A() * x_1).isApprox(task1.b(), prec));
+    EXPECT_TRUE((task0.A() * x_1).isApprox(task0.b(), prec));
   }
 
-  Task getStackedTasks() const { return stackedTasks_; }
-
-  matrix_t getStackedZMatrix() const { return stackedZ_; }
-
-  vector_t getStackedSlackSolutions() const { return stackedSlackVars_; }
-
-  size_t getSlackedNumVars() const { return stackedTasks_.D().rows(); }
-
- private:
-  void initVars();
-  void formulateProblem();
-  void solveProblem();
-  void buildZMatrix();
-  void stackSlackSolutions();
-
-  void buildHMatrix();
-  void buildCVector();
-  void buildDMatrix();
-  void buildFVector();
-
-  Task task_;
-  size_t numSlackVars_{};
-  bool hasEqConstraints_{};
-  bool hasIneqConstraints_{};
-
-  HoQpPtr higherProblem_;
-  Task stackedTasksPrev_;
-  vector_t xPrev_;
-  matrix_t stackedZPrev_;
-  vector_t stackedSlackSolutionsPrev_;
-
-  size_t numDecisionVars_{};
-  size_t numPrevSlackVars_{};
-
-  Task stackedTasks_;
-  matrix_t stackedZ_;
-
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> h_, d_;
-  vector_t c_, f_;
-  vector_t decisionVarsSolutions_, slackVarsSolutions_;
-  vector_t stackedSlackVars_;
-
-  matrix_t eyeNvNv_;
-  matrix_t zeroNvNx_;
-};
-
-}  // namespace quad_control
+  vector_t y = task0.D() * x0;
+  for (int i = 0; i < y.size(); ++i) EXPECT_TRUE(y[i] <= task0.f()[i] + slack0[i]);
+  y = task1.D() * x_1;
+  for (int i = 0; i < y.size(); ++i) EXPECT_TRUE(y[i] <= task1.f()[i] + slack_1[i]);
+}
