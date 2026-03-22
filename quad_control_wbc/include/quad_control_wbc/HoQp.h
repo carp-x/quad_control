@@ -36,7 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 namespace quad_control {
-// Hierarchical Optimization Quadratic Program
+
 class HoQp {
  public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -47,16 +47,16 @@ class HoQp {
 
   HoQp(Task task, HoQpPtr higherProblem);
 
-  matrix_t getStackedZMatrix() const { return stackedZ_; }
-
-  Task getStackedTasks() const { return stackedTasks_; }
-
-  vector_t getStackedSlackSolutions() const { return stackedSlackVars_; }
-
   vector_t getSolutions() const {
     vector_t x = xPrev_ + stackedZPrev_ * decisionVarsSolutions_;
     return x;
   }
+
+  Task getStackedTasks() const { return stackedTasks_; }
+
+  matrix_t getStackedZMatrix() const { return stackedZ_; }
+
+  vector_t getStackedSlackSolutions() const { return stackedSlackVars_; }
 
   size_t getSlackedNumVars() const { return stackedTasks_.D().rows(); }
 
@@ -64,29 +64,36 @@ class HoQp {
   void initVars();
   void formulateProblem();
   void solveProblem();
+  void buildZMatrix();
+  void stackSlackSolutions();
 
   void buildHMatrix();
   void buildCVector();
   void buildDMatrix();
   void buildFVector();
 
-  void buildZMatrix();
-  void stackSlackSolutions();
+  Task task_;
+  bool hasEqConstraints_{};
+  bool hasIneqConstraints_{};
+  size_t numSlackVars_{};
 
-  Task task_, stackedTasksPrev_, stackedTasks_;
   HoQpPtr higherProblem_;
+  Task stackedTasksPrev_;
+  vector_t xPrev_;
+  matrix_t stackedZPrev_;
+  vector_t stackedSlackSolutionsPrev_;
 
-  bool hasEqConstraints_{}, hasIneqConstraints_{};
-  size_t numSlackVars_{}, numDecisionVars_{};
-  matrix_t stackedZPrev_, stackedZ_;
-  vector_t stackedSlackSolutionsPrev_, xPrev_;
+  size_t numDecisionVars_{};
   size_t numPrevSlackVars_{};
+
+  Task stackedTasks_;
+  matrix_t stackedZ_;
 
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> h_, d_;
   vector_t c_, f_;
-  vector_t stackedSlackVars_, slackVarsSolutions_, decisionVarsSolutions_;
+  vector_t decisionVarsSolutions_, slackVarsSolutions_;
+  vector_t stackedSlackVars_;
 
-  // Convenience matrices that are used multiple times
   matrix_t eyeNvNv_;
   matrix_t zeroNvNx_;
 };
