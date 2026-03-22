@@ -35,6 +35,21 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace quad_control {
 
+void WeightedWbc::loadTasksSetting(const std::string& taskFile, bool verbose) {
+  WbcBase::loadTasksSetting(taskFile, verbose);
+
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_info(taskFile, pt);
+  std::string prefix = "weight.";
+  if (verbose) {
+    std::cerr << "\n #### WBC weight:";
+    std::cerr << "\n #### =============================================================================\n";
+  }
+  loadData::loadPtreeValue(pt, weightBaseAccel_, prefix + "baseAccel", verbose);
+  loadData::loadPtreeValue(pt, weightSwingLeg_, prefix + "swingLeg", verbose);
+  loadData::loadPtreeValue(pt, weightContactForce_, prefix + "contactForce", verbose);
+}
+
 vector_t WeightedWbc::update(const vector_t& stateDesired, const vector_t& inputDesired, const vector_t& rbdStateMeasured, size_t mode,
                              scalar_t period) {
   WbcBase::update(stateDesired, inputDesired, rbdStateMeasured, mode, period);
@@ -47,7 +62,6 @@ vector_t WeightedWbc::update(const vector_t& stateDesired, const vector_t& input
   vector_t lbA(numConstraints), ubA(numConstraints);  // clang-format off
   A << constraints.A(),
        constraints.D();
-
   lbA << constraints.b(),
          -qpOASES::INFTY * vector_t::Ones(constraints.f().size());
   ubA << constraints.b(),
@@ -79,23 +93,8 @@ Task WeightedWbc::formulateConstraints() {
 }
 
 Task WeightedWbc::formulateWeightedTasks(const vector_t& stateDesired, const vector_t& inputDesired, scalar_t period) {
-  return formulateSwingLegTask() * weightSwingLeg_ + formulateBaseAccelTask(stateDesired, inputDesired, period) * weightBaseAccel_ +
-         formulateContactForceTask(inputDesired) * weightContactForce_;
-}
-
-void WeightedWbc::loadTasksSetting(const std::string& taskFile, bool verbose) {
-  WbcBase::loadTasksSetting(taskFile, verbose);
-
-  boost::property_tree::ptree pt;
-  boost::property_tree::read_info(taskFile, pt);
-  std::string prefix = "weight.";
-  if (verbose) {
-    std::cerr << "\n #### WBC weight:";
-    std::cerr << "\n #### =============================================================================\n";
-  }
-  loadData::loadPtreeValue(pt, weightSwingLeg_, prefix + "swingLeg", verbose);
-  loadData::loadPtreeValue(pt, weightBaseAccel_, prefix + "baseAccel", verbose);
-  loadData::loadPtreeValue(pt, weightContactForce_, prefix + "contactForce", verbose);
+  return formulateBaseAccelTask(stateDesired, inputDesired, period) * weightBaseAccel_ +
+         formulateSwingLegTask() * weightSwingLeg_ + formulateContactForceTask(inputDesired) * weightContactForce_;
 }
 
 }  // namespace quaD()control

@@ -19,7 +19,7 @@ swingLegTask
 
 weight
 {
-    swingLeg        100
     baseAccel       1
+    swingLeg        100
     contactForce    0.01
 }
