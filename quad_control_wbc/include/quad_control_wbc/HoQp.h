@@ -73,9 +73,9 @@ class HoQp {
   void buildFVector();
 
   Task task_;
+  size_t numSlackVars_{};
   bool hasEqConstraints_{};
   bool hasIneqConstraints_{};
-  size_t numSlackVars_{};
 
   HoQpPtr higherProblem_;
   Task stackedTasksPrev_;

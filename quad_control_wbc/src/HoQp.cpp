@@ -40,34 +40,32 @@ HoQp::HoQp(Task task, HoQp::HoQpPtr higherProblem) : task_(std::move(task)), hig
   initVars();
   formulateProblem();
   solveProblem();
-  // For next problem
   buildZMatrix();
   stackSlackSolutions();
 }
 
 void HoQp::initVars() {
-  // Task variables
   numSlackVars_ = task_.D().rows();
   hasEqConstraints_ = task_.A().rows() > 0;
   hasIneqConstraints_ = numSlackVars_ > 0;
 
-  // Pre-Task variables
   if (higherProblem_ != nullptr) {
-    stackedZPrev_ = higherProblem_->getStackedZMatrix();
     stackedTasksPrev_ = higherProblem_->getStackedTasks();
-    stackedSlackSolutionsPrev_ = higherProblem_->getStackedSlackSolutions();
     xPrev_ = higherProblem_->getSolutions();
-    numPrevSlackVars_ = higherProblem_->getSlackedNumVars();
+    stackedZPrev_ = higherProblem_->getStackedZMatrix();
+    stackedSlackSolutionsPrev_ = higherProblem_->getStackedSlackSolutions();
 
     numDecisionVars_ = stackedZPrev_.cols();
-  } else {
+    numPrevSlackVars_ = higherProblem_->getSlackedNumVars();
+  }
+  else {
     numDecisionVars_ = std::max(task_.A().cols(), task_.D().cols());
+    numPrevSlackVars_ = 0;
 
     stackedTasksPrev_ = Task(numDecisionVars_);
     stackedZPrev_ = matrix_t::Identity(numDecisionVars_, numDecisionVars_);
     stackedSlackSolutionsPrev_ = Eigen::VectorXd::Zero(0);
     xPrev_ = Eigen::VectorXd::Zero(numDecisionVars_);
-    numPrevSlackVars_ = 0;
   }
 
   stackedTasks_ = task_ + stackedTasksPrev_;
@@ -82,6 +80,40 @@ void HoQp::formulateProblem() {
   buildCVector();
   buildDMatrix();
   buildFVector();
+}
+
+void HoQp::solveProblem() {
+  auto qpProblem = qpOASES::QProblem(numDecisionVars_ + numSlackVars_, f_.size());
+  qpOASES::Options options;
+  options.setToMPC();
+  options.printLevel = qpOASES::PL_LOW;
+  qpProblem.setOptions(options);
+  int nWsr = 20;
+
+  qpProblem.init(h_.data(), c_.data(), d_.data(), nullptr, nullptr, nullptr, f_.data(), nWsr);
+  vector_t qpSol(numDecisionVars_ + numSlackVars_);
+
+  qpProblem.getPrimalSolution(qpSol.data());
+
+  decisionVarsSolutions_ = qpSol.head(numDecisionVars_);
+  slackVarsSolutions_ = qpSol.tail(numSlackVars_);
+}
+
+void HoQp::buildZMatrix() {
+  if (hasEqConstraints_) {
+    assert((task_.A().cols() > 0));
+    stackedZ_ = stackedZPrev_ * (task_.A() * stackedZPrev_).fullPivLu().kernel();
+  } else {
+    stackedZ_ = stackedZPrev_;
+  }
+}
+
+void HoQp::stackSlackSolutions() {
+  if (higherProblem_ != nullptr) {
+    stackedSlackVars_ = Task::concatenateVectors(higherProblem_->getStackedSlackSolutions(), slackVarsSolutions_);
+  } else {
+    stackedSlackVars_ = slackVarsSolutions_;
+  }
 }
 
 void HoQp::buildHMatrix() {
@@ -148,40 +180,6 @@ void HoQp::buildFVector() {
   f_ = (vector_t(2 * numSlackVars_ + numPrevSlackVars_) << zeroVec,
         stackedTasksPrev_.f() - stackedTasksPrev_.D() * xPrev_ + stackedSlackSolutionsPrev_, fMinusDXPrev)
            .finished();
-}
-
-void HoQp::buildZMatrix() {
-  if (hasEqConstraints_) {
-    assert((task_.A().cols() > 0));
-    stackedZ_ = stackedZPrev_ * (task_.A() * stackedZPrev_).fullPivLu().kernel();
-  } else {
-    stackedZ_ = stackedZPrev_;
-  }
-}
-
-void HoQp::solveProblem() {
-  auto qpProblem = qpOASES::QProblem(numDecisionVars_ + numSlackVars_, f_.size());
-  qpOASES::Options options;
-  options.setToMPC();
-  options.printLevel = qpOASES::PL_LOW;
-  qpProblem.setOptions(options);
-  int nWsr = 20;
-
-  qpProblem.init(h_.data(), c_.data(), d_.data(), nullptr, nullptr, nullptr, f_.data(), nWsr);
-  vector_t qpSol(numDecisionVars_ + numSlackVars_);
-
-  qpProblem.getPrimalSolution(qpSol.data());
-
-  decisionVarsSolutions_ = qpSol.head(numDecisionVars_);
-  slackVarsSolutions_ = qpSol.tail(numSlackVars_);
-}
-
-void HoQp::stackSlackSolutions() {
-  if (higherProblem_ != nullptr) {
-    stackedSlackVars_ = Task::concatenateVectors(higherProblem_->getStackedSlackSolutions(), slackVarsSolutions_);
-  } else {
-    stackedSlackVars_ = slackVarsSolutions_;
-  }
 }
 
 }  // namespace quad_control
