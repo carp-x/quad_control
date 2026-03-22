@@ -218,10 +218,10 @@ controller_interface::return_type QuadController::update(const rclcpp::Time& tim
   robot_visualizer_->update(current_observation_, mpc_mrt_interface_->getPolicy(), mpc_mrt_interface_->getCommand());
   self_collision_visualization_->update(current_observation_);
 
-  printStateCommand(print_period_ms_);
-  printMpcOptimizedState(optimized_state, print_period_ms_);
-  printMpcOptimizedCInput(optimized_input, print_period_ms_);
-  printWbcOptimizedToque(ff, print_period_ms_);
+    // printStateCommand(print_period_ms_);
+    // printMpcOptimizedState(optimized_state, print_period_ms_);
+    // printMpcOptimizedCInput(optimized_input, print_period_ms_);
+    // printWbcOptimizedToque(ff, print_period_ms_);
   return controller_interface::return_type::OK;
 }
 
@@ -713,7 +713,15 @@ void QuadController::setupSub() {
   target_trajectories_subscriber_ = node_lifecycle_->create_subscription<ocs2_msgs::msg::MpcTargetTrajectories>(
     "quad_robot_mpc_target", 10,
     [this](const ocs2_msgs::msg::MpcTargetTrajectories::SharedPtr msg) {
+      
       auto target_trajectories = ros_msg_conversions::readTargetTrajectoriesMsg(*msg);
+      if (!target_trajectories.timeTrajectory.empty()) {
+        double time_offset = current_observation_.time - target_trajectories.timeTrajectory.front();
+        for (auto& t : target_trajectories.timeTrajectory) {
+          t += time_offset;
+        }
+      }
+
       mpc_mrt_interface_->getReferenceManager().setTargetTrajectories(std::move(target_trajectories));
       RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadController target trajectories updated.");
     });
