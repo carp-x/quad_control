@@ -70,7 +70,6 @@ void HoQp::initVars() {
 
   stackedTasks_ = task_ + stackedTasksPrev_;
 
-  // Init convenience matrices
   eyeNvNv_ = matrix_t::Identity(numSlackVars_, numSlackVars_);
   zeroNvNx_ = matrix_t::Zero(numSlackVars_, numDecisionVars_);
 }
