@@ -80,9 +80,9 @@ class WbcBase {
   contact_flag_t contactFlag_{};
   size_t numContacts_{};
 
-  // Task Parameters:
   vector_t torqueLimits_;
-  scalar_t frictionCoeff_{}, swingKp_{}, swingKd_{};
+  scalar_t frictionCoeff_{};
+  scalar_t swingKp_{}, swingKd_{};
 };
 
 }  // namespace quad_control
