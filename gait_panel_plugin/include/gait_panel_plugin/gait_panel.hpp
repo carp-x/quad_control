@@ -29,9 +29,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include <rviz_common/panel.hpp>
-#include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/string.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <rviz_common/panel.hpp>
+
 #include <QPushButton>
 #include <QVBoxLayout>
 

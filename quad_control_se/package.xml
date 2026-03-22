@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>quad_control_se</name>
-  <version>0.0.0</version>
+  <version>0.0.1</version>
   <description>The quad_control_se package</description>
   <maintainer email="liyuxin_2016@163.com">Yuxin Li</maintainer>
 

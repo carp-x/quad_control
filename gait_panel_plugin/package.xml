@@ -2,8 +2,8 @@
 <?xml-model href="http://download.ros.org" schematypens="http://www.w3.org"?>
 <package format="3">
   <name>gait_panel_plugin</name>
-  <version>0.0.0</version>
-  <description>TODO</description>
+  <version>0.0.1</version>
+  <description>The gait_panel_plugin package</description>
   <maintainer email="liyuxin_2016@163.com">Yuxin Li</maintainer>
 
   <license>BSD-3</license>
@@ -11,10 +11,10 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <depend>std_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rviz_common</depend>
   <depend>pluginlib</depend>
-  <depend>std_msgs</depend>
 
   <depend>qtbase5-dev</depend>
   <depend>libqt6-widgets</depend>
