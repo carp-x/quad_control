@@ -62,11 +62,12 @@ class LeggedRobotPreComputation : public PreComputation {
   const PinocchioInterface& getPinocchioInterface() const { return pinocchioInterface_; }
 
  private:
-  LeggedRobotPreComputation(const LeggedRobotPreComputation& other) = default;
+  LeggedRobotPreComputation(const LeggedRobotPreComputation& other);
 
   PinocchioInterface pinocchioInterface_;
   CentroidalModelInfo info_;
   const SwingTrajectoryPlanner* swingTrajectoryPlannerPtr_;
+  std::unique_ptr<CentroidalModelPinocchioMapping> mappingPtr_;
   const ModelSettings settings_;
 
   std::vector<EndEffectorLinearConstraint::Config> eeNormalVelConConfigs_;
