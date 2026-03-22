@@ -9,11 +9,11 @@ from launch.conditions import IfCondition
 
 def generate_launch_description():
 
-  pkg_robot = get_package_share_directory('quad_control_gz')
-  pkg_mpc = get_package_share_directory('quad_control_mpc')
-  pkg_wbc = get_package_share_directory('quad_control_wbc')
+  pkg_robot = get_package_share_directory('quad_control')
+  pkg_mpc = get_package_share_directory('quad_control')
+  pkg_wbc = get_package_share_directory('quad_control')
 
-  urdf_file = os.path.join(pkg_robot, 'urdf', 'anymal_c', 'urdf', 'anymal.urdf')
+  urdf_file = os.path.join(pkg_robot, 'model', 'anymal_c', 'urdf', 'anymal.urdf')
   task_file = os.path.join(pkg_mpc, 'config', 'mpc', 'task.info')
   reference_file = os.path.join(pkg_mpc, 'config', 'command', 'reference.info')
   task_file_wbc = os.path.join(pkg_wbc, 'config', 'wbc', 'task.info')
@@ -21,12 +21,13 @@ def generate_launch_description():
   declare_rviz_arg = DeclareLaunchArgument(
       'rviz', default_value='true', description='Whether to start RViz2')
   rviz_config_file = os.path.join(
-      get_package_share_directory('quad_control_ct'), 'rviz', 'quad_robot.rviz')
+      get_package_share_directory('quad_control'), 'rviz', 'quad_robot.rviz')
 
   config_path = os.path.join(
-    get_package_share_directory('quad_control_ct'),
+    get_package_share_directory('quad_control'),
     'config',
-    'config.yaml'
+    'controller',
+    'quad_controller.yaml'
   )
 
   quad_controller_spawner = Node(

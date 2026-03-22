@@ -8,13 +8,13 @@ import xacro
 
 def generate_launch_description():
 
-    pkg_project = get_package_share_directory('quad_control_gz')
+    pkg_project = get_package_share_directory('quad_control')
 
-    urdf_file = os.path.join(pkg_project, 'urdf', 'anymal.complete.xacro')
+    urdf_file = os.path.join(pkg_project, 'model', 'anymal.complete.xacro')
     robot_description_config = xacro.process_file(urdf_file)
     robot_desc = robot_description_config.toxml()
 
-    pkg_meshes = get_package_share_directory('quad_control_gz')
+    pkg_meshes = get_package_share_directory('quad_control')
     mesh_file = os.path.dirname(pkg_meshes)
     set_gz_resource_path = SetEnvironmentVariable(
         name='GZ_SIM_RESOURCE_PATH',

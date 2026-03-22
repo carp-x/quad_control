@@ -7,10 +7,13 @@
   <maintainer email="liyuxin_2016@163.com">l</maintainer>
   <license>TODO: License declaration</license>
 
-  <test_depend>ament_copyright</test_depend>
-  <test_depend>ament_flake8</test_depend>
-  <test_depend>ament_pep257</test_depend>
-  <test_depend>python3-pytest</test_depend>
+  <exec_depend>gait_panel_plugin</exec_depend>
+  <exec_depend>quad_control_ct</exec_depend>
+  <exec_depend>quad_control_gz</exec_depend>
+  <exec_depend>quad_control_mpc</exec_depend>
+  <exec_depend>quad_control_ros</exec_depend>
+  <exec_depend>quad_control_se</exec_depend>
+  <exec_depend>quad_control_wbc</exec_depend>
 
   <export>
     <build_type>ament_python</build_type>

@@ -7,7 +7,7 @@ from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
-    rviz_config_file = get_package_share_directory('quad_control_ros') + "/rviz/legged_robot.rviz"
+    rviz_config_file = get_package_share_directory('quad_control') + "/rviz/legged_robot.rviz"
     ld = launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument(
             name='terminal_prefix',
@@ -16,12 +16,12 @@ def generate_launch_description():
         launch.actions.DeclareLaunchArgument(
             name='referenceFile',
             default_value=get_package_share_directory(
-                'quad_control_mpc') + '/config/command/reference.info'
+                'quad_control') + '/config/command/reference.info'
         ),
         launch.actions.DeclareLaunchArgument(
             name='gaitCommandFile',
             default_value=get_package_share_directory(
-                'quad_control_mpc') + '/config/command/gait.info'
+                'quad_control') + '/config/command/gait.info'
         ),
 
         launch_ros.actions.Node(

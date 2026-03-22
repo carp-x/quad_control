@@ -11,7 +11,7 @@ def generate_launch_description():
         launch.actions.DeclareLaunchArgument(
             name='metrics_config',
             default_value=get_package_share_directory(
-                'quad_control_mpc') + '/config/multiplot/zero_velocity.xml'
+                'quad_control') + '/config/mpc/multiplot/zero_velocity.xml'
         ),
         launch_ros.actions.Node(
             package='rqt_multiplot',
@@ -25,7 +25,7 @@ def generate_launch_description():
                     'ocs2_ros_interfaces'), 'launch/performance_indices.launch.py')
             ),
             launch_arguments={
-                'mpc_policy_topic_name': 'legged_robot_mpc_policy'
+                'mpc_policy_topic_name': 'quad_robot_mpc_policy'
             }.items()
         )
     ])

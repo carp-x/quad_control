@@ -7,7 +7,7 @@ from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
-    rviz_config_file = get_package_share_directory('quad_control_ros') + "/rviz/legged_robot.rviz"
+    rviz_config_file = get_package_share_directory('quad_control') + "/rviz/quad_robot.rviz"
     ld = launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument(
             name='rviz',
@@ -28,22 +28,22 @@ def generate_launch_description():
         launch.actions.DeclareLaunchArgument(
             name='taskFile',
             default_value=get_package_share_directory(
-                'quad_control_mpc') + '/config/mpc/task.info'
+                'quad_control') + '/config/mpc/task.info'
         ),
         launch.actions.DeclareLaunchArgument(
             name='referenceFile',
             default_value=get_package_share_directory(
-                'quad_control_mpc') + '/config/command/reference.info'
+                'quad_control') + '/config/command/reference.info'
         ),
         launch.actions.DeclareLaunchArgument(
             name='urdfFile',
             default_value=get_package_share_directory(
-                'quad_control_gz') + '/urdf/anymal_c/urdf/anymal.urdf'
+                'quad_control') + '/model/anymal_c/urdf/anymal.urdf'
         ),
         launch.actions.DeclareLaunchArgument(
             name='gaitCommandFile',
             default_value=get_package_share_directory(
-                'quad_control_mpc') + '/config/command/gait.info'
+                'quad_control') + '/config/command/gait.info'
         ),
         launch_ros.actions.Node(
             package="robot_state_publisher",
