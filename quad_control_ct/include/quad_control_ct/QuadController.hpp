@@ -201,7 +201,7 @@ class QuadController : public controller_interface::ControllerInterface {
 
   bool delay_expired_;
   rclcpp::Time start_time_;
-  const double delay_duration_ = 5.0;
+  const double delay_duration_ = 0.0;
   const int print_period_ms_ = 1000;
 
   const double kp_ = 0.0;
