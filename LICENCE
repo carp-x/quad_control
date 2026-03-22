@@ -22,7 +22,7 @@ It includes refactored components derived from the following works:
 
 * quad_control_ct / quad_control_est / quad_control_wbc:
   Derived from the "legged_control" project.
-  Copyright (c) 2022, QiayuanLiao.
+  Copyright (c) 2022, Qiayuan Liao.
   (Licensed under BSD-3-Clause)
 
 -------------------------------------------------------------------------------
