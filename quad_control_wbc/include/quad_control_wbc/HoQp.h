@@ -58,7 +58,7 @@ class HoQp {
     return x;
   }
 
-  size_t getSlackedNumVars() const { return stackedTasks_.d_.rows(); }
+  size_t getSlackedNumVars() const { return stackedTasks_.D().rows(); }
 
  private:
   void initVars();

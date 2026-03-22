@@ -50,19 +50,18 @@ class Task {
       : Task(matrix_t::Zero(0, numDecisionVars), vector_t::Zero(0), matrix_t::Zero(0, numDecisionVars), vector_t::Zero(0)) {}
 
   Task operator+(const Task& rhs) const {
-    return {concatenateMatrices(a_, rhs.a_), concatenateVectors(b_, rhs.b_), concatenateMatrices(d_, rhs.d_),
+    return {concatenateMatrices(a_, rhs.a_), 
+            concatenateVectors(b_, rhs.b_), 
+            concatenateMatrices(d_, rhs.d_),
             concatenateVectors(f_, rhs.f_)};
   }
 
-  Task operator*(scalar_t rhs) const {  // clang-format off
+  Task operator*(scalar_t rhs) const {
     return {a_.cols() > 0 ? rhs * a_ : a_,
             b_.cols() > 0 ? rhs * b_ : b_,
             d_.cols() > 0 ? rhs * d_ : d_,
-            f_.cols() > 0 ? rhs * f_ : f_};  // clang-format on
+            f_.cols() > 0 ? rhs * f_ : f_};
   }
-
-  matrix_t a_, d_;
-  vector_t b_, f_;
 
   static matrix_t concatenateMatrices(matrix_t m1, matrix_t m2) {
     if (m1.cols() <= 0) {
@@ -87,6 +86,23 @@ class Task {
     res << v1, v2;
     return res;
   }
+
+  const matrix_t& A() const {
+    return a_;
+  }
+  const vector_t& b() const {
+    return b_;
+  }
+  const matrix_t& D() const {
+    return d_;
+  }
+  const vector_t& f() const {
+    return f_;
+  }
+
+private:
+  matrix_t a_, d_;
+  vector_t b_, f_;
 };
 
 }  // namespace quad_control

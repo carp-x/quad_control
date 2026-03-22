@@ -47,8 +47,8 @@ HoQp::HoQp(Task task, HoQp::HoQpPtr higherProblem) : task_(std::move(task)), hig
 
 void HoQp::initVars() {
   // Task variables
-  numSlackVars_ = task_.d_.rows();
-  hasEqConstraints_ = task_.a_.rows() > 0;
+  numSlackVars_ = task_.D().rows();
+  hasEqConstraints_ = task_.A().rows() > 0;
   hasIneqConstraints_ = numSlackVars_ > 0;
 
   // Pre-Task variables
@@ -61,7 +61,7 @@ void HoQp::initVars() {
 
     numDecisionVars_ = stackedZPrev_.cols();
   } else {
-    numDecisionVars_ = std::max(task_.a_.cols(), task_.d_.cols());
+    numDecisionVars_ = std::max(task_.A().cols(), task_.D().cols());
 
     stackedTasksPrev_ = Task(numDecisionVars_);
     stackedZPrev_ = matrix_t::Identity(numDecisionVars_, numDecisionVars_);
@@ -89,7 +89,7 @@ void HoQp::buildHMatrix() {
 
   if (hasEqConstraints_) {
     // Make sure that all eigenvalues of A_t_A are non-negative, which could arise due to numerical issues
-    matrix_t aCurrZPrev = task_.a_ * stackedZPrev_;
+    matrix_t aCurrZPrev = task_.A() * stackedZPrev_;
     zTaTaz = aCurrZPrev.transpose() * aCurrZPrev + 1e-12 * matrix_t::Identity(numDecisionVars_, numDecisionVars_);
     // This way of splitting up the multiplication is about twice as fast as multiplying 4 matrices
   } else {
@@ -108,7 +108,7 @@ void HoQp::buildCVector() {
 
   vector_t temp(numDecisionVars_);
   if (hasEqConstraints_) {
-    temp = (task_.a_ * stackedZPrev_).transpose() * (task_.a_ * xPrev_ - task_.b_);
+    temp = (task_.A() * stackedZPrev_).transpose() * (task_.A() * xPrev_ - task_.b());
   } else {
     temp.setZero();
   }
@@ -121,7 +121,7 @@ void HoQp::buildDMatrix() {
 
   matrix_t dCurrZ;
   if (hasIneqConstraints_) {
-    dCurrZ = task_.d_ * stackedZPrev_;
+    dCurrZ = task_.D() * stackedZPrev_;
   } else {
     dCurrZ = matrix_t::Zero(0, numDecisionVars_);
   }
@@ -130,7 +130,7 @@ void HoQp::buildDMatrix() {
   // but more consistent with the rest of the algorithm
   d_ = (matrix_t(2 * numSlackVars_ + numPrevSlackVars_, numDecisionVars_ + numSlackVars_)  // clang-format off
             << zeroNvNx_, -eyeNvNv_,
-                stackedTasksPrev_.d_ * stackedZPrev_, stackedZero,
+                stackedTasksPrev_.D() * stackedZPrev_, stackedZero,
                 dCurrZ, -eyeNvNv_)  // clang-format on
            .finished();
 }
@@ -140,20 +140,20 @@ void HoQp::buildFVector() {
 
   vector_t fMinusDXPrev;
   if (hasIneqConstraints_) {
-    fMinusDXPrev = task_.f_ - task_.d_ * xPrev_;
+    fMinusDXPrev = task_.f() - task_.D() * xPrev_;
   } else {
     fMinusDXPrev = vector_t::Zero(0);
   }
 
   f_ = (vector_t(2 * numSlackVars_ + numPrevSlackVars_) << zeroVec,
-        stackedTasksPrev_.f_ - stackedTasksPrev_.d_ * xPrev_ + stackedSlackSolutionsPrev_, fMinusDXPrev)
+        stackedTasksPrev_.f() - stackedTasksPrev_.D() * xPrev_ + stackedSlackSolutionsPrev_, fMinusDXPrev)
            .finished();
 }
 
 void HoQp::buildZMatrix() {
   if (hasEqConstraints_) {
-    assert((task_.a_.cols() > 0));
-    stackedZ_ = stackedZPrev_ * (task_.a_ * stackedZPrev_).fullPivLu().kernel();
+    assert((task_.A().cols() > 0));
+    stackedZ_ = stackedZPrev_ * (task_.A() * stackedZPrev_).fullPivLu().kernel();
   } else {
     stackedZ_ = stackedZPrev_;
   }

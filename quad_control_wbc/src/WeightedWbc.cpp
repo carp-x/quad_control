@@ -41,22 +41,22 @@ vector_t WeightedWbc::update(const vector_t& stateDesired, const vector_t& input
 
   // Constraints
   Task constraints = formulateConstraints();
-  size_t numConstraints = constraints.b_.size() + constraints.f_.size();
+  size_t numConstraints = constraints.b().size() + constraints.f().size();
 
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> A(numConstraints, getNumDecisionVars());
   vector_t lbA(numConstraints), ubA(numConstraints);  // clang-format off
-  A << constraints.a_,
-       constraints.d_;
+  A << constraints.A(),
+       constraints.D();
 
-  lbA << constraints.b_,
-         -qpOASES::INFTY * vector_t::Ones(constraints.f_.size());
-  ubA << constraints.b_,
-         constraints.f_;  // clang-format on
+  lbA << constraints.b(),
+         -qpOASES::INFTY * vector_t::Ones(constraints.f().size());
+  ubA << constraints.b(),
+         constraints.f();  // clang-format on
 
   // Cost
   Task weighedTask = formulateWeightedTasks(stateDesired, inputDesired, period);
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> H = weighedTask.a_.transpose() * weighedTask.a_;
-  vector_t g = -weighedTask.a_.transpose() * weighedTask.b_;
+  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> H = weighedTask.A().transpose() * weighedTask.A();
+  vector_t g = -weighedTask.A().transpose() * weighedTask.b();
 
   // Solve
   auto qpProblem = qpOASES::QProblem(getNumDecisionVars(), numConstraints);
@@ -98,4 +98,4 @@ void WeightedWbc::loadTasksSetting(const std::string& taskFile, bool verbose) {
   loadData::loadPtreeValue(pt, weightContactForce_, prefix + "contactForce", verbose);
 }
 
-}  // namespace quad_control
+}  // namespace quaD()control

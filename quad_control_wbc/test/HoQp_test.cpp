@@ -36,13 +36,15 @@ using namespace quad_control;
 
 TEST(HoQP, twoTask) {
   srand(0);
-  Task task0, task1;
-  task0.a_ = matrix_t::Random(2, 4);
-  task0.b_ = vector_t::Ones(2);
-  task0.d_ = matrix_t::Random(2, 4);
-  task0.f_ = vector_t::Ones(2);
-  task1 = task0;
-  task1.a_ = matrix_t::Ones(2, 4);
+  Task task0{matrix_t::Random(2, 4),
+             vector_t::Ones(2),  
+             matrix_t::Random(2, 4),
+             vector_t::Ones(2)};
+  Task task1{matrix_t::Ones(2, 4),
+             task0.b(),  
+             task0.D(),
+             task0.f()};
+
   std::shared_ptr<HoQp> hoQp0 = std::make_shared<HoQp>(task0);
   std::shared_ptr<HoQp> hoQp1 = std::make_shared<HoQp>(task1, hoQp0);
 
@@ -56,14 +58,14 @@ TEST(HoQP, twoTask) {
 
   scalar_t prec = 1e-6;
 
-  if (slack0.isApprox(vector_t::Zero(slack0.size()))) EXPECT_TRUE((task0.a_ * x0).isApprox(task0.b_, prec));
+  if (slack0.isApprox(vector_t::Zero(slack0.size()))) EXPECT_TRUE((task0.A() * x0).isApprox(task0.b(), prec));
   if (slack_1.isApprox(vector_t::Zero(slack_1.size()))) {
-    EXPECT_TRUE((task1.a_ * x_1).isApprox(task1.b_, prec));
-    EXPECT_TRUE((task0.a_ * x_1).isApprox(task0.b_, prec));
+    EXPECT_TRUE((task1.A() * x_1).isApprox(task1.b(), prec));
+    EXPECT_TRUE((task0.A() * x_1).isApprox(task0.b(), prec));
   }
 
-  vector_t y = task0.d_ * x0;
-  for (int i = 0; i < y.size(); ++i) EXPECT_TRUE(y[i] <= task0.f_[i] + slack0[i]);
-  y = task1.d_ * x_1;
-  for (int i = 0; i < y.size(); ++i) EXPECT_TRUE(y[i] <= task1.f_[i] + slack_1[i]);
+  vector_t y = task0.D() * x0;
+  for (int i = 0; i < y.size(); ++i) EXPECT_TRUE(y[i] <= task0.f()[i] + slack0[i]);
+  y = task1.D() * x_1;
+  for (int i = 0; i < y.size(); ++i) EXPECT_TRUE(y[i] <= task1.f()[i] + slack_1[i]);
 }
