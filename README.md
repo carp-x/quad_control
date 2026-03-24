@@ -2,37 +2,47 @@
 
 A quadrupedal robot control framework which supports ROS 2 and Gazebo simulation.
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/c36abc95-2b6b-4673-bfcf-e463c0c82207" width="48%" />
-  <img src="https://github.com/user-attachments/assets/0933aa6a-89d8-42bf-b0cf-5c7da1568391" width="48%" />
+<p align="left">
+  <img src="https://github.com/user-attachments/assets/1201ddc4-4299-4c91-a457-5b08774ac8e9" width="600">
 </p>
 
-<p align="center">
-  <video src="https://github.com/user-attachments/assets/bcc9eaa4-4e32-43f7-9fca-ad2bcf7ec76f" width="66%" autoplay muted loop></video>
-</p>
+## Key Features
+* **Modern Stack**: Native support for **Ubuntu 24.04** & **ROS 2 Jazzy**.
+* **Modular Control**: **`ros2_control`** powered integration for seamless algorithm switching and hardware abstraction.
+* **Simulation**: High-fidelity physics validation in **Gazebo Harmonic**.
+* **MPC**: High-performance optimal control based on **OCS2**.
+* **WBC**: Whole Body Control implementation ported from **[legged_control](https://github.com/qiayuanliao/legged_control)**.
 
-## Environment
-- **OS**: Ubuntu 24.04
-- **ROS 2**: Jazzy Jalisco
-- **Simulator**: Gazebo Harmonic
+## Environments
+* **OS**: Ubuntu 24.04 LTS
+* **ROS 2**: Jazzy Jalisco (LTS)
+* **Middleware**: **`ros2_control`**
+* **Simulator**: Gazebo Harmonic
 
 ## Dependencies
-The framework relies on the following core libraries:
-- Eigen3  
-- Pinocchio  
-- OCS2
-- qpOASES
-- ros2_control, ros_gz_sim  
+Most dependencies are managed automatically via `rosdep`.  
+The following core algorithm libraries require manual installation:
+* **OCS2 & Pinocchio**: Follow the official installation guide:
+  * [OCS2 ROS 2 Installation Guide](https://github.com/leggedrobotics/ocs2/blob/ros2/installation.md)
+* **qpOASES**: Install from source from the official repository:
+  * [qpOASES](https://github.com/coin-or/qpOASES)
 
 ## Build
    ```bash
+   cd {your_ws}/src
    git clone git@github.com:carp-x/quad_control.git
-   cd quad_control
+   cd ..
    colcon build --symlink-install
    ```
 
- # Run
+## Run
    ```bash
    source install/setup.bash
    ros2 launch quad_control quad_control.launch.py
    ```
+
+## 🤝 Acknowledgments
+* **[ros2_control](https://control.ros.org/jazzy/index.html)**: The underlying architecture of this project.
+* **[legged_control](https://github.com/qiayuanliao/legged_control)**: The primary reference for this implementation.
+* **[OCS2](https://leggedrobotics.github.io/ocs2/)**: The core dependency for the control algorithms.
+
