@@ -18,7 +18,7 @@ quad_control/
 ├── gait_panel_plugin      # rviz plugin for gait command
 ├── quad_control           # model, config and launch
 ├── quad_control_ct        # controller interface
-├── quad_control_gz        # hardware interface via gazebo
+├── quad_control_gz        # simulated hardware via gazebo
 ├── quad_control_mpc       # ocs2 mpc interface
 ├── quad_control_ros       # ros node for gait and goal command
 ├── quad_control_se        # base pose state estimation
