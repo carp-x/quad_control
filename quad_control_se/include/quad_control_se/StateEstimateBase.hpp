@@ -79,8 +79,8 @@ class StateEstimateBase {
   size_t getMode() { return stanceLeg2ModeNumber(contact_flag_); }
   
  protected:
-  void updateAngular(const vector3_t& global_rpy_b, const vector_t& global_angular_vel_b);
-  void updateLinear(const vector_t& global_xyz_b, const vector_t& global_linear_vel_b);
+  void updateAngular(const vector3_t& global_zyx_b, const vector_t& global_angular_vel_b);
+  void updateLinear(const vector_t& global_pos_b, const vector_t& global_linear_vel_b);
   void publishMsgs(const nav_msgs::msg::Odometry& odom);
   
   // ROS 2 Lifecycle Node Handle
@@ -92,8 +92,8 @@ class StateEstimateBase {
   std::unique_ptr<PinocchioEndEffectorKinematics> ee_kinematics_;
   
   // Internal States
-  const vector3_t base_rpy_i_{0.00, 0.00, 0.00};
-  const vector3_t base_xyz_i_{0.00, 0.00, 0.00};
+  const vector3_t base_zyx_i_{0.00, 0.00, 0.00};
+  const vector3_t base_pos_i_{0.00, 0.00, 0.00};
   Eigen::Quaternion<scalar_t> base_quat_i_ = Eigen::Quaternion<scalar_t>::Identity();
   vector_t rbd_state_;
   contact_flag_t contact_flag_{};
@@ -119,13 +119,13 @@ template <typename T>
 inline T square(T a) { return a * a; }
 
 template <typename SCALAR_T>
-Eigen::Matrix<SCALAR_T, 3, 1> quatToRpy(const Eigen::Quaternion<SCALAR_T>& q) {
-  Eigen::Matrix<SCALAR_T, 3, 1> rpy;
+Eigen::Matrix<SCALAR_T, 3, 1> quatToZyx(const Eigen::Quaternion<SCALAR_T>& q) {
+  Eigen::Matrix<SCALAR_T, 3, 1> zyx;
   SCALAR_T as = std::min(-2. * (q.x() * q.z() - q.w() * q.y()), static_cast<SCALAR_T>(.99999));
-  rpy(0) = std::atan2(2 * (q.x() * q.y() + q.w() * q.z()), square(q.w()) + square(q.x()) - square(q.y()) - square(q.z()));
-  rpy(1) = std::asin(as);
-  rpy(2) = std::atan2(2 * (q.y() * q.z() + q.w() * q.x()), square(q.w()) - square(q.x()) - square(q.y()) + square(q.z()));
-  return rpy;
+  zyx(0) = std::atan2(2 * (q.x() * q.y() + q.w() * q.z()), square(q.w()) + square(q.x()) - square(q.y()) - square(q.z()));
+  zyx(1) = std::asin(as);
+  zyx(2) = std::atan2(2 * (q.y() * q.z() + q.w() * q.x()), square(q.w()) - square(q.x()) - square(q.y()) + square(q.z()));
+  return zyx;
 }
 
 } // namespace quad_control

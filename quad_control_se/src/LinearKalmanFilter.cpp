@@ -86,9 +86,9 @@ LinearKalmanFilter::LinearKalmanFilter(std::shared_ptr<rclcpp_lifecycle::Lifecyc
 
 vector_t LinearKalmanFilter::update(const rclcpp::Time& time, const rclcpp::Duration& period) {
   
-  vector3_t global_rpy_b = quatToRpy(global_quat_b_);
+  vector3_t global_zyx_b = quatToZyx(global_quat_b_);
   vector3_t global_angular_vel_b = global_quat_i_ * imu_angular_vel_i_;
-  updateAngular(global_rpy_b, global_angular_vel_b);
+  updateAngular(global_zyx_b, global_angular_vel_b);
 
   discretizeModel(period.seconds(), A_, B_, Q_);
   updateInput(u_);
@@ -120,7 +120,7 @@ void LinearKalmanFilter::updateInput(vector_t& u) {
   vector3_t base_linear_acc_i = base_quat_i_ * imu_linear_acc_i_;
   vector3_t base_angular_vel_i = base_quat_i_ * imu_angular_vel_i_;
   // ignore tangential acc
-  vector3_t base_centrifugal_acc_i = base_angular_vel_i.cross(base_angular_vel_i.cross(base_xyz_i_));
+  vector3_t base_centrifugal_acc_i = base_angular_vel_i.cross(base_angular_vel_i.cross(base_pos_i_));
   vector3_t base_linear_acc_b = base_linear_acc_i - base_centrifugal_acc_i ;
   u = global_quat_b_ * base_linear_acc_b + g_;
 }

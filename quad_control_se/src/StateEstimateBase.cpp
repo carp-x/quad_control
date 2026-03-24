@@ -42,9 +42,9 @@ StateEstimateBase::StateEstimateBase(std::shared_ptr<rclcpp_lifecycle::Lifecycle
       rbd_state_(vector_t::Zero(2 * cm_info_.generalizedCoordinatesNum)) {
 
   base_quat_i_ = Eigen::Quaternion<scalar_t>(
-    Eigen::AngleAxis<scalar_t>(base_rpy_i_.z(), Eigen::Vector3d::UnitZ()) *
-    Eigen::AngleAxis<scalar_t>(base_rpy_i_.y(), Eigen::Vector3d::UnitY()) *
-    Eigen::AngleAxis<scalar_t>(base_rpy_i_.x(), Eigen::Vector3d::UnitX())
+    Eigen::AngleAxis<scalar_t>(base_zyx_i_[0], Eigen::Vector3d::UnitZ()) *
+    Eigen::AngleAxis<scalar_t>(base_zyx_i_[1], Eigen::Vector3d::UnitY()) *
+    Eigen::AngleAxis<scalar_t>(base_zyx_i_[2], Eigen::Vector3d::UnitX())
   );
 
   odom_pub_ = std::make_shared<OdomPublisher>(node_ptr_->create_publisher<nav_msgs::msg::Odometry>("odom", 10));
@@ -74,13 +74,13 @@ void StateEstimateBase::updateImu(const Eigen::Quaternion<scalar_t>& global_quat
   global_quat_i_.normalize();
 }
 
-void StateEstimateBase::updateAngular(const vector3_t& global_rpy_b, const vector_t& global_angular_vel_b) {
-  rbd_state_.segment<3>(0) = global_rpy_b;
+void StateEstimateBase::updateAngular(const vector3_t& global_zyx_b, const vector_t& global_angular_vel_b) {
+  rbd_state_.segment<3>(0) = global_zyx_b;
   rbd_state_.segment<3>(cm_info_.generalizedCoordinatesNum) = global_angular_vel_b;
 }
 
-void StateEstimateBase::updateLinear(const vector_t& global_xyz_b, const vector_t& global_linear_vel_b) {
-  rbd_state_.segment<3>(3) = global_xyz_b;
+void StateEstimateBase::updateLinear(const vector_t& global_pos_b, const vector_t& global_linear_vel_b) {
+  rbd_state_.segment<3>(3) = global_pos_b;
   rbd_state_.segment<3>(cm_info_.generalizedCoordinatesNum + 3) = global_linear_vel_b;
 }
 

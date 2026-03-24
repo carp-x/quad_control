@@ -11,7 +11,7 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <depend>gz-sim</depend>
+  <depend>gz_sim_vendor</depend>
   <depend>std_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>control_msgs</depend>
