@@ -152,7 +152,7 @@ controller_interface::return_type QuadControllerRL::update(const rclcpp::Time& t
   updateStateEstimation(time, period);
 
   if (loop_cnt_ % rl_robot_cfg_.control_cfg.decimation == 0) {
-    computeObservation();
+    computeObservations();
     computeActions();
     scalar_t action_min = -rl_robot_cfg_.clip_actions;
     scalar_t action_max = rl_robot_cfg_.clip_actions;
@@ -161,8 +161,11 @@ controller_interface::return_type QuadControllerRL::update(const rclcpp::Time& t
   }
 
   if (delay_expired_) {
-    Eigen::Map<vector_t> actions_eigen(actions_.data(), actions_.size());
-    vector_t pos_des = actions_eigen * rl_robot_cfg_.control_cfg.action_scale + default_joint_angles_;
+    vector_t pos_dec = vector_t::Zero(actions_.size());
+    for (size_t i = 0; i < actions_.size(); ++i) {
+      pos_dec(i) = actions_[i] *  rl_robot_cfg_.control_cfg.action_scale + default_joint_angles_(i);
+    }
+    
     setCommand(vector_t::Zero(actions_.size()),     // ff
                pos_des,                             // pos_des   
                vector_t::Zero(actions_.size()),     // vel_des
