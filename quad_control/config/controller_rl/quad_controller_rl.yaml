@@ -1,0 +1,25 @@
+quad_controller_rl:
+  ros__parameters:
+    type: quad_control/QuadControllerRL
+    joints: 
+      - LF_HAA_LF_HIP
+      - LF_HFE_LF_THIGH
+      - LF_KFE_LF_SHANK
+      - LH_HAA_LH_HIP
+      - LH_HFE_LH_THIGH
+      - LH_KFE_LH_SHANK
+      - RF_HAA_RF_HIP
+      - RF_HFE_RF_THIGH
+      - RF_KFE_RF_SHANK
+      - RH_HAA_RH_HIP
+      - RH_HFE_RH_THIGH
+      - RH_KFE_RH_SHANK
+    
+    imus: 
+      - base_imu
+    
+    feet:
+      - LF_ft
+      - RF_ft
+      - LH_ft
+      - RH_ft
