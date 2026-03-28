@@ -128,13 +128,12 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
   virtual void declarePolicyParams();
   virtual bool loadPolicyParams();
   virtual bool setupPolicy();
-  virtual void setupActions(); 
+  virtual void setupPolicyIO();
   virtual void setupQuadInterface(const std::string& task_file,
                                   const std::string& urdf_file,
                                   const std::string& reference_file);
   virtual void setupStateEstimation();
   virtual void setupRbd();
-  virtual void setupObservations();
   virtual void setupSub();
   virtual void setupPub();
   virtual void updateStateEstimation(const rclcpp::Time& time, 
@@ -157,7 +156,7 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
   RLRobotCfg rl_robot_cfg_{};
   int actions_size_;
   int observations_size_;
-  vector_t default_Joint_angles_;
+  vector_t default_joint_angles_;
   // onnx
   std::shared_ptr<Ort::Env> onnx_env_ptr_;
   std::unique_ptr<Ort::Session> session_ptr_;

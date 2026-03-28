@@ -75,12 +75,11 @@ controller_interface::CallbackReturn QuadControllerRL::on_configure(const rclcpp
 
   try {
     if (!setupPolicy()) return controller_interface::CallbackReturn::ERROR;
-    setupActions();  // TODO
+    setupPolicyIO();
 
     setupQuadInterface(task_file_, urdf_file_, reference_file_);
     setupStateEstimation();
     setupRbd();
-    setupObservations(); // TODO
 
     setupSub();
     setupPub();
@@ -391,6 +390,27 @@ bool QuadControllerRL::setupPolicy() {
               model_obs_size, model_act_size);
 
   return true;
+}
+
+
+void QuadControllerRL::setupPolicyIO() {
+
+  actions_.resize(actions_size_);
+  observations_.resize(observations_size_);
+
+  std::vector<scalar_t> temp{
+      rl_robot_cfg_.init_state.LF_HAA_joint, rl_robot_cfg_.init_state.LF_HFE_joint, rl_robot_cfg_.init_state.LF_KFE_joint,
+      rl_robot_cfg_.init_state.LH_HAA_joint, rl_robot_cfg_.init_state.LH_HFE_joint, rl_robot_cfg_.init_state.LH_KFE_joint,
+      rl_robot_cfg_.init_state.RF_HAA_joint, rl_robot_cfg_.init_state.RF_HFE_joint, rl_robot_cfg_.init_state.RF_KFE_joint,
+      rl_robot_cfg_.init_state.RH_HAA_joint, rl_robot_cfg_.init_state.RH_HFE_joint, rl_robot_cfg_.init_state.RH_KFE_joint};
+  const auto& info = quad_interface_->getCentroidalModelInfo();
+  default_joint_angles_.resize(info.actuatedDofNum);
+  for (size_t i = 0; i < info.actuatedDofNum; i++) {
+    default_joint_angles_(i) = temp[i];
+  }  
+
+  cmd_vel_.setZero();
+  last_actions_.resize(quad_interface_->getCentroidalModelInfo().actuatedDofNum);
 }
 
 
