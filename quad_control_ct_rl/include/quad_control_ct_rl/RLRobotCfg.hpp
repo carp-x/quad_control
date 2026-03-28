@@ -53,14 +53,6 @@ struct RLRobotCfg {
     scalar_t RH_KFE_joint;
   };
 
-  struct ObsScales {
-    scalar_t linVel;
-    scalar_t angVel;
-    scalar_t dofPos;
-    scalar_t dofVel;
-    scalar_t heightMeasurements;
-  };
-
   struct ControlCfg {
     float stiffness;
     float damping;
@@ -68,12 +60,19 @@ struct RLRobotCfg {
     int decimation;
   };
 
+  struct ObsScales {
+    scalar_t lin_vel;
+    scalar_t ang_vel;
+    scalar_t dof_pos;
+    scalar_t dof_vel;
+  };
+
   InitState init_state;
-  ObsScales obs_scales;
   ControlCfg control_cfg;
+  ObsScales obs_scales;
 
   scalar_t clip_actions;
-  scalar_t clip_obs;
+  scalar_t clip_observations;
 };
 
 }  // namespace quad_control

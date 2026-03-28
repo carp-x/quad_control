@@ -26,14 +26,14 @@ QuadRobotCfg:
     decimation: 10
 
   normalization:
-    clip_scales:
-      clip_observations: 100.
-      clip_actions: 100.
     obs_scales:
       lin_vel: 1.0
       ang_vel: 1.0
       dof_pos: 1.0
       dof_vel: 1.0
+    clip_scales:
+      clip_actions: 100.
+      clip_observations: 100.
 
   size:
     actions_size: 12

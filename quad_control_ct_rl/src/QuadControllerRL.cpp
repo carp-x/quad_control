@@ -53,7 +53,7 @@ controller_interface::CallbackReturn QuadControllerRL::on_init() {
 
     declareSensorParams();
     declareFileParams();
-    declarePolicyParams(); // TODO
+    declarePolicyParams();
 
   } catch (const std::exception& e) {
     RCLCPP_ERROR(node_lifecycle_->get_logger(), "Exception in on_init: %s", e.what());
@@ -216,6 +216,42 @@ void QuadControllerRL::declareFileParams() {
 }
 
 
+void QuadControllerRL::declarePolicyParams() {
+  std::string prefix = "QuadRobotCfg.init_state.default_joint_angle.";
+  node_lifecycle_->declare_parameter<double>(prefix + "LF_HAA_joint");
+  node_lifecycle_->declare_parameter<double>(prefix + "LF_HFE_joint");
+  node_lifecycle_->declare_parameter<double>(prefix + "LF_KFE_joint");
+  //
+  node_lifecycle_->declare_parameter<double>(prefix + "LH_HAA_joint");
+  node_lifecycle_->declare_parameter<double>(prefix + "LH_HFE_joint");
+  node_lifecycle_->declare_parameter<double>(prefix + "LH_KFE_joint");
+  //
+  node_lifecycle_->declare_parameter<double>(prefix + "RF_HAA_joint");
+  node_lifecycle_->declare_parameter<double>(prefix + "RF_HFE_joint");
+  node_lifecycle_->declare_parameter<double>(prefix + "RF_KFE_joint");
+  //
+  node_lifecycle_->declare_parameter<double>(prefix + "RH_HAA_joint");
+  node_lifecycle_->declare_parameter<double>(prefix + "RH_HFE_joint");
+  node_lifecycle_->declare_parameter<double>(prefix + "RH_KFE_joint");
+
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.control.stiffness");
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.control.damping");
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.control.action_scale");
+  node_lifecycle_->declare_parameter<int>("QuadRobotCfg.control.decimation");
+  
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.obs_scales.lin_vel");
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.obs_scales.ang_vel");
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.obs_scales.dof_pos");
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.obs_scales.dof_vel");
+
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.clip_scales.clip_actions");
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.clip_scales.clip_observations");
+
+  node_lifecycle_->declare_parameter<int>("QuadRobotCfg.size.actions_size");
+  node_lifecycle_->declare_parameter<int>("QuadRobotCfg.size.observations_size");
+}
+
+
 bool QuadControllerRL::loadSensorParams() {
   if (!node_lifecycle_->get_parameter("joints", joint_names_) || joint_names_.empty()) {
     RCLCPP_ERROR(node_lifecycle_->get_logger(), "Failed to load 'joints' parameter or the list is empty.");
@@ -257,6 +293,51 @@ bool QuadControllerRL::loadFileParams() {
   RCLCPP_INFO(node_lifecycle_->get_logger(), "Loaded files:\nTask: %s\nURDF: %s\nRef: %s", 
               task_file_.c_str(), urdf_file_.c_str(), reference_file_.c_str());
   return true;
+}
+
+
+bool QuadControllerRL::loadPolicyParams() {
+  try {
+    std::string prefix = "QuadRobotCfg.init_state.default_joint_angle.";
+    rl_robot_cfg_.init_state.LF_HAA_joint = node_lifecycle_->get_parameter(prefix + "LF_HAA_joint").as_double();
+    rl_robot_cfg_.init_state.LF_HFE_joint = node_lifecycle_->get_parameter(prefix + "LF_HFE_joint").as_double();
+    rl_robot_cfg_.init_state.LF_KFE_joint = node_lifecycle_->get_parameter(prefix + "LF_KFE_joint").as_double();
+    //
+    rl_robot_cfg_.init_state.LH_HAA_joint = node_lifecycle_->get_parameter(prefix + "LH_HAA_joint").as_double();
+    rl_robot_cfg_.init_state.LH_HFE_joint = node_lifecycle_->get_parameter(prefix + "LH_HFE_joint").as_double();
+    rl_robot_cfg_.init_state.LH_KFE_joint = node_lifecycle_->get_parameter(prefix + "LH_KFE_joint").as_double();
+    //
+    rl_robot_cfg_.init_state.RF_HAA_joint = node_lifecycle_->get_parameter(prefix + "RF_HAA_joint").as_double();
+    rl_robot_cfg_.init_state.RF_HFE_joint = node_lifecycle_->get_parameter(prefix + "RF_HFE_joint").as_double();
+    rl_robot_cfg_.init_state.RF_KFE_joint = node_lifecycle_->get_parameter(prefix + "RF_KFE_joint").as_double();
+    //
+    rl_robot_cfg_.init_state.RH_HAA_joint = node_lifecycle_->get_parameter(prefix + "RH_HAA_joint").as_double();
+    rl_robot_cfg_.init_state.RH_HFE_joint = node_lifecycle_->get_parameter(prefix + "RH_HFE_joint").as_double();
+    rl_robot_cfg_.init_state.RH_KFE_joint = node_lifecycle_->get_parameter(prefix + "RH_KFE_joint").as_double();
+
+    rl_robot_cfg_.control_cfg.stiffness   = node_lifecycle_->get_parameter("QuadRobotCfg.control.stiffness").as_double();
+    rl_robot_cfg_.control_cfg.damping     = node_lifecycle_->get_parameter("QuadRobotCfg.control.damping").as_double();
+    rl_robot_cfg_.control_cfg.actionScale = node_lifecycle_->get_parameter("QuadRobotCfg.control.action_scale").as_double();
+    rl_robot_cfg_.control_cfg.decimation  = node_lifecycle_->get_parameter("QuadRobotCfg.control.decimation").as_int();
+
+    rl_robot_cfg_.obs_scales.lin_vel = node_lifecycle_->get_parameter("QuadRobotCfg.normalization.obs_scales.lin_vel").as_double();
+    rl_robot_cfg_.obs_scales.ang_vel = node_lifecycle_->get_parameter("QuadRobotCfg.normalization.obs_scales.ang_vel").as_double();
+    rl_robot_cfg_.obs_scales.dof_pos = node_lifecycle_->get_parameter("QuadRobotCfg.normalization.obs_scales.dof_pos").as_double();
+    rl_robot_cfg_.obs_scales.dof_vel = node_lifecycle_->get_parameter("QuadRobotCfg.normalization.obs_scales.dof_vel").as_double();
+
+    rl_robot_cfg_.clip_actions      = node_lifecycle_->get_parameter("QuadRobotCfg.normalization.clip_scales.clip_actions").as_double();
+    rl_robot_cfg_.clip_observations = node_lifecycle_->get_parameter("QuadRobotCfg.normalization.clip_scales.clip_observations").as_double();
+
+    actions_size_      = node_lifecycle_->get_parameter("QuadRobotCfg.size.actions_size").as_int();
+    observations_size_ = node_lifecycle_->get_parameter("QuadRobotCfg.size.observations_size").as_int();
+
+  } catch (const rclcpp::exceptions::ParameterNotDeclaredException& e) {
+    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Parameter not declared: %s", e.what());
+    return false;
+  } catch (const std::exception& e) {
+    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Error loading parameters: %s", e.what());
+    return false;
+  }
 }
 
 
