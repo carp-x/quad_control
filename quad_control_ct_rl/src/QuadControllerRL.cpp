@@ -99,6 +99,10 @@ controller_interface::CallbackReturn QuadControllerRL::on_activate(const rclcpp_
     return controller_interface::CallbackReturn::ERROR;
   }
 
+  cmd_vel_.setZero();
+  last_actions_.resize(quad_interface_->getCentroidalModelInfo().actuatedDofNum);
+  loop_cnt_ = 0;
+
   delay_expired_ = false;
   start_time_ = node_lifecycle_->get_clock()->now();
   printHandlesCfg();
@@ -146,15 +150,28 @@ controller_interface::return_type QuadControllerRL::update(const rclcpp::Time& t
   }
 
   updateStateEstimation(time, period);
-  computeObservations(); // TODO
 
-  computeActions(); // TODO
-  vector_t ff = rbd_torque.tail(12); // TODO
-  vector_t pos_des = centroidal_model::getJointAngles(optimized_state, quad_interface_->getCentroidalModelInfo()); // TODO
-  vector_t vel_des = centroidal_model::getJointVelocities(optimized_input, quad_interface_->getCentroidalModelInfo()); // TODO
-  if (delay_expired_) {
-    setCommand(ff, pos_des, vel_des, kp_, kd_);
+  if (loop_cnt_ % rl_robot_cfg_.control_cfg.decimation == 0) {
+    computeObservation();
+    computeActions();
+    scalar_t action_min = -rl_robot_cfg_.clip_actions;
+    scalar_t action_max = rl_robot_cfg_.clip_actions;
+    std::transform(actions_.begin(), actions_.end(), actions_.begin(),
+                   [action_min, action_max](scalar_t x) { return std::max(action_min, std::min(action_max, x)); });
   }
+
+  if (delay_expired_) {
+    Eigen::Map<vector_t> actions_eigen(actions_.data(), actions_.size());
+    vector_t pos_des = actions_eigen * rl_robot_cfg_.control_cfg.action_scale + default_joint_angles_;
+    setCommand(vector_t::Zero(actions_.size()),     // ff
+               pos_des,                             // pos_des   
+               vector_t::Zero(actions_.size()),     // vel_des
+               rl_robot_cfg_.control_cfg.stiffness, // kp
+               rl_robot_cfg_.control_cfg.damping);  // kd
+    
+    last_actions_ = actions_eigen;
+  }
+  loop_cnt_++;
 
   auto observation_msg = ros_msg_conversions::createObservationMsg(current_observation_);
   observation_msg.time = time.seconds();
@@ -314,10 +331,10 @@ bool QuadControllerRL::loadPolicyParams() {
     rl_robot_cfg_.init_state.RH_HFE_joint = node_lifecycle_->get_parameter(prefix + "RH_HFE_joint").as_double();
     rl_robot_cfg_.init_state.RH_KFE_joint = node_lifecycle_->get_parameter(prefix + "RH_KFE_joint").as_double();
 
-    rl_robot_cfg_.control_cfg.stiffness   = node_lifecycle_->get_parameter("QuadRobotCfg.control.stiffness").as_double();
-    rl_robot_cfg_.control_cfg.damping     = node_lifecycle_->get_parameter("QuadRobotCfg.control.damping").as_double();
-    rl_robot_cfg_.control_cfg.actionScale = node_lifecycle_->get_parameter("QuadRobotCfg.control.action_scale").as_double();
-    rl_robot_cfg_.control_cfg.decimation  = node_lifecycle_->get_parameter("QuadRobotCfg.control.decimation").as_int();
+    rl_robot_cfg_.control_cfg.stiffness    = node_lifecycle_->get_parameter("QuadRobotCfg.control.stiffness").as_double();
+    rl_robot_cfg_.control_cfg.damping      = node_lifecycle_->get_parameter("QuadRobotCfg.control.damping").as_double();
+    rl_robot_cfg_.control_cfg.action_scale = node_lifecycle_->get_parameter("QuadRobotCfg.control.action_scale").as_double();
+    rl_robot_cfg_.control_cfg.decimation   = node_lifecycle_->get_parameter("QuadRobotCfg.control.decimation").as_int();
 
     rl_robot_cfg_.obs_scales.lin_vel = node_lifecycle_->get_parameter("QuadRobotCfg.normalization.obs_scales.lin_vel").as_double();
     rl_robot_cfg_.obs_scales.ang_vel = node_lifecycle_->get_parameter("QuadRobotCfg.normalization.obs_scales.ang_vel").as_double();
@@ -406,10 +423,7 @@ void QuadControllerRL::setupPolicyIO() {
   default_joint_angles_.resize(info.actuatedDofNum);
   for (size_t i = 0; i < info.actuatedDofNum; i++) {
     default_joint_angles_(i) = temp[i];
-  }  
-
-  cmd_vel_.setZero();
-  last_actions_.resize(quad_interface_->getCentroidalModelInfo().actuatedDofNum);
+  }
 }
 
 

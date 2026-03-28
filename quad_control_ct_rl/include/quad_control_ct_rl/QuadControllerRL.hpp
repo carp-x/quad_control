@@ -178,6 +178,7 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
 
   vector3_t cmd_vel_;
   vector_t last_actions_;
+  int64_t loop_cnt_;
 
   rclcpp::Subscription<geometry_msgs::Twist>::SharedPtr cmd_vel_subscriber_;
   rclcpp::Publisher<ocs2_msgs::msg::MpcObservation>::SharedPtr observation_publisher_;
@@ -189,9 +190,6 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
   rclcpp::Time start_time_;
   const double delay_duration_ = 0.0;
   const int print_period_ms_ = 1000;
-
-  const double kp_ = 0.0;
-  const double kd_ = 3.0;
 
  private:
   benchmark::RepeatedTimer policy_timer_;
