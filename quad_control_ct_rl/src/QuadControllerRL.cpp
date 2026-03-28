@@ -394,7 +394,6 @@ bool QuadControllerRL::setupPolicy() {
 
 
 void QuadControllerRL::setupPolicyIO() {
-
   actions_.resize(actions_size_);
   observations_.resize(observations_size_);
 
@@ -411,6 +410,28 @@ void QuadControllerRL::setupPolicyIO() {
 
   cmd_vel_.setZero();
   last_actions_.resize(quad_interface_->getCentroidalModelInfo().actuatedDofNum);
+}
+
+
+void QuadControllerRL::setupSub() {
+  cmd_vel_subscriber_ = node_lifecycle_->create_subscription<geometry_msgs::Twist>(
+    "quad_robot_cmd_vel", 10,
+    [this](const geometry_msgs::Twist::SharedPtr msg) {
+      cmd_vel_(0) = msg->linear.x;
+      cmd_vel_(1) = msg->linear.y;
+      cmd_vel_(2) = msg->angular.z;
+    });
+
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadControllerRL setupSub succeed.");
+}
+
+
+void QuadControllerRL::setupPub() {
+  observation_publisher_ = node_lifecycle_->create_publisher<ocs2_msgs::msg::MpcObservation>(
+      robot_name_ + "_mpc_observation", 
+      rclcpp::SystemDefaultsQoS());
+  
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadControllerRL setupPub succeed.");
 }
 
 
@@ -664,37 +685,6 @@ void QuadControllerRL::updateStateEstimation(const rclcpp::Time& time,
   current_observation_.state(9) = yaw_last + angles::shortest_angular_distance(yaw_last, current_observation_.state(9));
   current_observation_.mode = state_estimate_->getMode();
   current_observation_.time += period.seconds();
-}
-
-
-void QuadControllerRL::setupSub() {
-  // TODO
-  target_trajectories_subscriber_ = node_lifecycle_->create_subscription<ocs2_msgs::msg::MpcTargetTrajectories>(
-    "quad_robot_mpc_target", 10,
-    [this](const ocs2_msgs::msg::MpcTargetTrajectories::SharedPtr msg) {
-      
-      auto target_trajectories = ros_msg_conversions::readTargetTrajectoriesMsg(*msg);
-      if (!target_trajectories.timeTrajectory.empty()) {
-        double time_offset = current_observation_.time - target_trajectories.timeTrajectory.front();
-        for (auto& t : target_trajectories.timeTrajectory) {
-          t += time_offset;
-        }
-      }
-
-      mpc_mrt_interface_->getReferenceManager().setTargetTrajectories(std::move(target_trajectories));
-      RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadControllerRL target trajectories updated.");
-    });
-
-  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadControllerRL setupSub succeed.");
-}
-
-
-void QuadControllerRL::setupPub() {
-  observation_publisher_ = node_lifecycle_->create_publisher<ocs2_msgs::msg::MpcObservation>(
-      robot_name_ + "_mpc_observation", 
-      rclcpp::SystemDefaultsQoS());
-  
-  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadControllerRL setupPub succeed.");
 }
 
 
