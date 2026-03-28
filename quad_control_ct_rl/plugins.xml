@@ -1,4 +1,4 @@
-<library path="quad_control_ct">
+<library path="quad_control_ct_rl">
   <class name="quad_control/QuadController" 
          type="quad_control::QuadController" 
          base_class_type="controller_interface::ControllerInterface">

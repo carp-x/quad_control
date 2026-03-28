@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(quad_control_ct)
+project(quad_control_ct_rl)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
