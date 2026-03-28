@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>quad_control_ct</name>
+  <version>0.0.1</version>
+  <description>The quad_control_ct package</description>
+  <maintainer email="liyuxin_2016@163.com">Yuxin Li</maintainer>
+
+  <license>BSD-3</license>
+  <author>Yuxin Li</author>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>pinocchio</depend>
+  <depend>eigen3_cmake_module</depend>
+  <depend>boost</depend>
+
+  <depend>angles</depend>
+  <depend>ocs2_msgs</depend>
+
+  <depend>rclcpp</depend>
+  <depend>rclcpp_lifecycle</depend>
+  <depend>controller_interface</depend>
+  <depend>hardware_interface</depend>
+
+  <depend>ocs2_core</depend>
+  <depend>ocs2_mpc</depend>
+  <depend>ocs2_sqp</depend>
+  <depend>ocs2_ddp</depend>
+
+  <depend>ocs2_pinocchio_interface</depend>
+  <depend>ocs2_centroidal_model</depend>
+  <depend>ocs2_ros_interfaces</depend>
+
+  <depend>quad_control_mpc</depend>
+  <depend>quad_control_ros</depend>
+  <depend>quad_control_se</depend>
+  <depend>quad_control_wbc</depend>
+
+  <depend>pluginlib</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+    <controller_interface plugin="${prefix}/plugins.xml" />
+  </export>
+</package>

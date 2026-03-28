@@ -1,0 +1,16 @@
+<library path="quad_control_ct">
+  <class name="quad_control/QuadController" 
+         type="quad_control::QuadController" 
+         base_class_type="controller_interface::ControllerInterface">
+    <description>
+      TODO...
+    </description>
+  </class>
+  <class name="quad_control/QuadCheaterController" 
+         type="quad_control::QuadCheaterController" 
+         base_class_type="controller_interface::ControllerInterface">
+    <description>
+      TODO...
+    </description>
+  </class>
+</library>
