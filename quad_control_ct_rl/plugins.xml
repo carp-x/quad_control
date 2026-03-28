@@ -1,13 +1,13 @@
 <library path="quad_control_ct_rl">
-  <class name="quad_control/QuadController" 
-         type="quad_control::QuadController" 
+  <class name="quad_control/QuadControllerRL" 
+         type="quad_control::QuadControllerRL" 
          base_class_type="controller_interface::ControllerInterface">
     <description>
       TODO...
     </description>
   </class>
-  <class name="quad_control/QuadCheaterController" 
-         type="quad_control::QuadCheaterController" 
+  <class name="quad_control/QuadCheaterControllerRL" 
+         type="quad_control::QuadCheaterControllerRL" 
          base_class_type="controller_interface::ControllerInterface">
     <description>
       TODO...

@@ -27,12 +27,13 @@ find_package(quad_control_mpc REQUIRED)
 find_package(quad_control_ros REQUIRED)
 find_package(quad_control_se REQUIRED)
 find_package(quad_control_wbc REQUIRED)
+find_package(quad_control_ct REQUIRED)
 find_package(pluginlib REQUIRED)
 
 #########
 
 add_library(${PROJECT_NAME} SHARED
-  src/QuadController.cpp
+  src/QuadControllerRL.cpp
 )
 target_include_directories(${PROJECT_NAME} 
   PUBLIC
@@ -67,6 +68,7 @@ ament_target_dependencies(${PROJECT_NAME}
   quad_control_ros
   quad_control_se
   quad_control_wbc
+  quad_control_ct
   pluginlib
 )
 

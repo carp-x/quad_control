@@ -36,6 +36,7 @@
   <depend>quad_control_ros</depend>
   <depend>quad_control_se</depend>
   <depend>quad_control_wbc</depend>
+  <depend>quad_control_ct</depend>
 
   <depend>pluginlib</depend>
 

@@ -75,10 +75,10 @@ namespace quad_control {
 using namespace ocs2;
 using namespace quad_robot;
 
-class QuadController : public controller_interface::ControllerInterface {
+class QuadControllerRL : public controller_interface::ControllerInterface {
  public:
-  QuadController() = default;
-  ~QuadController() override;
+  QuadControllerRL() = default;
+  ~QuadControllerRL() override;
 
   controller_interface::CallbackReturn on_init() override;
   controller_interface::CallbackReturn on_configure(const rclcpp_lifecycle::State& previous_state) override;
@@ -214,7 +214,7 @@ class QuadController : public controller_interface::ControllerInterface {
   benchmark::RepeatedTimer wbc_timer_;
 };
 
-class QuadCheaterController : public QuadController {
+class QuadCheaterControllerRL : public QuadControllerRL {
  protected:
   void setupStateEstimation() override;
 };
