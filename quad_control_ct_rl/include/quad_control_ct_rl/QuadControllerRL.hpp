@@ -127,7 +127,7 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
  protected:
   virtual void declarePolicyParams();
   virtual bool loadPolicyParams();
-  virtual void setupPolicy();
+  virtual bool setupPolicy();
   virtual void setupActions(); 
   virtual void setupQuadInterface(const std::string& task_file,
                                   const std::string& urdf_file,
@@ -159,10 +159,10 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
   int observations_size_;
   vector_t default_Joint_angles_;
   // onnx
-  std::shared_ptr<Ort::Env> onnx_env_prt_;
+  std::shared_ptr<Ort::Env> onnx_env_ptr_;
   std::unique_ptr<Ort::Session> session_ptr_;
-  std::vector<const char*> input_names_;
-  std::vector<const char*> output_names_;
+  std::vector<std::string> input_names_;
+  std::vector<std::string> output_names_;
   std::vector<std::vector<int64_t>> input_shapes_;
   std::vector<std::vector<int64_t>> output_shapes_;
   std::vector<tensor_element_t> actions_;

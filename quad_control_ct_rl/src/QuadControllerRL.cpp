@@ -71,10 +71,10 @@ controller_interface::CallbackReturn QuadControllerRL::on_configure(const rclcpp
 
   if (!loadSensorParams()) return controller_interface::CallbackReturn::ERROR;
   if (!loadFileParams()) return controller_interface::CallbackReturn::ERROR;
-  if (!loadPolicyParams()) return controller_interface::CallbackReturn::ERROR; // TODO
+  if (!loadPolicyParams()) return controller_interface::CallbackReturn::ERROR;
 
   try {
-    setupPolicy(); // TODO
+    if (!setupPolicy()) return controller_interface::CallbackReturn::ERROR;
     setupActions();  // TODO
 
     setupQuadInterface(task_file_, urdf_file_, reference_file_);
@@ -338,6 +338,59 @@ bool QuadControllerRL::loadPolicyParams() {
     RCLCPP_ERROR(node_lifecycle_->get_logger(), "Error loading parameters: %s", e.what());
     return false;
   }
+}
+
+
+bool QuadControllerRL::setupPolicy() {
+  onnx_env_ptr_ = std::make_shared<Ort::Env>(ORT_LOGGING_LEVEL_WARNING, "QuadControllerRLOnnx");
+  Ort::SessionOptions session_options;
+  session_options.SetInterOpNumThreads(1);
+  session_options.SetIntraOpNumThreads(1);
+  try {
+    session_ptr_ = std::make_unique<Ort::Session>(*onnx_env_ptr_, policy_file_.c_str(), session_options);
+  } catch (const std::exception& e) {
+    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Failed to create ONNX session: %s", e.what());
+    return false;
+  }
+
+  input_names_.clear();
+  output_names_.clear();
+  input_shapes_.clear();
+  output_shapes_.clear();
+
+  Ort::AllocatorWithDefaultOptions allocator;
+  for (size_t i = 0; i < session_ptr_->GetInputCount(); i++) {
+    auto name_ptr = session_ptr_->GetInputNameAllocated(i, allocator);
+    input_names_.push_back(std::string(name_ptr.get()));
+    input_shapes_.push_back(session_ptr_->GetInputTypeInfo(i).GetTensorTypeAndShapeInfo().GetShape());
+  }
+  for (size_t i = 0; i < session_ptr_->GetOutputCount(); i++) {
+    auto name_ptr = session_ptr_->GetOutputNameAllocated(i, allocator);
+    output_names_.push_back(std::string(name_ptr.get()));
+    output_shapes_.push_back(session_ptr_->GetOutputTypeInfo(i).GetTensorTypeAndShapeInfo().GetShape());
+  }
+
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "ONNX model loaded successfully from: %s", policy_file_.c_str());
+
+  int64_t model_obs_size = input_shapes_[0].back(); 
+  if (model_obs_size != rl_robot_cfg_.observations_size) {
+    RCLCPP_ERROR(node_lifecycle_->get_logger(), 
+                 "Observation size mismatch! YAML: %d, ONNX Model: %ld", 
+                 rl_robot_cfg_.observations_size, model_obs_size);
+    return false;
+  }
+  int64_t model_act_size = output_shapes_[0].back();
+  if (model_act_size != rl_robot_cfg_.actions_size) {
+    RCLCPP_ERROR(node_lifecycle_->get_logger(), 
+                 "Action size mismatch! YAML: %d, ONNX Model: %ld", 
+                 rl_robot_cfg_.actions_size, model_act_size);
+    return false;
+  }
+  RCLCPP_INFO(node_lifecycle_->get_logger(), 
+              "ONNX Model validated: Obs=%ld, Actions=%ld", 
+              model_obs_size, model_act_size);
+
+  return true;
 }
 
 
