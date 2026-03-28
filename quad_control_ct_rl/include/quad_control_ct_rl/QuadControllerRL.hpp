@@ -37,12 +37,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <thread>
 
 #include <angles/angles.h>
+#include <geometry_msgs/Twist.h>
 #include <ocs2_msgs/msg/mpc_observation.hpp>
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
 #include <controller_interface/controller_interface.hpp>
 #include <hardware_interface/handle.hpp>
+
+#include <onnxruntime/onnxruntime_cxx_api.h>
+#include <Eigen/Geometry>
 
 #include <ocs2_core/Types.h>
 #include <ocs2_core/misc/Benchmark.h>
@@ -52,6 +56,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quad_control_se/FromTopiceEstimate.hpp"
 
 #include "quad_control_ct/HardwareInterfaceHandles.hpp"
+#include "quad_control_ct_rl/RLRobotCfg.hpp"
 
 namespace quad_control {
 using namespace ocs2;
@@ -120,12 +125,15 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
   }
 
  protected:
+  virtual void declarePolicyParams();
+  virtual bool loadPolicyParams();
   virtual void setupPolicy();
   virtual void setupActions(); 
   virtual void setupQuadInterface(const std::string& task_file,
                                   const std::string& urdf_file,
                                   const std::string& reference_file);
   virtual void setupStateEstimation();
+  virtual void setupRbd();
   virtual void setupObservations();
   virtual void setupSub();
   virtual void setupPub();
@@ -145,7 +153,20 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
 
   bool on_configure_succeed_ = false;
 
-  // TODO: add policy/actions/observations object
+  std::string policy_file_;
+  RLRobotCfg rl_robot_cfg_{};
+  int actions_size_;
+  int observations_size_;
+  vector_t default_Joint_angles_;
+  // onnx
+  std::shared_ptr<Ort::Env> onnx_env_prt_;
+  std::unique_ptr<Ort::Session> session_ptr_;
+  std::vector<const char*> input_names_;
+  std::vector<const char*> output_names_;
+  std::vector<std::vector<int64_t>> input_shapes_;
+  std::vector<std::vector<int64_t>> output_shapes_;
+  std::vector<tensor_element_t> actions_;
+  std::vector<tensor_element_t> observations_;
 
   std::string task_file_, urdf_file_, reference_file_;
   std::shared_ptr<LeggedRobotInterface> quad_interface_;
@@ -156,8 +177,11 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
   std::shared_ptr<StateEstimateBase> state_estimate_;
   std::shared_ptr<CentroidalModelRbdConversions> rbd_conversions_;
 
+  vector3_t cmd_vel_;
+  vector_t last_actions_;
+
+  rclcpp::Subscription<geometry_msgs::Twist>::SharedPtr cmd_vel_subscriber_;
   rclcpp::Publisher<ocs2_msgs::msg::MpcObservation>::SharedPtr observation_publisher_;
-  rclcpp::Subscription<ocs2_msgs::msg::MpcTargetTrajectories>::SharedPtr target_trajectories_subscriber_; // TODO: change to cmd_vel sub
 
   const std::string robot_name_ = "quad_robot";
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_lifecycle_;

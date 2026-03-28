@@ -79,6 +79,7 @@ controller_interface::CallbackReturn QuadControllerRL::on_configure(const rclcpp
 
     setupQuadInterface(task_file_, urdf_file_, reference_file_);
     setupStateEstimation();
+    setupRbd();
     setupObservations(); // TODO
 
     setupSub();
@@ -472,6 +473,15 @@ void QuadControllerRL::setupStateEstimation() {
   current_observation_.time = 0.0;
 
   RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadControllerRL setupStateEstimation succeed.");
+}
+
+
+void QuadControllerRL::setupRbd() {
+  rbd_conversions_ = std::make_shared<CentroidalModelRbdConversions>(
+      quad_interface_->getPinocchioInterface(),
+      quad_interface_->getCentroidalModelInfo());
+  
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadControllerRL setupRbd succeed.");
 }
 
 
