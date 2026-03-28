@@ -212,7 +212,7 @@ void QuadControllerRL::declareFileParams() {
   node_lifecycle_->declare_parameter<std::string>("task_file", "");
   node_lifecycle_->declare_parameter<std::string>("urdf_file", "");
   node_lifecycle_->declare_parameter<std::string>("reference_file", "");
-  node_lifecycle_->declare_parameter<std::string>("task_file_wbc", "");
+  node_lifecycle_->declare_parameter<std::string>("policy_file", "");
 }
 
 
@@ -285,8 +285,8 @@ bool QuadControllerRL::loadFileParams() {
     RCLCPP_ERROR(node_lifecycle_->get_logger(), "Failed to load 'reference_file' parameter or the path is empty.");
     return false;
   }
-  if (!node_lifecycle_->get_parameter("task_file_wbc", task_file_wbc_) || task_file_wbc_.empty()) {
-    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Failed to load 'task_file_wbc' parameter or the path is empty.");
+  if (!node_lifecycle_->get_parameter("policy_file", policy_file_) || policy_file_.empty()) {
+    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Failed to load 'policy_file' parameter or the path is empty.");
     return false;
   }
 
