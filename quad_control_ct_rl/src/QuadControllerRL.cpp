@@ -31,9 +31,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <pthread.h>
 #include <chrono>
 
-#include <pinocchio/multibody/model.hpp>
-#include <pinocchio/algorithm/model.hpp>
-
 #include <ocs2_centroidal_model/AccessHelperFunctions.h>
 #include <ocs2_ros_interfaces/common/RosMsgConversions.h>
 
@@ -56,6 +53,7 @@ controller_interface::CallbackReturn QuadControllerRL::on_init() {
 
     declareSensorParams();
     declareFileParams();
+    declarePolicyParams(); // TODO
 
   } catch (const std::exception& e) {
     RCLCPP_ERROR(node_lifecycle_->get_logger(), "Exception in on_init: %s", e.what());
@@ -70,24 +68,21 @@ controller_interface::CallbackReturn QuadControllerRL::on_init() {
 controller_interface::CallbackReturn QuadControllerRL::on_configure(const rclcpp_lifecycle::State&) {
   if (on_configure_succeed_)
     return controller_interface::CallbackReturn::SUCCESS;
-  if (!node_base_)
-    node_base_ = rclcpp::Node::make_shared(robot_name_);
 
   if (!loadSensorParams()) return controller_interface::CallbackReturn::ERROR;
   if (!loadFileParams()) return controller_interface::CallbackReturn::ERROR;
+  if (!loadPolicyParams()) return controller_interface::CallbackReturn::ERROR; // TODO
 
   try {
+    setupPolicy(); // TODO
+    setupActions();  // TODO
+
     setupQuadInterface(task_file_, urdf_file_, reference_file_);
-    setupMpc();
-    setupMrt();
-    setupWbc(task_file_wbc_);
-    setupSafetyChecker();
     setupStateEstimation();
-    setupRbd();
+    setupObservations(); // TODO
+
     setupSub();
     setupPub();
-    setupVisualization();
-    printPinocchioMapping();
   } catch (const std::exception& e) {
     RCLCPP_ERROR(node_lifecycle_->get_logger(), "Failed to setup QuadControllerRL: %s", e.what());
     return controller_interface::CallbackReturn::ERROR;
@@ -104,8 +99,6 @@ controller_interface::CallbackReturn QuadControllerRL::on_activate(const rclcpp_
     return controller_interface::CallbackReturn::ERROR;
   }
 
-  activateMrt();
-
   delay_expired_ = false;
   start_time_ = node_lifecycle_->get_clock()->now();
   printHandlesCfg();
@@ -115,32 +108,12 @@ controller_interface::CallbackReturn QuadControllerRL::on_activate(const rclcpp_
 
 
 controller_interface::CallbackReturn QuadControllerRL::on_deactivate(const rclcpp_lifecycle::State&) {
-  mpc_running_ = false;
-  controller_running_ = false;
-
-  if (mpc_thread_.joinable()) {
-    mpc_thread_.join();
-  }
 
   joint_handles_.clear();
   ft_handles_.clear();
   imu_handles_.clear();
 
-  RCLCPP_INFO(node_lifecycle_->get_logger(), 
-    "\n########################################################################"
-    "\n### MPC Benchmarking"
-    "\n###   Maximum : %.3f [ms]."
-    "\n###   Average : %.3f [ms]."
-    "\n########################################################################"
-    "\n### WBC Benchmarking"
-    "\n###   Maximum : %.3f [ms]."
-    "\n###   Average : %.3f [ms]."
-    "\n########################################################################",
-    mpc_timer_.getMaxIntervalInMilliseconds(),
-    mpc_timer_.getAverageInMilliseconds(),
-    wbc_timer_.getMaxIntervalInMilliseconds(),
-    wbc_timer_.getAverageInMilliseconds()
-  );
+  // TODO: policy/actions/observations clear()
 
   RCLCPP_INFO(node_lifecycle_->get_logger(), "Controller deactivated.");
   return controller_interface::CallbackReturn::SUCCESS;
@@ -173,41 +146,12 @@ controller_interface::return_type QuadControllerRL::update(const rclcpp::Time& t
   }
 
   updateStateEstimation(time, period);
-  mpc_mrt_interface_->setCurrentObservation(current_observation_);
-  mpc_mrt_interface_->updatePolicy();
+  computeObservations(); // TODO
 
-  vector_t optimized_state, optimized_input;
-  size_t planned_mode = 0; 
-  mpc_mrt_interface_->evaluatePolicy(current_observation_.time,
-                                     current_observation_.state,
-                                     optimized_state,
-                                     optimized_input,
-                                     planned_mode);
-  if (!optimized_state.allFinite() || !optimized_input.allFinite()) {
-    RCLCPP_ERROR(node_lifecycle_->get_logger(), "NaN x/u, stop QuadControllerRL.");
-    return controller_interface::return_type::ERROR;
-  }
-  current_observation_.input = optimized_input;
-
-  if (!safety_checker_->check(current_observation_, optimized_state, optimized_input)) {
-    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Safety check failed, stop QuadControllerRL.");
-    return controller_interface::return_type::ERROR;
-  }
-
-    /*
-    vector_t joint_acc = vector_t::Zero(quad_interface_->getCentroidalModelInfo().actuatedDofNum);
-    vector_t rbd_torque = rbd_conversions_->computeRbdTorqueFromCentroidalModel(optimized_state, 
-                                                                                optimized_input,
-                                                                                joint_acc);
-    */
-
-  wbc_timer_.startTimer();
-  vector_t rbd_torque = wbc_->update(optimized_state, optimized_input, measured_rbd_state_, planned_mode, period.seconds());
-  wbc_timer_.endTimer();
-
-  vector_t ff = rbd_torque.tail(12);
-  vector_t pos_des = centroidal_model::getJointAngles(optimized_state, quad_interface_->getCentroidalModelInfo());
-  vector_t vel_des = centroidal_model::getJointVelocities(optimized_input, quad_interface_->getCentroidalModelInfo());
+  computeActions(); // TODO
+  vector_t ff = rbd_torque.tail(12); // TODO
+  vector_t pos_des = centroidal_model::getJointAngles(optimized_state, quad_interface_->getCentroidalModelInfo()); // TODO
+  vector_t vel_des = centroidal_model::getJointVelocities(optimized_input, quad_interface_->getCentroidalModelInfo()); // TODO
   if (delay_expired_) {
     setCommand(ff, pos_des, vel_des, kp_, kd_);
   }
@@ -215,13 +159,8 @@ controller_interface::return_type QuadControllerRL::update(const rclcpp::Time& t
   auto observation_msg = ros_msg_conversions::createObservationMsg(current_observation_);
   observation_msg.time = time.seconds();
   observation_publisher_->publish(observation_msg);
-  robot_visualizer_->update(current_observation_, mpc_mrt_interface_->getPolicy(), mpc_mrt_interface_->getCommand());
-  self_collision_visualization_->update(current_observation_);
 
-    // printStateCommand(print_period_ms_);
-    // printMpcOptimizedState(optimized_state, print_period_ms_);
-    // printMpcOptimizedCInput(optimized_input, print_period_ms_);
-    // printWbcOptimizedToque(ff, print_period_ms_);
+  printStateCommand(print_period_ms_);
   return controller_interface::return_type::OK;
 }
 
@@ -525,130 +464,6 @@ void QuadControllerRL::setupQuadInterface(const std::string& task_file,
 }
 
 
-void QuadControllerRL::setupMpc() {
-  auto ros_reference_manager_ptr = std::make_shared<RosReferenceManager>(
-      robot_name_, quad_interface_->getReferenceManagerPtr());
-  ros_reference_manager_ptr->subscribe(node_base_);
-
-  gait_receiver_ptr_ = std::make_shared<GaitReceiver>(
-      node_base_, quad_interface_->getSwitchedModelReferenceManagerPtr()->getGaitSchedule(), robot_name_);
-  
-  mpc_ = std::make_shared<SqpMpc>(quad_interface_->mpcSettings(), 
-                                  quad_interface_->sqpSettings(),
-                                  quad_interface_->getOptimalControlProblem(), 
-                                  quad_interface_->getInitializer());
-    // mpc_ = std::make_shared<GaussNewtonDDP_MPC>(quad_interface_->mpcSettings(), 
-    //                                             quad_interface_->ddpSettings(),
-    //                                             quad_interface_->getRollout(),
-    //                                             quad_interface_->getOptimalControlProblem(), 
-    //                                             quad_interface_->getInitializer());
-  mpc_->getSolverPtr()->setReferenceManager(ros_reference_manager_ptr);
-  mpc_->getSolverPtr()->addSynchronizedModule(gait_receiver_ptr_);
-
-  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadControllerRL setupMpc succeed.");
-}
-
-
-void QuadControllerRL::setupMrt() {
-  mpc_mrt_interface_ = std::make_shared<MPC_MRT_Interface>(*mpc_);
-  mpc_mrt_interface_->initRollout(&quad_interface_->getRollout());
-  mpc_timer_.reset();
-
-  if (mpc_thread_.joinable()) {
-      controller_running_ = false;
-      mpc_thread_.join();
-  }
-  controller_running_ = true;
-  mpc_running_ = false;
-  mpc_thread_ = std::thread([this]() {
-    double desired_frequency = quad_interface_->mpcSettings().mpcDesiredFrequency_;
-    auto sleep_duration = std::chrono::microseconds(static_cast<int>(1e6 / desired_frequency));
-
-    while (rclcpp::ok() && controller_running_) {
-      auto start = std::chrono::steady_clock::now();
-      try {
-        if (mpc_running_) {
-          mpc_timer_.startTimer();
-          mpc_mrt_interface_->advanceMpc();
-          mpc_timer_.endTimer();
-        }
-      } catch (const std::exception& e) {
-        controller_running_ = false;
-        RCLCPP_ERROR(node_lifecycle_->get_logger(), "[OCS2 MPC thread] Error: %s", e.what());
-      }
-      auto end = std::chrono::steady_clock::now();
-      auto elapsed = end - start;
-      if (sleep_duration > elapsed) {
-        std::this_thread::sleep_for(sleep_duration - elapsed);
-      }
-    }
-  });
-
-  int priority = quad_interface_->sqpSettings().threadPriority;
-    // int priority = quad_interface_->ddpSettings().threadPriority_;
-  if (priority > 0) {
-    struct sched_param param;
-    param.sched_priority = priority;
-    if (pthread_setschedparam(mpc_thread_.native_handle(), SCHED_FIFO, &param) != 0) {
-      RCLCPP_WARN(node_lifecycle_->get_logger(), "Failed to set MPC thread priority to %d", priority);
-    } else {
-      RCLCPP_INFO(node_lifecycle_->get_logger(), "Successfully set MPC thread priority to %d", priority);
-    }
-  }
-
-  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadControllerRL setupMrt succeed.");
-}
-
-
-void QuadControllerRL::activateMrt() {
-
-  const auto time = node_lifecycle_->now();
-
-  current_observation_.state.setZero(quad_interface_->getCentroidalModelInfo().stateDim);
-  current_observation_.input.setZero(quad_interface_->getCentroidalModelInfo().inputDim);
-  current_observation_.mode = ModeNumber::STANCE;
-
-  const rclcpp::Duration period = rclcpp::Duration::from_seconds(1.0 / static_cast<double>(get_update_rate()));
-  updateStateEstimation(time, period);
-
-  SystemObservation init_observation;
-  init_observation.state = quad_interface_->getInitialState();
-  init_observation.input =
-      vector_t::Zero(quad_interface_->getCentroidalModelInfo().inputDim);
-  init_observation.mode = ModeNumber::STANCE;
-  TargetTrajectories init_target_rajectories({0.0}, 
-                                             {init_observation.state},
-                                             {init_observation.input});
-
-  mpc_mrt_interface_->setCurrentObservation(current_observation_);
-  mpc_mrt_interface_->getReferenceManager().setTargetTrajectories(init_target_rajectories);
-
-  RCLCPP_INFO(node_lifecycle_->get_logger(), "Waiting for the initial policy ...");
-  while (rclcpp::ok() && !mpc_mrt_interface_->initialPolicyReceived()) {
-    mpc_mrt_interface_->advanceMpc();
-    std::this_thread::sleep_for(std::chrono::milliseconds(
-        static_cast<int>(1000.0 / quad_interface_->mpcSettings().mrtDesiredFrequency_)));
-  }
-
-  mpc_running_ = true;
-  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadControllerRL activateMrt succeed.");
-}
-
-
-void QuadControllerRL::setupWbc(const std::string& task_file_wbc) {
-  wbc_ = std::make_shared<WeightedWbc>(quad_interface_->getPinocchioInterface(), 
-                                       quad_interface_->getCentroidalModelInfo(),
-                                       *ee_kinematics_ptr_);
-  bool verbose = false;
-  wbc_->loadTasksSetting(task_file_wbc, verbose);
-}
-
-
-void QuadControllerRL::setupSafetyChecker() {
-  safety_checker_ = std::make_shared<SafetyChecker>(quad_interface_->getCentroidalModelInfo());
-}
-
-
 void QuadControllerRL::setupStateEstimation() {
   state_estimate_ = std::make_shared<LinearKalmanFilter>(node_lifecycle_,
                                                          quad_interface_->getPinocchioInterface(),
@@ -688,28 +503,8 @@ void QuadControllerRL::updateStateEstimation(const rclcpp::Time& time,
 }
 
 
-void QuadControllerRL::setupRbd() {
-  rbd_conversions_ = std::make_shared<CentroidalModelRbdConversions>(
-      quad_interface_->getPinocchioInterface(),
-      quad_interface_->getCentroidalModelInfo());
-  
-  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadControllerRL setupRbd succeed.");
-}
-
-
 void QuadControllerRL::setupSub() {
-  gait_subscriber_ = node_lifecycle_->create_subscription<ocs2_msgs::msg::ModeSchedule>(
-    "quad_robot_mpc_mode_schedule", 10,
-    [this](const ocs2_msgs::msg::ModeSchedule::SharedPtr msg) {
-      if (gait_receiver_ptr_) {
-        gait_receiver_ptr_->updateGait(msg);
-        RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadControllerRL gait updated.");
-      }
-      else {
-        RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadControllerRL gait_receiver_ptr_ released.");
-      }
-    });
-
+  // TODO
   target_trajectories_subscriber_ = node_lifecycle_->create_subscription<ocs2_msgs::msg::MpcTargetTrajectories>(
     "quad_robot_mpc_target", 10,
     [this](const ocs2_msgs::msg::MpcTargetTrajectories::SharedPtr msg) {
@@ -736,38 +531,6 @@ void QuadControllerRL::setupPub() {
       rclcpp::SystemDefaultsQoS());
   
   RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadControllerRL setupPub succeed.");
-}
-
-
-void QuadControllerRL::setupVisualization() {
-  robot_visualizer_ = std::make_shared<LeggedRobotVisualizer>(
-      quad_interface_->getPinocchioInterface(), 
-      quad_interface_->getCentroidalModelInfo(),
-      *ee_kinematics_ptr_, node_base_);
-  
-  self_collision_visualization_.reset(new LeggedSelfCollisionVisualization(
-      quad_interface_->getPinocchioInterface(),
-      quad_interface_->getGeometryInterface(), 
-      *pinocchio_mapping_ptr_));
-
-  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadControllerRL setupVisualization succeed.");
-}
-
-
-void QuadControllerRL::printPinocchioMapping() {
-  auto logger = node_lifecycle_->get_logger();
-
-  const auto& model = quad_interface_->getPinocchioInterface().getModel();
-
-  RCLCPP_INFO(logger, "--------------------------------------------------");
-  RCLCPP_INFO(logger, ">> [Pinocchio Generalized Coordinates (q)]");
-  for (size_t i = 0; i < model.joints.size(); ++i) {
-      RCLCPP_INFO(logger, "Joint ID: %ld, Name: %s, nq: %d", 
-                  i, 
-                  model.names[i].c_str(), 
-                  model.joints[i].nq());
-  }
-  RCLCPP_INFO(logger, "--------------------------------------------------");
 }
 
 
@@ -811,67 +574,6 @@ void QuadControllerRL::setCommand(const vector_t& ff, const vector_t& pos_des, c
     (void)joint_handles_[i].kp.get().set_value(kp);
     (void)joint_handles_[i].kd.get().set_value(kd);
   } 
-}
-
-
-void QuadControllerRL::printMpcOptimizedState(const vector_t& optimized_state, int period_ms) {
-  auto logger = node_lifecycle_->get_logger();
-  auto& clock = *(node_lifecycle_->get_clock());
-
-  std::stringstream ss;
-  ss << "\n--- MPC OPTIMIZED STATE ------------------------\n";
-
-  char buf[256];
-  for (int i = 0; i < optimized_state.size(); ++i) {
-    snprintf(buf, sizeof(buf), "%8.3f ", optimized_state[i]);
-    ss << buf;
-    if ((i + 1) % 6 == 0) ss << "\n"; 
-    else if ((i + 1) % 3 == 0) ss << " | ";
-  }
-
-  ss << "\n------------------------------------------------";
-  RCLCPP_INFO_THROTTLE(logger, clock, period_ms, "%s", ss.str().c_str());
-}
-
-
-void QuadControllerRL::printMpcOptimizedCInput(const vector_t& optimized_input, int period_ms) {
-  auto logger = node_lifecycle_->get_logger();
-  auto& clock = *(node_lifecycle_->get_clock());
-
-  std::stringstream ss;
-  ss << "\n--- MPC OPTIMIZED INPUT --------------------\n";
-
-  char buf[256];
-  for (int i = 0; i < optimized_input.size(); ++i) {
-    snprintf(buf, sizeof(buf), "%8.3f ", optimized_input[i]);
-    ss << buf;
-    if ((i + 1) % 6 == 0) ss << "\n"; 
-    else if ((i + 1) % 3 == 0) ss << " | ";
-  }
-
-  ss << "\n--------------------------------------------";
-  RCLCPP_INFO_THROTTLE(logger, clock, period_ms, "%s", ss.str().c_str());
-}
-
-
-void QuadControllerRL::printWbcOptimizedToque(const vector_t& ff, int period_ms) {
-  auto logger = node_lifecycle_->get_logger();
-  auto& clock = *(node_lifecycle_->get_clock());
-
-  std::stringstream ss;
-  ss << "\n--- WBC OPTIMIZED TORQUE ------\n";
-  
-  char buf[512];
-  for (int i = 0; i < ff.size(); ++i) {
-    snprintf(buf, sizeof(buf), "%8.3f ", ff[i]);
-    ss << buf;
-    if ((i + 1) % 6 == 0) ss << "\n"; 
-    else if ((i + 1) % 3 == 0) ss << " | ";
-  }
-
-  ss << "---------------------------------";
-
-  RCLCPP_INFO_THROTTLE(logger, clock, period_ms, "%s", ss.str().c_str());
 }
 
 

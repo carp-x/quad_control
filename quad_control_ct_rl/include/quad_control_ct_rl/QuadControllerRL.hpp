@@ -38,8 +38,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <angles/angles.h>
 #include <ocs2_msgs/msg/mpc_observation.hpp>
-#include <ocs2_msgs/msg/mode_schedule.hpp>
-#include <ocs2_msgs/msg/mpc_target_trajectories.hpp>
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
@@ -48,28 +46,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <ocs2_core/Types.h>
 #include <ocs2_core/misc/Benchmark.h>
-#include <ocs2_mpc/MPC_BASE.h>
-#include <ocs2_mpc/MPC_MRT_Interface.h>
-#include <ocs2_sqp/SqpMpc.h>
-#include <ocs2_ddp/GaussNewtonDDP_MPC.h>
-
 #include <ocs2_pinocchio_interface/PinocchioEndEffectorKinematics.h>
 #include <ocs2_centroidal_model/CentroidalModelRbdConversions.h>
-#include <ocs2_ros_interfaces/synchronized_module/RosReferenceManager.h>
-#include <ocs2_ros_interfaces/synchronized_module/SolverObserverRosCallbacks.h>
-
-#include "quad_control_mpc/LeggedRobotInterface.h"
-#include "quad_control_ros/gait/GaitReceiver.h"
-#include "quad_control_ros/visualization/LeggedRobotVisualizer.h"
-#include "quad_control_ros/visualization/LeggedSelfCollisionVisualization.h"
 #include "quad_control_se/LinearKalmanFilter.hpp"
 #include "quad_control_se/FromTopiceEstimate.hpp"
-#include "quad_control_wbc/WbcBase.h"
-#include "quad_control_wbc/WeightedWbc.h"
-#include "quad_control_wbc/HierarchicalWbc.h"
 
 #include "quad_control_ct/HardwareInterfaceHandles.hpp"
-#include "quad_control_ct/SafetyChecker.hpp"
 
 namespace quad_control {
 using namespace ocs2;
@@ -138,22 +120,19 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
   }
 
  protected:
+  virtual void setupPolicy();
+  virtual void setupActions(); 
   virtual void setupQuadInterface(const std::string& task_file,
                                   const std::string& urdf_file,
                                   const std::string& reference_file);
-  virtual void setupMpc();
-  virtual void setupMrt();
-  virtual void activateMrt();
-  virtual void setupWbc(const std::string& task_file_wbc);
-  virtual void setupSafetyChecker();
   virtual void setupStateEstimation();
-  virtual void updateStateEstimation(const rclcpp::Time& time, 
-                                     const rclcpp::Duration& period);
-  virtual void setupRbd();
+  virtual void setupObservations();
   virtual void setupSub();
   virtual void setupPub();
-  virtual void setupVisualization();
-  virtual void printPinocchioMapping();
+  virtual void updateStateEstimation(const rclcpp::Time& time, 
+                                     const rclcpp::Duration& period);
+  virtual void computeObservations();
+  virtual void computeActions();
 
   void getState(vector_t& joint_pos, vector_t& joint_vel, 
                 contact_flag_t& contact_flag, 
@@ -163,41 +142,25 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
                 matrix3_t& angular_vel_cov, matrix3_t& linear_acc_cov);
   void setCommand(const vector_t& ff, const vector_t& pos_des, const vector_t& vel_des,
                   double kp, double kd);
-  void printMpcOptimizedState(const vector_t& optimized_state, int period_ms);
-  void printMpcOptimizedCInput(const vector_t& optimized_input, int period_ms);
-  void printWbcOptimizedToque(const vector_t& ff, int period_ms);
 
   bool on_configure_succeed_ = false;
 
-  std::string task_file_, urdf_file_, reference_file_;
-  std::string task_file_wbc_;
+  // TODO: add policy/actions/observations object
 
+  std::string task_file_, urdf_file_, reference_file_;
   std::shared_ptr<LeggedRobotInterface> quad_interface_;
   std::shared_ptr<CentroidalModelPinocchioMapping>  pinocchio_mapping_ptr_;
   std::shared_ptr<PinocchioEndEffectorKinematics> ee_kinematics_ptr_;
-
-  std::shared_ptr<MPC_BASE> mpc_;
-  std::shared_ptr<MPC_MRT_Interface> mpc_mrt_interface_;
-
-  std::shared_ptr<WbcBase> wbc_;
-  std::shared_ptr<SafetyChecker> safety_checker_;
-
   SystemObservation current_observation_;
   vector_t measured_rbd_state_;
   std::shared_ptr<StateEstimateBase> state_estimate_;
   std::shared_ptr<CentroidalModelRbdConversions> rbd_conversions_;
 
   rclcpp::Publisher<ocs2_msgs::msg::MpcObservation>::SharedPtr observation_publisher_;
-  std::shared_ptr<LeggedRobotVisualizer> robot_visualizer_;
-  std::shared_ptr<LeggedSelfCollisionVisualization> self_collision_visualization_;
-
-  std::shared_ptr<GaitReceiver> gait_receiver_ptr_;
-  rclcpp::Subscription<ocs2_msgs::msg::ModeSchedule>::SharedPtr gait_subscriber_;
-  rclcpp::Subscription<ocs2_msgs::msg::MpcTargetTrajectories>::SharedPtr target_trajectories_subscriber_;
+  rclcpp::Subscription<ocs2_msgs::msg::MpcTargetTrajectories>::SharedPtr target_trajectories_subscriber_; // TODO: change to cmd_vel sub
 
   const std::string robot_name_ = "quad_robot";
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_lifecycle_;
-  rclcpp::Node::SharedPtr node_base_;
 
   bool delay_expired_;
   rclcpp::Time start_time_;
@@ -208,10 +171,7 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
   const double kd_ = 3.0;
 
  private:
-  std::thread mpc_thread_;
-  std::atomic_bool controller_running_{}, mpc_running_{};
-  benchmark::RepeatedTimer mpc_timer_;
-  benchmark::RepeatedTimer wbc_timer_;
+  benchmark::RepeatedTimer policy_timer_;
 };
 
 class QuadCheaterControllerRL : public QuadControllerRL {
