@@ -773,6 +773,10 @@ void QuadControllerRL::computeObservations() {
          joint_vel * obs_scales.dof_vel,
          actions;
 
+  for (size_t i = 0; i < obs.size(); ++i) {
+    observations_[i] = static_cast<tensor_element_t>(obs(i));
+  }
+
   scalar_t obs_min = -rl_robot_cfg_.clip_observations;
   scalar_t obs_max = rl_robot_cfg_.clip_observations;
   std::transform(observations_.begin(), observations_.end(), observations_.begin(),
