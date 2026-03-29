@@ -561,7 +561,7 @@ void QuadController::setupMrt() {
   controller_running_ = true;
   mpc_running_ = false;
   mpc_thread_ = std::thread([this]() {
-    double desired_frequency = quad_interface_->mpcSettings().mpcDesiredFrequency_;
+    scalar_t desired_frequency = quad_interface_->mpcSettings().mpcDesiredFrequency_;
     auto sleep_duration = std::chrono::microseconds(static_cast<int>(1e6 / desired_frequency));
 
     while (rclcpp::ok() && controller_running_) {
@@ -608,7 +608,7 @@ void QuadController::activateMrt() {
   current_observation_.input.setZero(quad_interface_->getCentroidalModelInfo().inputDim);
   current_observation_.mode = ModeNumber::STANCE;
 
-  const rclcpp::Duration period = rclcpp::Duration::from_seconds(1.0 / static_cast<double>(get_update_rate()));
+  const rclcpp::Duration period = rclcpp::Duration::from_seconds(1.0 / static_cast<scalar_t>(get_update_rate()));
   updateStateEstimation(time, period);
 
   SystemObservation init_observation;
@@ -716,7 +716,7 @@ void QuadController::setupSub() {
       
       auto target_trajectories = ros_msg_conversions::readTargetTrajectoriesMsg(*msg);
       if (!target_trajectories.timeTrajectory.empty()) {
-        double time_offset = current_observation_.time - target_trajectories.timeTrajectory.front();
+        scalar_t time_offset = current_observation_.time - target_trajectories.timeTrajectory.front();
         for (auto& t : target_trajectories.timeTrajectory) {
           t += time_offset;
         }
@@ -803,7 +803,7 @@ void QuadController::getState(
 
 
 void QuadController::setCommand(const vector_t& ff, const vector_t& pos_des, const vector_t& vel_des,
-                                double kp, double kd) {
+                                scalar_t kp, scalar_t kd) {
   for (size_t i = 0; i < quad_interface_->getCentroidalModelInfo().actuatedDofNum; ++i) {
     (void)joint_handles_[i].pos_des.get().set_value(pos_des(i));
     (void)joint_handles_[i].vel_des.get().set_value(vel_des(i));

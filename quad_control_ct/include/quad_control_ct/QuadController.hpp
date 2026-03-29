@@ -162,7 +162,7 @@ class QuadController : public controller_interface::ControllerInterface {
                 matrix3_t& ori_cov, 
                 matrix3_t& angular_vel_cov, matrix3_t& linear_acc_cov);
   void setCommand(const vector_t& ff, const vector_t& pos_des, const vector_t& vel_des,
-                  double kp, double kd);
+                  scalar_t kp, scalar_t kd);
   void printMpcOptimizedState(const vector_t& optimized_state, int period_ms);
   void printMpcOptimizedCInput(const vector_t& optimized_input, int period_ms);
   void printWbcOptimizedToque(const vector_t& ff, int period_ms);
@@ -201,11 +201,11 @@ class QuadController : public controller_interface::ControllerInterface {
 
   bool delay_expired_;
   rclcpp::Time start_time_;
-  const double delay_duration_ = 0.0;
+  const scalar_t delay_duration_ = 0.0;
   const int print_period_ms_ = 1000;
 
-  const double kp_ = 0.0;
-  const double kd_ = 3.0;
+  const scalar_t kp_ = 0.0;
+  const scalar_t kd_ = 3.0;
 
  private:
   std::thread mpc_thread_;
