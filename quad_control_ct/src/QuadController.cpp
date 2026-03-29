@@ -115,16 +115,15 @@ controller_interface::CallbackReturn QuadController::on_activate(const rclcpp_li
 
 
 controller_interface::CallbackReturn QuadController::on_deactivate(const rclcpp_lifecycle::State&) {
-  mpc_running_ = false;
-  controller_running_ = false;
-
-  if (mpc_thread_.joinable()) {
-    mpc_thread_.join();
-  }
-
   joint_handles_.clear();
   ft_handles_.clear();
   imu_handles_.clear();
+
+  mpc_running_ = false;
+  controller_running_ = false;
+  if (mpc_thread_.joinable()) {
+    mpc_thread_.join();
+  }
 
   RCLCPP_INFO(node_lifecycle_->get_logger(), 
     "\n########################################################################"
