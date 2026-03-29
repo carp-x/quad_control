@@ -187,7 +187,7 @@ controller_interface::return_type QuadControllerRL::update(const rclcpp::Time& t
   observation_msg.time = time.seconds();
   observation_publisher_->publish(observation_msg);
 
-  printStateCommand(print_period_ms_);
+  // printStateCommand(print_period_ms_);
   return controller_interface::return_type::OK;
 }
 
@@ -323,24 +323,25 @@ bool QuadControllerRL::loadFileParams() {
 
 
 bool QuadControllerRL::loadPolicyParams() {
-  
   auto get_param_double = [this](const std::string& name) -> scalar_t {
-    return static_cast<scalar_t>(node_lifecycle_->get_parameter(name).as_double());
+    auto val = static_cast<scalar_t>(node_lifecycle_->get_parameter(name).as_double());
+    RCLCPP_INFO(node_lifecycle_->get_logger(), "Successfully loaded [Double] %s: %f", name.c_str(), val);
+    return val;
   };
+
   try {
+    RCLCPP_INFO(node_lifecycle_->get_logger(), "--- Starting to load Policy Parameters ---");
+
     std::string prefix = "QuadRobotCfg.init_state.default_joint_angle.";
     rl_robot_cfg_.init_state.LF_HAA_joint = get_param_double(prefix + "LF_HAA_joint");
     rl_robot_cfg_.init_state.LF_HFE_joint = get_param_double(prefix + "LF_HFE_joint");
     rl_robot_cfg_.init_state.LF_KFE_joint = get_param_double(prefix + "LF_KFE_joint");
-    //
     rl_robot_cfg_.init_state.LH_HAA_joint = get_param_double(prefix + "LH_HAA_joint");
     rl_robot_cfg_.init_state.LH_HFE_joint = get_param_double(prefix + "LH_HFE_joint");
     rl_robot_cfg_.init_state.LH_KFE_joint = get_param_double(prefix + "LH_KFE_joint");
-    //
     rl_robot_cfg_.init_state.RF_HAA_joint = get_param_double(prefix + "RF_HAA_joint");
     rl_robot_cfg_.init_state.RF_HFE_joint = get_param_double(prefix + "RF_HFE_joint");
     rl_robot_cfg_.init_state.RF_KFE_joint = get_param_double(prefix + "RF_KFE_joint");
-    //
     rl_robot_cfg_.init_state.RH_HAA_joint = get_param_double(prefix + "RH_HAA_joint");
     rl_robot_cfg_.init_state.RH_HFE_joint = get_param_double(prefix + "RH_HFE_joint");
     rl_robot_cfg_.init_state.RH_KFE_joint = get_param_double(prefix + "RH_KFE_joint");
@@ -348,7 +349,9 @@ bool QuadControllerRL::loadPolicyParams() {
     rl_robot_cfg_.control_cfg.stiffness    = get_param_double("QuadRobotCfg.control.stiffness");
     rl_robot_cfg_.control_cfg.damping      = get_param_double("QuadRobotCfg.control.damping");
     rl_robot_cfg_.control_cfg.action_scale = get_param_double("QuadRobotCfg.control.action_scale");
-    rl_robot_cfg_.control_cfg.decimation   = node_lifecycle_->get_parameter("QuadRobotCfg.control.decimation").as_int();
+    int decimation = node_lifecycle_->get_parameter("QuadRobotCfg.control.decimation").as_int();
+    rl_robot_cfg_.control_cfg.decimation = decimation;
+    RCLCPP_INFO(node_lifecycle_->get_logger(), "Successfully loaded [Int] QuadRobotCfg.control.decimation: %d", decimation);
 
     rl_robot_cfg_.obs_scales.lin_vel = get_param_double("QuadRobotCfg.normalization.obs_scales.lin_vel");
     rl_robot_cfg_.obs_scales.ang_vel = get_param_double("QuadRobotCfg.normalization.obs_scales.ang_vel");
@@ -360,9 +363,15 @@ bool QuadControllerRL::loadPolicyParams() {
 
     actions_size_      = static_cast<size_t>(node_lifecycle_->get_parameter("QuadRobotCfg.size.actions_size").as_int());
     observations_size_ = static_cast<size_t>(node_lifecycle_->get_parameter("QuadRobotCfg.size.observations_size").as_int());
+    
+    RCLCPP_INFO(node_lifecycle_->get_logger(), "Successfully loaded Sizes: Act=%zu, Obs=%zu", actions_size_, observations_size_);
+    RCLCPP_INFO(node_lifecycle_->get_logger(), "--- All Policy Parameters Loaded Successfully ---");
 
   } catch (const rclcpp::exceptions::ParameterNotDeclaredException& e) {
-    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Parameter not declared: %s", e.what());
+    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Parameter not declared (Did you forget declare_parameter?): %s", e.what());
+    return false;
+  } catch (const rclcpp::exceptions::InvalidParameterTypeException& e) {
+    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Parameter type mismatch (Check if YAML has .0 for doubles): %s", e.what());
     return false;
   } catch (const std::exception& e) {
     RCLCPP_ERROR(node_lifecycle_->get_logger(), "Error loading parameters: %s", e.what());
