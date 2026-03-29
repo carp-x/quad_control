@@ -119,12 +119,27 @@ controller_interface::CallbackReturn QuadControllerRL::on_activate(const rclcpp_
 
 
 controller_interface::CallbackReturn QuadControllerRL::on_deactivate(const rclcpp_lifecycle::State&) {
-
   joint_handles_.clear();
   ft_handles_.clear();
   imu_handles_.clear();
 
-  // TODO: policy/actions/observations clear()
+  cmd_vel_.setZero();
+  last_actions_.setZero();
+  loop_cnt_ = 0;
+
+  current_observation_.state.setZero(quad_interface_->getCentroidalModelInfo().stateDim);
+  current_observation_.input.setZero(quad_interface_->getCentroidalModelInfo().inputDim);
+  current_observation_.mode = ModeNumber::STANCE;
+
+  RCLCPP_INFO(node_lifecycle_->get_logger(), 
+    "\n########################################################################"
+    "\n### ONNX Benchmarking"
+    "\n###   Maximum : %.3f [ms]."
+    "\n###   Average : %.3f [ms]."
+    "\n########################################################################",
+    policy_timer_.getMaxIntervalInMilliseconds(),
+    policy_timer_.getAverageInMilliseconds()
+  );
 
   RCLCPP_INFO(node_lifecycle_->get_logger(), "Controller deactivated.");
   return controller_interface::CallbackReturn::SUCCESS;
@@ -820,12 +835,14 @@ void QuadControllerRL::computeActions() {
                                                                     input_shapes_[0].size()));
 
   Ort::RunOptions run_options;
+  policy_timer_.startTimer();
   std::vector<Ort::Value> output_values = session_ptr_->Run(
       run_options, 
       input_names_.data(), 
       input_values.data(), 1, 
       output_names_.data(), 1
-    );
+  );
+  policy_timer_.endTimer();
 
   for (size_t i = 0; i < actions_size_; i++) {
     actions_[i] = *(output_values[0].GetTensorMutableData<tensor_element_t>() + i);
