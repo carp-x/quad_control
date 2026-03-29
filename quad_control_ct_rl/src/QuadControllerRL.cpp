@@ -165,7 +165,7 @@ controller_interface::return_type QuadControllerRL::update(const rclcpp::Time& t
     for (size_t i = 0; i < actions_.size(); ++i) {
       pos_dec(i) = actions_[i] *  rl_robot_cfg_.control_cfg.action_scale + default_joint_angles_(i);
     }
-    
+
     setCommand(vector_t::Zero(actions_.size()),     // ff
                pos_des,                             // pos_des   
                vector_t::Zero(actions_.size()),     // vel_des
@@ -734,6 +734,65 @@ void QuadControllerRL::getState(
     linear_acc_cov(i) = ih.linear_acc_cov[i].get().get_optional().value();
   }
 }
+
+
+void QuadControllerRL::computeObservations() {
+  const auto& info = quad_interface_->getCentroidalModelInfo();
+  vector3_t global_zyx_b = measured_rbd_state_.segment<3>(0);
+  auto global_quat_b = Eigen::Quaternion<scalar_t>(
+    Eigen::AngleAxis<scalar_t>(global_zyx_b[0], Eigen::Vector3d::UnitZ()) *
+    Eigen::AngleAxis<scalar_t>(global_zyx_b[1], Eigen::Vector3d::UnitY()) *
+    Eigen::AngleAxis<scalar_t>(global_zyx_b[2], Eigen::Vector3d::UnitX())
+  );
+
+  // 0:5
+  vector3_t base_lin_vel_b = global_quat_b.transpose() * measured_rbd_state_.segment<3>(info.generalizedCoordinatesNum + 3);
+  vector3_t base_ang_vel_b = global_quat_b.transpose() * measured_rbd_state_.segment<3>(info.generalizedCoordinatesNum);
+  // 6:8
+  vector3_t gravity_vector(0, 0, -1);
+  vector3_t projected_gravity(global_quat_b.transpose() * gravity_vector);
+  // 9:11
+  vector3_t cmd_vel = cmd_vel_;
+  // 12:35
+  vector_t joint_pos(info.actuatedDofNum);
+  vector_t joint_vel(info.actuatedDofNum);
+  joint_pos = measured_rbd_state_.segment(6, info.actuatedDofNum);
+  joint_vel = measured_rbd_state_.segment(info.generalizedCoordinatesNum + 6, info.actuatedDofNum);
+  // 36:47
+  vector_t actions(last_actions);
+
+  RLRobotCfg::ObsScales obs_scales = rl_robot_cfg_.obs_scales;
+  matrix_t cmd_scaler = Eigen::DiagonalMatrix<scalar_t, 3>(obs_scales.lin_vel, obs_scales.lin_vel, obs_scales.ang_vel);
+
+  vector_t obs(48);
+  obs << base_lin_vel_b * obs_scales.lin_vel,
+         base_ang_vel_b * obs_scales.ang_vel,
+         projected_gravity,
+         cmd_scaler * cmd_vel,
+         (joint_pos - default_joint_angles_) * obs_scales.dof_pos,
+         joint_vel * obs_scales.dof_vel,
+         actions;
+
+  scalar_t obs_min = -rl_robot_cfg_.clip_observations;
+  scalar_t obs_max = rl_robot_cfg_.clip_observations;
+  std::transform(observations_.begin(), observations_.end(), observations_.begin(),
+                 [obs_min, obs_max](scalar_t x) { return std::max(obs_min, std::min(obs_max, x)); });
+}
+
+
+// void QuadControllerRL::computeActions() {
+//   Ort::MemoryInfo memoryInfo = Ort::MemoryInfo::CreateCpu(OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);
+//   std::vector<Ort::Value> inputValues;
+//   inputValues.push_back(Ort::Value::CreateTensor<tensor_element_t>(memoryInfo, observations_.data(), observations_.size(),
+//                                                                    inputShapes_[0].data(), inputShapes_[0].size()));
+//   // run inference
+//   Ort::RunOptions runOptions;
+//   std::vector<Ort::Value> outputValues = sessionPtr_->Run(runOptions, inputNames_.data(), inputValues.data(), 1, outputNames_.data(), 1);
+
+//   for (int i = 0; i < actionsSize_; i++) {
+//     actions_[i] = *(outputValues[0].GetTensorMutableData<tensor_element_t>() + i);
+//   }
+// }
 
 
 void QuadControllerRL::setCommand(const vector_t& ff, const vector_t& pos_des, const vector_t& vel_des,
