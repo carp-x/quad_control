@@ -240,37 +240,37 @@ void QuadControllerRL::declareFileParams() {
 
 void QuadControllerRL::declarePolicyParams() {
   std::string prefix = "QuadRobotCfg.init_state.default_joint_angle.";
-  node_lifecycle_->declare_parameter<double>(prefix + "LF_HAA_joint");
-  node_lifecycle_->declare_parameter<double>(prefix + "LF_HFE_joint");
-  node_lifecycle_->declare_parameter<double>(prefix + "LF_KFE_joint");
+  node_lifecycle_->declare_parameter<double>(prefix + "LF_HAA_joint", 0.0);
+  node_lifecycle_->declare_parameter<double>(prefix + "LF_HFE_joint", 0.0);
+  node_lifecycle_->declare_parameter<double>(prefix + "LF_KFE_joint", 0.0);
   //
-  node_lifecycle_->declare_parameter<double>(prefix + "LH_HAA_joint");
-  node_lifecycle_->declare_parameter<double>(prefix + "LH_HFE_joint");
-  node_lifecycle_->declare_parameter<double>(prefix + "LH_KFE_joint");
+  node_lifecycle_->declare_parameter<double>(prefix + "LH_HAA_joint", 0.0);
+  node_lifecycle_->declare_parameter<double>(prefix + "LH_HFE_joint", 0.0);
+  node_lifecycle_->declare_parameter<double>(prefix + "LH_KFE_joint", 0.0);
   //
-  node_lifecycle_->declare_parameter<double>(prefix + "RF_HAA_joint");
-  node_lifecycle_->declare_parameter<double>(prefix + "RF_HFE_joint");
-  node_lifecycle_->declare_parameter<double>(prefix + "RF_KFE_joint");
+  node_lifecycle_->declare_parameter<double>(prefix + "RF_HAA_joint", 0.0);
+  node_lifecycle_->declare_parameter<double>(prefix + "RF_HFE_joint", 0.0);
+  node_lifecycle_->declare_parameter<double>(prefix + "RF_KFE_joint", 0.0);
   //
-  node_lifecycle_->declare_parameter<double>(prefix + "RH_HAA_joint");
-  node_lifecycle_->declare_parameter<double>(prefix + "RH_HFE_joint");
-  node_lifecycle_->declare_parameter<double>(prefix + "RH_KFE_joint");
+  node_lifecycle_->declare_parameter<double>(prefix + "RH_HAA_joint", 0.0);
+  node_lifecycle_->declare_parameter<double>(prefix + "RH_HFE_joint", 0.0);
+  node_lifecycle_->declare_parameter<double>(prefix + "RH_KFE_joint", 0.0);
 
-  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.control.stiffness");
-  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.control.damping");
-  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.control.action_scale");
-  node_lifecycle_->declare_parameter<int>("QuadRobotCfg.control.decimation");
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.control.stiffness", 0.0);
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.control.damping", 0.0);
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.control.action_scale", 0.0);
+  node_lifecycle_->declare_parameter<int>("QuadRobotCfg.control.decimation", 0);
   
-  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.obs_scales.lin_vel");
-  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.obs_scales.ang_vel");
-  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.obs_scales.dof_pos");
-  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.obs_scales.dof_vel");
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.obs_scales.lin_vel", 0.0);
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.obs_scales.ang_vel", 0.0);
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.obs_scales.dof_pos", 0.0);
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.obs_scales.dof_vel", 0.0);
 
-  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.clip_scales.clip_actions");
-  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.clip_scales.clip_observations");
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.clip_scales.clip_actions", 0.0);
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.clip_scales.clip_observations", 0.0);
 
-  node_lifecycle_->declare_parameter<int>("QuadRobotCfg.size.actions_size");
-  node_lifecycle_->declare_parameter<int>("QuadRobotCfg.size.observations_size");
+  node_lifecycle_->declare_parameter<int>("QuadRobotCfg.size.actions_size", 0);
+  node_lifecycle_->declare_parameter<int>("QuadRobotCfg.size.observations_size", 0);
 }
 
 
