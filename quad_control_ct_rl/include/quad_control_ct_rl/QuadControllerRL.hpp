@@ -156,8 +156,8 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
 
   std::string policy_file_;
   RLRobotCfg rl_robot_cfg_{};
-  int actions_size_;
-  int observations_size_;
+  size_t actions_size_;
+  size_t observations_size_;
   vector_t default_joint_angles_;
   // onnx
   std::shared_ptr<Ort::Env> onnx_env_ptr_;

@@ -100,7 +100,7 @@ controller_interface::CallbackReturn QuadControllerRL::on_activate(const rclcpp_
   }
 
   cmd_vel_.setZero();
-  last_actions_.resize(quad_interface_->getCentroidalModelInfo().actuatedDofNum);
+  last_actions_.resize(actions_size_);
   loop_cnt_ = 0;
 
   delay_expired_ = false;
@@ -159,20 +159,20 @@ controller_interface::return_type QuadControllerRL::update(const rclcpp::Time& t
     std::transform(actions_.begin(), actions_.end(), actions_.begin(),
                    [action_min, action_max](scalar_t x) { return std::max(action_min, std::min(action_max, x)); });
     
-    for (size_t i = 0; i < actions_.size(); ++i) {
+    for (size_t i = 0; i < actions_size_; ++i) {
         last_actions_(i) = static_cast<scalar_t>(actions_[i]);
     }
   }
 
   if (delay_expired_) {
-    vector_t pos_des = vector_t::Zero(actions_.size());
-    for (size_t i = 0; i < actions_.size(); ++i) {
+    vector_t pos_des = vector_t::Zero(actions_size_);
+    for (size_t i = 0; i < actions_size_; ++i) {
       pos_des(i) = actions_[i] *  rl_robot_cfg_.control_cfg.action_scale + default_joint_angles_(i);
     }
 
-    setCommand(vector_t::Zero(actions_.size()),     // ff
+    setCommand(vector_t::Zero(actions_size_),     // ff
                pos_des,                             // pos_des   
-               vector_t::Zero(actions_.size()),     // vel_des
+               vector_t::Zero(actions_size_),     // vel_des
                rl_robot_cfg_.control_cfg.stiffness, // kp
                rl_robot_cfg_.control_cfg.damping);  // kd
   }
@@ -353,8 +353,8 @@ bool QuadControllerRL::loadPolicyParams() {
     rl_robot_cfg_.clip_actions      = get_param_double("QuadRobotCfg.normalization.clip_scales.clip_actions");
     rl_robot_cfg_.clip_observations = get_param_double("QuadRobotCfg.normalization.clip_scales.clip_observations");
 
-    actions_size_      = node_lifecycle_->get_parameter("QuadRobotCfg.size.actions_size").as_int();
-    observations_size_ = node_lifecycle_->get_parameter("QuadRobotCfg.size.observations_size").as_int();
+    actions_size_      = static_cast<size_t>(node_lifecycle_->get_parameter("QuadRobotCfg.size.actions_size").as_int());
+    observations_size_ = static_cast<size_t>(node_lifecycle_->get_parameter("QuadRobotCfg.size.observations_size").as_int());
 
   } catch (const rclcpp::exceptions::ParameterNotDeclaredException& e) {
     RCLCPP_ERROR(node_lifecycle_->get_logger(), "Parameter not declared: %s", e.what());
@@ -404,16 +404,16 @@ bool QuadControllerRL::setupPolicy() {
   RCLCPP_INFO(node_lifecycle_->get_logger(), "ONNX model loaded successfully from: %s", policy_file_.c_str());
 
   int64_t model_obs_size = input_shapes_[0].back(); 
-  if (model_obs_size != observations_size_) {
+  if (model_obs_size != static_cast<int64_t>(observations_size_)) {
     RCLCPP_ERROR(node_lifecycle_->get_logger(), 
-                 "Observation size mismatch! YAML: %d, ONNX Model: %ld", 
+                 "Observation size mismatch! YAML: %zu, ONNX Model: %ld", 
                  observations_size_, model_obs_size);
     return false;
   }
   int64_t model_act_size = output_shapes_[0].back();
-  if (model_act_size != actions_size_) {
+  if (model_act_size != static_cast<int64_t>(actions_size_)) {
     RCLCPP_ERROR(node_lifecycle_->get_logger(), 
-                 "Action size mismatch! YAML: %d, ONNX Model: %ld", 
+                 "Action size mismatch! YAML: %zu, ONNX Model: %ld", 
                  actions_size_, model_act_size);
     return false;
   }
@@ -434,9 +434,8 @@ void QuadControllerRL::setupPolicyIO() {
       rl_robot_cfg_.init_state.LH_HAA_joint, rl_robot_cfg_.init_state.LH_HFE_joint, rl_robot_cfg_.init_state.LH_KFE_joint,
       rl_robot_cfg_.init_state.RF_HAA_joint, rl_robot_cfg_.init_state.RF_HFE_joint, rl_robot_cfg_.init_state.RF_KFE_joint,
       rl_robot_cfg_.init_state.RH_HAA_joint, rl_robot_cfg_.init_state.RH_HFE_joint, rl_robot_cfg_.init_state.RH_KFE_joint};
-  const auto& info = quad_interface_->getCentroidalModelInfo();
-  default_joint_angles_.resize(info.actuatedDofNum);
-  for (size_t i = 0; i < info.actuatedDofNum; i++) {
+  default_joint_angles_.resize(actions_size_);
+  for (size_t i = 0; i < actions_size_; i++) {
     default_joint_angles_(i) = temp[i];
   }
 }
@@ -766,8 +765,8 @@ void QuadControllerRL::computeObservations() {
   // 9:11
   vector3_t cmd_vel = cmd_vel_;
   // 12:35
-  vector_t joint_pos(info.actuatedDofNum);
-  vector_t joint_vel(info.actuatedDofNum);
+  vector_t joint_pos(actions_size_);
+  vector_t joint_vel(actions_size_);
   joint_pos = measured_rbd_state_.segment(6, info.actuatedDofNum);
   joint_vel = measured_rbd_state_.segment(info.generalizedCoordinatesNum + 6, info.actuatedDofNum);
   // 36:47
@@ -776,7 +775,7 @@ void QuadControllerRL::computeObservations() {
   RLRobotCfg::ObsScales obs_scales = rl_robot_cfg_.obs_scales;
   matrix_t cmd_scaler = Eigen::DiagonalMatrix<scalar_t, 3>(obs_scales.lin_vel, obs_scales.lin_vel, obs_scales.ang_vel);
 
-  vector_t obs(48);
+  vector_t obs(observations_size_);
   obs << base_lin_vel_b * obs_scales.lin_vel,
          base_ang_vel_b * obs_scales.ang_vel,
          projected_gravity,
@@ -785,7 +784,7 @@ void QuadControllerRL::computeObservations() {
          joint_vel * obs_scales.dof_vel,
          actions;
 
-  for (Eigen::Index i = 0; i < obs.size(); ++i) {
+  for (size_t i = 0; i < observations_size_; ++i) {
     observations_[i] = static_cast<tensor_element_t>(obs(i));
   }
 
@@ -813,7 +812,7 @@ void QuadControllerRL::computeActions() {
       output_names_.data(), 1
     );
 
-  for (Eigen::Index i = 0; i < actions_size_; i++) {
+  for (size_t i = 0; i < actions_size_; i++) {
     actions_[i] = *(output_values[0].GetTensorMutableData<tensor_element_t>() + i);
   }
 }
