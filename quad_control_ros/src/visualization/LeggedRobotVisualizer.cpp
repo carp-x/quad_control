@@ -126,6 +126,25 @@ void LeggedRobotVisualizer::update(const SystemObservation& observation,
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
+void LeggedRobotVisualizer::updateObs(const SystemObservation& observation) {
+  if (observation.time - lastTime_ > minPublishTimeDifference_) {
+    const auto& model = pinocchioInterface_.getModel();
+    auto& data = pinocchioInterface_.getData();
+    pinocchio::forwardKinematics(model, data,
+                                 centroidal_model::getGeneralizedCoordinates(
+                                     observation.state, centroidalModelInfo_));
+    pinocchio::updateFramePlacements(model, data);
+
+    const auto timeStamp = node_->get_clock()->now();
+    publishObservation(timeStamp, observation);
+
+    lastTime_ = observation.time;
+  }
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
 void LeggedRobotVisualizer::publishObservation(
     rclcpp::Time timeStamp, const SystemObservation& observation) {
   // Extract components from state

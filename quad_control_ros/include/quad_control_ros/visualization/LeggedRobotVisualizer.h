@@ -84,6 +84,8 @@ class LeggedRobotVisualizer : public DummyObserver {
               const PrimalSolution& primalSolution,
               const CommandData& command) override;
 
+  void updateObs(const SystemObservation& observation);
+
   void publishTrajectory(
       const std::vector<SystemObservation>& system_observation_array,
       scalar_t speed = 1.0);
