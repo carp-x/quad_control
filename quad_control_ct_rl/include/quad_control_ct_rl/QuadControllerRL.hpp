@@ -162,6 +162,8 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
   std::unique_ptr<Ort::Session> session_ptr_;
   std::vector<const char*> input_names_;
   std::vector<const char*> output_names_;
+  std::vector<Ort::AllocatedStringPtr> input_name_ptrs_;
+  std::vector<Ort::AllocatedStringPtr> output_name_ptrs_;
   std::vector<std::vector<int64_t>> input_shapes_;
   std::vector<std::vector<int64_t>> output_shapes_;
   std::vector<tensor_element_t> actions_;

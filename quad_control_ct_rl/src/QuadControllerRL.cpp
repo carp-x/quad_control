@@ -158,12 +158,16 @@ controller_interface::return_type QuadControllerRL::update(const rclcpp::Time& t
     scalar_t action_max = rl_robot_cfg_.clip_actions;
     std::transform(actions_.begin(), actions_.end(), actions_.begin(),
                    [action_min, action_max](scalar_t x) { return std::max(action_min, std::min(action_max, x)); });
+    
+    for (size_t i = 0; i < actions_.size(); ++i) {
+        last_actions_(i) = static_cast<scalar_t>(actions_[i]);
+    }
   }
 
   if (delay_expired_) {
-    vector_t pos_dec = vector_t::Zero(actions_.size());
+    vector_t pos_des = vector_t::Zero(actions_.size());
     for (size_t i = 0; i < actions_.size(); ++i) {
-      pos_dec(i) = actions_[i] *  rl_robot_cfg_.control_cfg.action_scale + default_joint_angles_(i);
+      pos_des(i) = actions_[i] *  rl_robot_cfg_.control_cfg.action_scale + default_joint_angles_(i);
     }
 
     setCommand(vector_t::Zero(actions_.size()),     // ff
@@ -171,8 +175,6 @@ controller_interface::return_type QuadControllerRL::update(const rclcpp::Time& t
                vector_t::Zero(actions_.size()),     // vel_des
                rl_robot_cfg_.control_cfg.stiffness, // kp
                rl_robot_cfg_.control_cfg.damping);  // kd
-    
-    last_actions_ = actions_eigen;
   }
   loop_cnt_++;
 
@@ -341,7 +343,7 @@ bool QuadControllerRL::loadPolicyParams() {
     rl_robot_cfg_.control_cfg.stiffness    = get_param_double("QuadRobotCfg.control.stiffness");
     rl_robot_cfg_.control_cfg.damping      = get_param_double("QuadRobotCfg.control.damping");
     rl_robot_cfg_.control_cfg.action_scale = get_param_double("QuadRobotCfg.control.action_scale");
-    rl_robot_cfg_.control_cfg.decimation   = get_param_double("QuadRobotCfg.control.decimation");
+    rl_robot_cfg_.control_cfg.decimation   = node_lifecycle_->get_parameter("QuadRobotCfg.control.decimation").as_int();
 
     rl_robot_cfg_.obs_scales.lin_vel = get_param_double("QuadRobotCfg.normalization.obs_scales.lin_vel");
     rl_robot_cfg_.obs_scales.ang_vel = get_param_double("QuadRobotCfg.normalization.obs_scales.ang_vel");
@@ -361,6 +363,8 @@ bool QuadControllerRL::loadPolicyParams() {
     RCLCPP_ERROR(node_lifecycle_->get_logger(), "Error loading parameters: %s", e.what());
     return false;
   }
+
+  return true;
 }
 
 
@@ -383,28 +387,34 @@ bool QuadControllerRL::setupPolicy() {
 
   Ort::AllocatorWithDefaultOptions allocator;
   for (size_t i = 0; i < session_ptr_->GetInputCount(); i++) {
-    inputNames_.push_back(session_ptr_->GetInputNameAllocated(i, allocator));
+    auto name_ptr = session_ptr_->GetInputNameAllocated(i, allocator);
+    input_names_.push_back(name_ptr.get());
+    input_name_ptrs_.push_back(std::move(name_ptr));
+
     input_shapes_.push_back(session_ptr_->GetInputTypeInfo(i).GetTensorTypeAndShapeInfo().GetShape());
   }
   for (size_t i = 0; i < session_ptr_->GetOutputCount(); i++) {
-    output_names_.push_back(session_ptr_->GetOutputNameAllocated(i, allocator));
+    auto name_ptr = session_ptr_->GetOutputNameAllocated(i, allocator);
+    output_names_.push_back(name_ptr.get());
+    output_name_ptrs_.push_back(std::move(name_ptr));
+
     output_shapes_.push_back(session_ptr_->GetOutputTypeInfo(i).GetTensorTypeAndShapeInfo().GetShape());
   }
 
   RCLCPP_INFO(node_lifecycle_->get_logger(), "ONNX model loaded successfully from: %s", policy_file_.c_str());
 
   int64_t model_obs_size = input_shapes_[0].back(); 
-  if (model_obs_size != rl_robot_cfg_.observations_size) {
+  if (model_obs_size != observations_size_) {
     RCLCPP_ERROR(node_lifecycle_->get_logger(), 
                  "Observation size mismatch! YAML: %d, ONNX Model: %ld", 
-                 rl_robot_cfg_.observations_size, model_obs_size);
+                 observations_size_, model_obs_size);
     return false;
   }
   int64_t model_act_size = output_shapes_[0].back();
-  if (model_act_size != rl_robot_cfg_.actions_size) {
+  if (model_act_size != actions_size_) {
     RCLCPP_ERROR(node_lifecycle_->get_logger(), 
                  "Action size mismatch! YAML: %d, ONNX Model: %ld", 
-                 rl_robot_cfg_.actions_size, model_act_size);
+                 actions_size_, model_act_size);
     return false;
   }
   RCLCPP_INFO(node_lifecycle_->get_logger(), 
@@ -436,9 +446,9 @@ void QuadControllerRL::setupSub() {
   cmd_vel_subscriber_ = node_lifecycle_->create_subscription<geometry_msgs::Twist>(
     "quad_robot_cmd_vel", 10,
     [this](const geometry_msgs::Twist::SharedPtr msg) {
-      cmd_vel_(0) = msg->linear.x;
-      cmd_vel_(1) = msg->linear.y;
-      cmd_vel_(2) = msg->angular.z;
+      cmd_vel_(0) = static_cast<scalar_t>(msg->linear.x);
+      cmd_vel_(1) = static_cast<scalar_t>(msg->linear.y);
+      cmd_vel_(2) = static_cast<scalar_t>(msg->angular.z);
     });
 
   RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadControllerRL setupSub succeed.");
@@ -748,11 +758,11 @@ void QuadControllerRL::computeObservations() {
   );
 
   // 0:5
-  vector3_t base_lin_vel_b = global_quat_b.transpose() * measured_rbd_state_.segment<3>(info.generalizedCoordinatesNum + 3);
-  vector3_t base_ang_vel_b = global_quat_b.transpose() * measured_rbd_state_.segment<3>(info.generalizedCoordinatesNum);
+  vector3_t base_lin_vel_b = global_quat_b.conjugate() * measured_rbd_state_.segment<3>(info.generalizedCoordinatesNum + 3);
+  vector3_t base_ang_vel_b = global_quat_b.conjugate() * measured_rbd_state_.segment<3>(info.generalizedCoordinatesNum);
   // 6:8
   vector3_t gravity_vector(0, 0, -1);
-  vector3_t projected_gravity(global_quat_b.transpose() * gravity_vector);
+  vector3_t projected_gravity(global_quat_b.conjugate() * gravity_vector);
   // 9:11
   vector3_t cmd_vel = cmd_vel_;
   // 12:35
@@ -761,7 +771,7 @@ void QuadControllerRL::computeObservations() {
   joint_pos = measured_rbd_state_.segment(6, info.actuatedDofNum);
   joint_vel = measured_rbd_state_.segment(info.generalizedCoordinatesNum + 6, info.actuatedDofNum);
   // 36:47
-  vector_t actions(last_actions);
+  vector_t actions(last_actions_);
 
   RLRobotCfg::ObsScales obs_scales = rl_robot_cfg_.obs_scales;
   matrix_t cmd_scaler = Eigen::DiagonalMatrix<scalar_t, 3>(obs_scales.lin_vel, obs_scales.lin_vel, obs_scales.ang_vel);
@@ -796,7 +806,12 @@ void QuadControllerRL::computeActions() {
                                                                     input_shapes_[0].size()));
 
   Ort::RunOptions run_options;
-  std::vector<Ort::Value> output_values = sessionPtr_->Run(run_options, input_names_.data(), input_values.data(), 1, output_names_.data(), 1);
+  std::vector<Ort::Value> output_values = session_ptr_->Run(
+      run_options, 
+      input_names_.data(), 
+      input_values.data(), 1, 
+      output_names_.data()
+    );
 
   for (size_t i = 0; i < actions_size_; i++) {
     actions_[i] = *(output_values[0].GetTensorMutableData<tensor_element_t>() + i);
