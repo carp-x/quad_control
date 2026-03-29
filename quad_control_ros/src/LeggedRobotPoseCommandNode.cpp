@@ -96,7 +96,7 @@ class LeggedRobotGoalPublisher {
     tf2::Quaternion q(msg->pose.orientation.x, msg->pose.orientation.y,
                       msg->pose.orientation.z, msg->pose.orientation.w);
     tf2::Matrix3x3 m(q);
-    double roll, pitch, yaw;
+    scalar_t roll, pitch, yaw;
     m.getRPY(roll, pitch, yaw);
     targetPose(3) = yaw;
 

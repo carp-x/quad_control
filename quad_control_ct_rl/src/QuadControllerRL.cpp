@@ -641,7 +641,7 @@ void QuadControllerRL::printStateCommand(int period_ms) {
   // FT data
   ss << "\n[FOOT CONTACTS]\n";
   for (const auto& fh : ft_handles_) {
-    scalar_t val = static_cast<scalar_t>(get_v(fh.contact));
+    scalar_t val = get_v(fh.contact);
     ss << "  " << fh.name << ": " << (val > 0.99 ? "CONTACT" : "AIR") << " (raw: " << val << ")\n";
   }
 

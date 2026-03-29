@@ -58,7 +58,7 @@ vector_t WeightedWbc::update(const vector_t& stateDesired, const vector_t& input
   Task constraints = formulateConstraints();
   size_t numConstraints = constraints.b().size() + constraints.f().size();
 
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> A(numConstraints, getNumDecisionVars());
+  Eigen::Matrix<scalar_t, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> A(numConstraints, getNumDecisionVars());
   vector_t lbA(numConstraints), ubA(numConstraints);  // clang-format off
   A << constraints.A(),
        constraints.D();
@@ -69,7 +69,7 @@ vector_t WeightedWbc::update(const vector_t& stateDesired, const vector_t& input
 
   // Cost
   Task weighedTask = formulateWeightedTasks(stateDesired, inputDesired, period);
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> H = weighedTask.A().transpose() * weighedTask.A();
+  Eigen::Matrix<scalar_t, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> H = weighedTask.A().transpose() * weighedTask.A();
   vector_t g = -weighedTask.A().transpose() * weighedTask.b();
 
   // Solve

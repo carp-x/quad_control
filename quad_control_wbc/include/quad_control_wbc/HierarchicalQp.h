@@ -89,7 +89,7 @@ class HierarchicalQp {
   Task stackedTasks_;
   matrix_t stackedZ_;
 
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> h_, d_;
+  Eigen::Matrix<scalar_t, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> h_, d_;
   vector_t c_, f_;
   vector_t decisionVarsSolutions_, slackVarsSolutions_;
   vector_t stackedSlackVars_;
