@@ -103,6 +103,10 @@ controller_interface::CallbackReturn QuadControllerRL::on_activate(const rclcpp_
   last_actions_.resize(actions_size_);
   loop_cnt_ = 0;
 
+  current_observation_.state.setZero(quad_interface_->getCentroidalModelInfo().stateDim);
+  current_observation_.input.setZero(quad_interface_->getCentroidalModelInfo().inputDim);
+  current_observation_.mode = ModeNumber::STANCE;
+
   delay_expired_ = false;
   start_time_ = node_lifecycle_->get_clock()->now();
   printHandlesCfg();
