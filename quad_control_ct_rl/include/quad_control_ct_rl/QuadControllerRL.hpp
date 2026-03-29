@@ -160,8 +160,8 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
   // onnx
   std::shared_ptr<Ort::Env> onnx_env_ptr_;
   std::unique_ptr<Ort::Session> session_ptr_;
-  std::vector<std::string> input_names_;
-  std::vector<std::string> output_names_;
+  std::vector<const char*> input_names_;
+  std::vector<const char*> output_names_;
   std::vector<std::vector<int64_t>> input_shapes_;
   std::vector<std::vector<int64_t>> output_shapes_;
   std::vector<tensor_element_t> actions_;

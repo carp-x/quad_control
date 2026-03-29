@@ -379,13 +379,11 @@ bool QuadControllerRL::setupPolicy() {
 
   Ort::AllocatorWithDefaultOptions allocator;
   for (size_t i = 0; i < session_ptr_->GetInputCount(); i++) {
-    auto name_ptr = session_ptr_->GetInputNameAllocated(i, allocator);
-    input_names_.push_back(std::string(name_ptr.get()));
+    inputNames_.push_back(session_ptr_->GetInputNameAllocated(i, allocator));
     input_shapes_.push_back(session_ptr_->GetInputTypeInfo(i).GetTensorTypeAndShapeInfo().GetShape());
   }
   for (size_t i = 0; i < session_ptr_->GetOutputCount(); i++) {
-    auto name_ptr = session_ptr_->GetOutputNameAllocated(i, allocator);
-    output_names_.push_back(std::string(name_ptr.get()));
+    output_names_.push_back(session_ptr_->GetOutputNameAllocated(i, allocator));
     output_shapes_.push_back(session_ptr_->GetOutputTypeInfo(i).GetTensorTypeAndShapeInfo().GetShape());
   }
 
