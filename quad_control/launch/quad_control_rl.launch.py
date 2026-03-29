@@ -22,7 +22,7 @@ def generate_launch_description():
 
     launch_controller = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(pkg_dir, 'launch', 'controller', 'quad_controller.launch.py')
+            os.path.join(pkg_dir, 'launch', 'controller', 'quad_controller_rl.launch.py')
         ),
     )
 

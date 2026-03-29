@@ -1,6 +1,5 @@
 QuadRobotCfg:
   init_state:
-    # target angles [rad] when action = 0.0
     default_joint_angle:
       LF_HAA_joint: 0.0
       LF_HFE_joint: 0.4
@@ -19,7 +18,6 @@ QuadRobotCfg:
       RH_KFE_joint: 0.8
 
   control:
-    # PD Drive parameters:
     stiffness: 40.0
     damping: 5.0
     action_scale: 0.5

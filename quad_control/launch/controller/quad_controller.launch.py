@@ -9,14 +9,12 @@ from launch.conditions import IfCondition
 
 def generate_launch_description():
 
-    pkg_robot = get_package_share_directory('quad_control')
-    pkg_mpc = get_package_share_directory('quad_control')
-    pkg_wbc = get_package_share_directory('quad_control')
+    pkg_file = get_package_share_directory('quad_control')
 
-    urdf_file = os.path.join(pkg_robot, 'model', 'anymal_c', 'urdf', 'anymal.urdf')
-    task_file = os.path.join(pkg_mpc, 'config', 'mpc', 'task.info')
-    reference_file = os.path.join(pkg_mpc, 'config', 'command', 'reference.info')
-    task_file_wbc = os.path.join(pkg_wbc, 'config', 'wbc', 'task.info')
+    urdf_file = os.path.join(pkg_file, 'model', 'anymal_c', 'urdf', 'anymal.urdf')
+    task_file = os.path.join(pkg_file, 'config', 'mpc', 'task.info')
+    reference_file = os.path.join(pkg_file, 'config', 'command', 'reference.info')
+    task_file_wbc = os.path.join(pkg_file, 'config', 'wbc', 'task.info')
 
     declare_rviz_arg = DeclareLaunchArgument(
         'rviz', default_value='true', description='Whether to start RViz2')
@@ -30,7 +28,7 @@ def generate_launch_description():
         'quad_controller.yaml'
     )
 
-    quad_controller_spawner = Node(
+    quad_control_spawner = Node(
         package="controller_manager",
         executable="spawner",
         arguments=[
@@ -38,18 +36,20 @@ def generate_launch_description():
         "--service-call-timeout", "60",
         "--switch-timeout", "60",
         "--param-file", config_path,
-        f"--controller-ros-args=-p task_file:={task_file} -p urdf_file:={urdf_file} -p reference_file:={reference_file}",
-        f"--controller-ros-args=-p task_file_wbc:={task_file_wbc}",
+        f"--controller-ros-args=-p task_file:={task_file} "
+        f"-p urdf_file:={urdf_file} "
+        f"-p reference_file:={reference_file} "
+        f"-p task_file_wbc:={task_file_wbc}",
         ],
         parameters=[{
         'use_sim_time': True,
         }],
     )
 
-    quad_controller_rviz = Node(
+    quad_control_rviz = Node(
         package='rviz2',
         executable='rviz2',
-        name='quad_controller_rviz',
+        name='quad_control_rviz',
         output='screen',
         condition=IfCondition(LaunchConfiguration('rviz')),
         arguments=['-d', rviz_config_file],
@@ -59,7 +59,7 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        quad_controller_spawner,
+        quad_control_spawner,
         declare_rviz_arg,
-        quad_controller_rviz,
+        quad_control_rviz,
     ])
