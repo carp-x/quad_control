@@ -12,6 +12,7 @@ find_package(pinocchio REQUIRED)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(Boost REQUIRED COMPONENTS system filesystem log_setup log)
 find_package(angles REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(ocs2_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
@@ -19,16 +20,11 @@ find_package(realtime_tools REQUIRED)
 find_package(controller_interface REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(ocs2_core REQUIRED)
-find_package(ocs2_mpc REQUIRED)
-find_package(ocs2_sqp REQUIRED)
-find_package(ocs2_ddp REQUIRED)
 find_package(ocs2_pinocchio_interface REQUIRED)
 find_package(ocs2_centroidal_model REQUIRED)
 find_package(ocs2_ros_interfaces REQUIRED)
 find_package(quad_control_mpc REQUIRED)
-find_package(quad_control_ros REQUIRED)
 find_package(quad_control_se REQUIRED)
-find_package(quad_control_wbc REQUIRED)
 find_package(quad_control_ct REQUIRED)
 find_package(pluginlib REQUIRED)
 
@@ -52,6 +48,7 @@ target_link_libraries(${PROJECT_NAME}
 
 ament_target_dependencies(${PROJECT_NAME}
   angles
+  geometry_msgs
   ocs2_msgs
   rclcpp
   rclcpp_lifecycle
@@ -59,16 +56,11 @@ ament_target_dependencies(${PROJECT_NAME}
   controller_interface
   hardware_interface
   ocs2_core
-  ocs2_mpc
-  ocs2_sqp
-  ocs2_ddp
   ocs2_pinocchio_interface
   ocs2_centroidal_model
   ocs2_ros_interfaces
   quad_control_mpc
-  quad_control_ros
   quad_control_se
-  quad_control_wbc
   quad_control_ct
   pluginlib
 )
