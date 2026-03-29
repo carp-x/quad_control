@@ -68,6 +68,8 @@ controller_interface::CallbackReturn QuadControllerRL::on_init() {
 controller_interface::CallbackReturn QuadControllerRL::on_configure(const rclcpp_lifecycle::State&) {
   if (on_configure_succeed_)
     return controller_interface::CallbackReturn::SUCCESS;
+  if (!node_base_)
+    node_base_ = rclcpp::Node::make_shared(robot_name_);
 
   if (!loadSensorParams()) return controller_interface::CallbackReturn::ERROR;
   if (!loadFileParams()) return controller_interface::CallbackReturn::ERROR;
@@ -83,6 +85,7 @@ controller_interface::CallbackReturn QuadControllerRL::on_configure(const rclcpp
 
     setupSub();
     setupPub();
+    setupVisualization();
   } catch (const std::exception& e) {
     RCLCPP_ERROR(node_lifecycle_->get_logger(), "Failed to setup QuadControllerRL: %s", e.what());
     return controller_interface::CallbackReturn::ERROR;
@@ -186,8 +189,9 @@ controller_interface::return_type QuadControllerRL::update(const rclcpp::Time& t
   auto observation_msg = ros_msg_conversions::createObservationMsg(current_observation_);
   observation_msg.time = time.seconds();
   observation_publisher_->publish(observation_msg);
+  robot_visualizer_->updateObs(current_observation_);
 
-  // printStateCommand(print_period_ms_);
+  printStateCommand(print_period_ms_);
   return controller_interface::return_type::OK;
 }
 
@@ -472,6 +476,16 @@ void QuadControllerRL::setupPub() {
       rclcpp::SystemDefaultsQoS());
   
   RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadControllerRL setupPub succeed.");
+}
+
+
+void QuadControllerRL::setupVisualization() {
+  robot_visualizer_ = std::make_shared<LeggedRobotVisualizer>(
+      quad_interface_->getPinocchioInterface(), 
+      quad_interface_->getCentroidalModelInfo(),
+      *ee_kinematics_ptr_, node_base_);
+
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadControllerRL setupVisualization succeed.");
 }
 
 

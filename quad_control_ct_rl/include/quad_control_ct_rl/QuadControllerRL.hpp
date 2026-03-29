@@ -54,9 +54,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ocs2_pinocchio_interface/PinocchioEndEffectorKinematics.h>
 #include <ocs2_centroidal_model/CentroidalModelRbdConversions.h>
 #include "quad_control_mpc/LeggedRobotInterface.h"
+#include "quad_control_ros/visualization/LeggedRobotVisualizer.h"
 #include "quad_control_se/LinearKalmanFilter.hpp"
 #include "quad_control_se/FromTopiceEstimate.hpp"
-
 #include "quad_control_ct/HardwareInterfaceHandles.hpp"
 #include "quad_control_ct_rl/RLRobotCfg.hpp"
 
@@ -140,6 +140,7 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
   virtual void setupRbd();
   virtual void setupSub();
   virtual void setupPub();
+  virtual void setupVisualization();
   virtual void updateStateEstimation(const rclcpp::Time& time, 
                                      const rclcpp::Duration& period);
   virtual void updateCommand();
@@ -190,13 +191,15 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_subscriber_;
   realtime_tools::RealtimeBuffer<geometry_msgs::msg::Twist> cmd_buffer_;
   rclcpp::Publisher<ocs2_msgs::msg::MpcObservation>::SharedPtr observation_publisher_;
+  std::shared_ptr<LeggedRobotVisualizer> robot_visualizer_;
 
   const std::string robot_name_ = "quad_robot";
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_lifecycle_;
+  rclcpp::Node::SharedPtr node_base_;
 
   bool delay_expired_;
   rclcpp::Time start_time_;
-  const scalar_t delay_duration_ = 0.0;
+  const scalar_t delay_duration_ = 10.0;
   const int print_period_ms_ = 1000;
 
  private:

@@ -24,6 +24,7 @@ find_package(ocs2_pinocchio_interface REQUIRED)
 find_package(ocs2_centroidal_model REQUIRED)
 find_package(ocs2_ros_interfaces REQUIRED)
 find_package(quad_control_mpc REQUIRED)
+find_package(quad_control_ros REQUIRED)
 find_package(quad_control_se REQUIRED)
 find_package(quad_control_ct REQUIRED)
 find_package(pluginlib REQUIRED)
@@ -60,6 +61,7 @@ ament_target_dependencies(${PROJECT_NAME}
   ocs2_centroidal_model
   ocs2_ros_interfaces
   quad_control_mpc
+  quad_control_ros
   quad_control_se
   quad_control_ct
   pluginlib
