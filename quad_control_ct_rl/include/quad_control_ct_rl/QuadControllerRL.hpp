@@ -148,7 +148,7 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
                 matrix3_t& ori_cov, 
                 matrix3_t& angular_vel_cov, matrix3_t& linear_acc_cov);
   void setCommand(const vector_t& ff, const vector_t& pos_des, const vector_t& vel_des,
-                  double kp, double kd);
+                  scalar_t kp, scalar_t kd);
 
   bool on_configure_succeed_ = false;
 
@@ -188,7 +188,7 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
 
   bool delay_expired_;
   rclcpp::Time start_time_;
-  const double delay_duration_ = 0.0;
+  const scalar_t delay_duration_ = 0.0;
   const int print_period_ms_ = 1000;
 
  private:

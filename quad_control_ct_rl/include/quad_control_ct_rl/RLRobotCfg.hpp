@@ -54,9 +54,9 @@ struct RLRobotCfg {
   };
 
   struct ControlCfg {
-    float stiffness;
-    float damping;
-    float action_scale;
+    scalar_t stiffness;
+    scalar_t damping;
+    scalar_t action_scale;
     int decimation;
   };
 
