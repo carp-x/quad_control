@@ -15,6 +15,7 @@ find_package(angles REQUIRED)
 find_package(ocs2_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
+find_package(realtime_tools REQUIRED)
 find_package(controller_interface REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(ocs2_core REQUIRED)
@@ -54,6 +55,7 @@ ament_target_dependencies(${PROJECT_NAME}
   ocs2_msgs
   rclcpp
   rclcpp_lifecycle
+  realtime_tools
   controller_interface
   hardware_interface
   ocs2_core

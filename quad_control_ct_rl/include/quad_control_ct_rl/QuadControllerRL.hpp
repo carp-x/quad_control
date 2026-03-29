@@ -42,6 +42,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
+#include <realtime_tools/realtime_buffer.hpp>
+#include <realtime_tools/realtime_publisher.hpp>
 #include <controller_interface/controller_interface.hpp>
 #include <hardware_interface/handle.hpp>
 
@@ -140,6 +142,7 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
   virtual void setupPub();
   virtual void updateStateEstimation(const rclcpp::Time& time, 
                                      const rclcpp::Duration& period);
+  virtual void updateCommand();
   virtual void computeObservations();
   virtual void computeActions();
 
@@ -184,7 +187,8 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
   vector_t last_actions_;
   int64_t loop_cnt_;
 
-  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_subscriber_;
+  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_subscriber_;
+  realtime_tools::RealtimeBuffer<geometry_msgs::msg::Twist> cmd_buffer_;
   rclcpp::Publisher<ocs2_msgs::msg::MpcObservation>::SharedPtr observation_publisher_;
 
   const std::string robot_name_ = "quad_robot";

@@ -152,6 +152,7 @@ controller_interface::return_type QuadControllerRL::update(const rclcpp::Time& t
   updateStateEstimation(time, period);
 
   if (loop_cnt_ % rl_robot_cfg_.control_cfg.decimation == 0) {
+    updateCommand();
     computeObservations();
     computeActions();
     scalar_t action_min = -rl_robot_cfg_.clip_actions;
@@ -442,12 +443,10 @@ void QuadControllerRL::setupPolicyIO() {
 
 
 void QuadControllerRL::setupSub() {
-  cmd_vel_subscriber_ = node_lifecycle_->create_subscription<geometry_msgs::msg::Twist>(
+  cmd_subscriber_ = node_lifecycle_->create_subscription<geometry_msgs::msg::Twist>(
     "quad_robot_cmd_vel", 10,
     [this](const geometry_msgs::msg::Twist::SharedPtr msg) {
-      cmd_vel_(0) = static_cast<scalar_t>(msg->linear.x);
-      cmd_vel_(1) = static_cast<scalar_t>(msg->linear.y);
-      cmd_vel_(2) = static_cast<scalar_t>(msg->angular.z);
+      cmd_buffer_.writeFromNonRT(*msg);
     });
 
   RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadControllerRL setupSub succeed.");
@@ -743,6 +742,21 @@ void QuadControllerRL::getState(
     ori_cov(i) = ih.ori_cov[i].get().get_optional().value();
     angular_vel_cov(i) = ih.angular_vel_cov[i].get().get_optional().value();
     linear_acc_cov(i) = ih.linear_acc_cov[i].get().get_optional().value();
+  }
+}
+
+
+void QuadControllerRL::updateCommand() {
+  const auto* msg = cmd_buffer_.readFromRT();
+  if (msg) {
+    cmd_vel_(0) = static_cast<scalar_t>(msg->linear.x);
+    cmd_vel_(1) = static_cast<scalar_t>(msg->linear.y);
+    cmd_vel_(2) = static_cast<scalar_t>(msg->angular.z);
+  }
+  else {
+    cmd_vel_(0) = 0.0;
+    cmd_vel_(1) = 0.0;
+    cmd_vel_(2) = 0.0;
   }
 }
 
