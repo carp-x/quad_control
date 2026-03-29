@@ -466,7 +466,7 @@ void QuadControllerRL::setupPolicyIO() {
 
 void QuadControllerRL::setupSub() {
   cmd_subscriber_ = node_lifecycle_->create_subscription<geometry_msgs::msg::Twist>(
-    "quad_robot_cmd_vel", 10,
+    "cmd_vel", 10,
     [this](const geometry_msgs::msg::Twist::SharedPtr msg) {
       cmd_buffer_.writeFromNonRT(*msg);
     });
