@@ -443,9 +443,9 @@ void QuadControllerRL::setupPolicyIO() {
 
 
 void QuadControllerRL::setupSub() {
-  cmd_vel_subscriber_ = node_lifecycle_->create_subscription<geometry_msgs::Twist>(
+  cmd_vel_subscriber_ = node_lifecycle_->create_subscription<geometry_msgs::msg::Twist>(
     "quad_robot_cmd_vel", 10,
-    [this](const geometry_msgs::Twist::SharedPtr msg) {
+    [this](const geometry_msgs::msg::Twist::SharedPtr msg) {
       cmd_vel_(0) = static_cast<scalar_t>(msg->linear.x);
       cmd_vel_(1) = static_cast<scalar_t>(msg->linear.y);
       cmd_vel_(2) = static_cast<scalar_t>(msg->angular.z);
@@ -785,7 +785,7 @@ void QuadControllerRL::computeObservations() {
          joint_vel * obs_scales.dof_vel,
          actions;
 
-  for (size_t i = 0; i < obs.size(); ++i) {
+  for (Eigen::Index i = 0; i < obs.size(); ++i) {
     observations_[i] = static_cast<tensor_element_t>(obs(i));
   }
 
@@ -810,10 +810,10 @@ void QuadControllerRL::computeActions() {
       run_options, 
       input_names_.data(), 
       input_values.data(), 1, 
-      output_names_.data()
+      output_names_.data(), 1
     );
 
-  for (size_t i = 0; i < actions_size_; i++) {
+  for (Eigen::Index i = 0; i < actions_size_; i++) {
     actions_[i] = *(output_values[0].GetTensorMutableData<tensor_element_t>() + i);
   }
 }

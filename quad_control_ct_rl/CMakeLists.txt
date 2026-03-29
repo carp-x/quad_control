@@ -7,6 +7,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 add_compile_options(-Wall -Wextra -Wpedantic)
 
 find_package(ament_cmake REQUIRED)
+find_package(onnxruntime REQUIRED)
 find_package(pinocchio REQUIRED)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(Boost REQUIRED COMPONENTS system filesystem log_setup log)
@@ -39,11 +40,9 @@ target_include_directories(${PROJECT_NAME}
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
-  ${pinocchio_INCLUDE_DIRS}
-  ${EIGEN3_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIRS}
 )
 target_link_libraries(${PROJECT_NAME}
+  onnxruntime::onnxruntime
   pinocchio::pinocchio
   Eigen3::Eigen 
   Boost::filesystem

@@ -86,4 +86,27 @@ install(DIRECTORY
   DESTINATION include
 )
 
+ament_export_include_directories(include)
+ament_export_libraries(${PROJECT_NAME})
+ament_export_dependencies(
+  angles
+  ocs2_msgs
+  rclcpp
+  rclcpp_lifecycle
+  controller_interface
+  hardware_interface
+  ocs2_core
+  ocs2_mpc
+  ocs2_sqp
+  ocs2_ddp
+  ocs2_pinocchio_interface
+  ocs2_centroidal_model
+  ocs2_ros_interfaces
+  quad_control_mpc
+  quad_control_ros
+  quad_control_se
+  quad_control_wbc
+  pluginlib
+)
+
 ament_package()

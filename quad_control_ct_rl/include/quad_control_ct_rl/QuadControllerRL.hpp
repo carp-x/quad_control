@@ -37,7 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <thread>
 
 #include <angles/angles.h>
-#include <geometry_msgs/Twist.h>
+#include <geometry_msgs/msg/twist.hpp>
 #include <ocs2_msgs/msg/mpc_observation.hpp>
 
 #include <rclcpp/rclcpp.hpp>
@@ -46,12 +46,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <hardware_interface/handle.hpp>
 
 #include <onnxruntime/onnxruntime_cxx_api.h>
-#include <Eigen/Geometry>
 
 #include <ocs2_core/Types.h>
 #include <ocs2_core/misc/Benchmark.h>
 #include <ocs2_pinocchio_interface/PinocchioEndEffectorKinematics.h>
 #include <ocs2_centroidal_model/CentroidalModelRbdConversions.h>
+#include "quad_control_mpc/LeggedRobotInterface.h"
 #include "quad_control_se/LinearKalmanFilter.hpp"
 #include "quad_control_se/FromTopiceEstimate.hpp"
 
@@ -63,6 +63,8 @@ using namespace ocs2;
 using namespace quad_robot;
 
 class QuadControllerRL : public controller_interface::ControllerInterface {
+  using tensor_element_t = float;
+
  public:
   QuadControllerRL() = default;
   ~QuadControllerRL() override;
@@ -182,7 +184,7 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
   vector_t last_actions_;
   int64_t loop_cnt_;
 
-  rclcpp::Subscription<geometry_msgs::Twist>::SharedPtr cmd_vel_subscriber_;
+  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_subscriber_;
   rclcpp::Publisher<ocs2_msgs::msg::MpcObservation>::SharedPtr observation_publisher_;
 
   const std::string robot_name_ = "quad_robot";
