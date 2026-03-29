@@ -1,38 +1,40 @@
-QuadRobotCfg:
-  init_state:
-    default_joint_angle:
-      LF_HAA_joint: 0.0
-      LF_HFE_joint: 0.4
-      LF_KFE_joint: -0.8
+quad_controller_rl:
+  ros__parameters:
+    QuadRobotCfg:
+      init_state:
+        default_joint_angle:
+          LF_HAA_joint: 0.0
+          LF_HFE_joint: 0.4
+          LF_KFE_joint: -0.8
 
-      LH_HAA_joint: 0.0
-      LH_HFE_joint: -0.4
-      LH_KFE_joint: 0.8
+          LH_HAA_joint: 0.0
+          LH_HFE_joint: -0.4
+          LH_KFE_joint: 0.8
 
-      RF_HAA_joint: 0.0
-      RF_HFE_joint: 0.4
-      RF_KFE_joint: -0.8
+          RF_HAA_joint: 0.0
+          RF_HFE_joint: 0.4
+          RF_KFE_joint: -0.8
 
-      RH_HAA_joint: 0.0
-      RH_HFE_joint: -0.4
-      RH_KFE_joint: 0.8
+          RH_HAA_joint: 0.0
+          RH_HFE_joint: -0.4
+          RH_KFE_joint: 0.8
 
-  control:
-    stiffness: 40.0
-    damping: 5.0
-    action_scale: 0.5
-    decimation: 10
+      control:
+        stiffness: 40.0
+        damping: 5.0
+        action_scale: 0.5
+        decimation: 10
 
-  normalization:
-    obs_scales:
-      lin_vel: 1.0
-      ang_vel: 1.0
-      dof_pos: 1.0
-      dof_vel: 1.0
-    clip_scales:
-      clip_actions: 100.
-      clip_observations: 100.
+      normalization:
+        obs_scales:
+          lin_vel: 1.0
+          ang_vel: 1.0
+          dof_pos: 1.0
+          dof_vel: 1.0
+        clip_scales:
+          clip_actions: 100.
+          clip_observations: 100.
 
-  size:
-    actions_size: 12
-    observations_size: 48
+      size:
+        actions_size: 12
+        observations_size: 48

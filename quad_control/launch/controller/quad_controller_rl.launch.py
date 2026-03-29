@@ -28,6 +28,13 @@ def generate_launch_description():
         'quad_controller_rl.yaml'
     )
 
+    config_rl_path = os.path.join(
+        get_package_share_directory('quad_control'),
+        'config',
+        'controller_rl',
+        'anymal-c.yaml'
+    )
+
     quad_control_spawner = Node(
         package="controller_manager",
         executable="spawner",
@@ -36,6 +43,7 @@ def generate_launch_description():
         "--service-call-timeout", "60",
         "--switch-timeout", "60",
         "--param-file", config_path,
+        "--param-file", config_rl_path,
         f"--controller-ros-args=-p task_file:={task_file} "
         f"-p urdf_file:={urdf_file} "
         f"-p reference_file:={reference_file} "
