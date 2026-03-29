@@ -154,7 +154,7 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
                 matrix3_t& ori_cov, 
                 matrix3_t& angular_vel_cov, matrix3_t& linear_acc_cov);
   void setCommand(const vector_t& ff, const vector_t& pos_des, const vector_t& vel_des,
-                  scalar_t kp, scalar_t kd);
+                  const scalar_t kp, const scalar_t kd);
 
   bool on_configure_succeed_ = false;
 

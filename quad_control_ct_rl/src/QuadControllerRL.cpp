@@ -175,7 +175,7 @@ controller_interface::return_type QuadControllerRL::update(const rclcpp::Time& t
   vector_t pos_des = vector_t::Zero(actions_size_);
   if (delay_expired_) {
     for (size_t i = 0; i < actions_size_; ++i) {
-      pos_des(i) = actions_[i] *  rl_robot_cfg_.control_cfg.action_scale + default_joint_angles_(i);
+      pos_des(i) = actions_[i] * rl_robot_cfg_.control_cfg.action_scale + default_joint_angles_(i);
     }
   }
   else {
@@ -251,42 +251,6 @@ void QuadControllerRL::declareFileParams() {
 }
 
 
-void QuadControllerRL::declarePolicyParams() {
-  std::string prefix = "QuadRobotCfg.init_state.default_joint_angle.";
-  node_lifecycle_->declare_parameter<double>(prefix + "LF_HAA_joint", 0.0);
-  node_lifecycle_->declare_parameter<double>(prefix + "LF_HFE_joint", 0.0);
-  node_lifecycle_->declare_parameter<double>(prefix + "LF_KFE_joint", 0.0);
-  //
-  node_lifecycle_->declare_parameter<double>(prefix + "LH_HAA_joint", 0.0);
-  node_lifecycle_->declare_parameter<double>(prefix + "LH_HFE_joint", 0.0);
-  node_lifecycle_->declare_parameter<double>(prefix + "LH_KFE_joint", 0.0);
-  //
-  node_lifecycle_->declare_parameter<double>(prefix + "RF_HAA_joint", 0.0);
-  node_lifecycle_->declare_parameter<double>(prefix + "RF_HFE_joint", 0.0);
-  node_lifecycle_->declare_parameter<double>(prefix + "RF_KFE_joint", 0.0);
-  //
-  node_lifecycle_->declare_parameter<double>(prefix + "RH_HAA_joint", 0.0);
-  node_lifecycle_->declare_parameter<double>(prefix + "RH_HFE_joint", 0.0);
-  node_lifecycle_->declare_parameter<double>(prefix + "RH_KFE_joint", 0.0);
-
-  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.control.stiffness", 0.0);
-  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.control.damping", 0.0);
-  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.control.action_scale", 0.0);
-  node_lifecycle_->declare_parameter<int>("QuadRobotCfg.control.decimation", 0);
-  
-  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.obs_scales.lin_vel", 0.0);
-  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.obs_scales.ang_vel", 0.0);
-  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.obs_scales.dof_pos", 0.0);
-  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.obs_scales.dof_vel", 0.0);
-
-  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.clip_scales.clip_actions", 0.0);
-  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.clip_scales.clip_observations", 0.0);
-
-  node_lifecycle_->declare_parameter<int>("QuadRobotCfg.size.actions_size", 0);
-  node_lifecycle_->declare_parameter<int>("QuadRobotCfg.size.observations_size", 0);
-}
-
-
 bool QuadControllerRL::loadSensorParams() {
   if (!node_lifecycle_->get_parameter("joints", joint_names_) || joint_names_.empty()) {
     RCLCPP_ERROR(node_lifecycle_->get_logger(), "Failed to load 'joints' parameter or the list is empty.");
@@ -328,169 +292,6 @@ bool QuadControllerRL::loadFileParams() {
   RCLCPP_INFO(node_lifecycle_->get_logger(), "Loaded files:\nTask: %s\nURDF: %s\nRef: %s", 
               task_file_.c_str(), urdf_file_.c_str(), reference_file_.c_str());
   return true;
-}
-
-
-bool QuadControllerRL::loadPolicyParams() {
-  auto get_param_double = [this](const std::string& name) -> scalar_t {
-    auto val = static_cast<scalar_t>(node_lifecycle_->get_parameter(name).as_double());
-    RCLCPP_INFO(node_lifecycle_->get_logger(), "Successfully loaded [Double] %s: %f", name.c_str(), val);
-    return val;
-  };
-
-  try {
-    RCLCPP_INFO(node_lifecycle_->get_logger(), "--- Starting to load Policy Parameters ---");
-
-    std::string prefix = "QuadRobotCfg.init_state.default_joint_angle.";
-    rl_robot_cfg_.init_state.LF_HAA_joint = get_param_double(prefix + "LF_HAA_joint");
-    rl_robot_cfg_.init_state.LF_HFE_joint = get_param_double(prefix + "LF_HFE_joint");
-    rl_robot_cfg_.init_state.LF_KFE_joint = get_param_double(prefix + "LF_KFE_joint");
-    rl_robot_cfg_.init_state.LH_HAA_joint = get_param_double(prefix + "LH_HAA_joint");
-    rl_robot_cfg_.init_state.LH_HFE_joint = get_param_double(prefix + "LH_HFE_joint");
-    rl_robot_cfg_.init_state.LH_KFE_joint = get_param_double(prefix + "LH_KFE_joint");
-    rl_robot_cfg_.init_state.RF_HAA_joint = get_param_double(prefix + "RF_HAA_joint");
-    rl_robot_cfg_.init_state.RF_HFE_joint = get_param_double(prefix + "RF_HFE_joint");
-    rl_robot_cfg_.init_state.RF_KFE_joint = get_param_double(prefix + "RF_KFE_joint");
-    rl_robot_cfg_.init_state.RH_HAA_joint = get_param_double(prefix + "RH_HAA_joint");
-    rl_robot_cfg_.init_state.RH_HFE_joint = get_param_double(prefix + "RH_HFE_joint");
-    rl_robot_cfg_.init_state.RH_KFE_joint = get_param_double(prefix + "RH_KFE_joint");
-
-    rl_robot_cfg_.control_cfg.stiffness    = get_param_double("QuadRobotCfg.control.stiffness");
-    rl_robot_cfg_.control_cfg.damping      = get_param_double("QuadRobotCfg.control.damping");
-    rl_robot_cfg_.control_cfg.action_scale = get_param_double("QuadRobotCfg.control.action_scale");
-    int decimation = node_lifecycle_->get_parameter("QuadRobotCfg.control.decimation").as_int();
-    rl_robot_cfg_.control_cfg.decimation = decimation;
-    RCLCPP_INFO(node_lifecycle_->get_logger(), "Successfully loaded [Int] QuadRobotCfg.control.decimation: %d", decimation);
-
-    rl_robot_cfg_.obs_scales.lin_vel = get_param_double("QuadRobotCfg.normalization.obs_scales.lin_vel");
-    rl_robot_cfg_.obs_scales.ang_vel = get_param_double("QuadRobotCfg.normalization.obs_scales.ang_vel");
-    rl_robot_cfg_.obs_scales.dof_pos = get_param_double("QuadRobotCfg.normalization.obs_scales.dof_pos");
-    rl_robot_cfg_.obs_scales.dof_vel = get_param_double("QuadRobotCfg.normalization.obs_scales.dof_vel");
-
-    rl_robot_cfg_.clip_actions      = get_param_double("QuadRobotCfg.normalization.clip_scales.clip_actions");
-    rl_robot_cfg_.clip_observations = get_param_double("QuadRobotCfg.normalization.clip_scales.clip_observations");
-
-    actions_size_      = static_cast<size_t>(node_lifecycle_->get_parameter("QuadRobotCfg.size.actions_size").as_int());
-    observations_size_ = static_cast<size_t>(node_lifecycle_->get_parameter("QuadRobotCfg.size.observations_size").as_int());
-    
-    RCLCPP_INFO(node_lifecycle_->get_logger(), "Successfully loaded Sizes: Act=%zu, Obs=%zu", actions_size_, observations_size_);
-    RCLCPP_INFO(node_lifecycle_->get_logger(), "--- All Policy Parameters Loaded Successfully ---");
-
-  } catch (const rclcpp::exceptions::ParameterNotDeclaredException& e) {
-    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Parameter not declared (Did you forget declare_parameter?): %s", e.what());
-    return false;
-  } catch (const rclcpp::exceptions::InvalidParameterTypeException& e) {
-    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Parameter type mismatch (Check if YAML has .0 for doubles): %s", e.what());
-    return false;
-  } catch (const std::exception& e) {
-    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Error loading parameters: %s", e.what());
-    return false;
-  }
-
-  return true;
-}
-
-
-bool QuadControllerRL::setupPolicy() {
-  onnx_env_ptr_ = std::make_shared<Ort::Env>(ORT_LOGGING_LEVEL_WARNING, "QuadControllerRLOnnx");
-  Ort::SessionOptions session_options;
-  session_options.SetInterOpNumThreads(1);
-  session_options.SetIntraOpNumThreads(1);
-  try {
-    session_ptr_ = std::make_unique<Ort::Session>(*onnx_env_ptr_, policy_file_.c_str(), session_options);
-  } catch (const std::exception& e) {
-    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Failed to create ONNX session: %s", e.what());
-    return false;
-  }
-
-  input_names_.clear();
-  output_names_.clear();
-  input_shapes_.clear();
-  output_shapes_.clear();
-
-  Ort::AllocatorWithDefaultOptions allocator;
-  for (size_t i = 0; i < session_ptr_->GetInputCount(); i++) {
-    auto name_ptr = session_ptr_->GetInputNameAllocated(i, allocator);
-    input_names_.push_back(name_ptr.get());
-    input_name_ptrs_.push_back(std::move(name_ptr));
-
-    input_shapes_.push_back(session_ptr_->GetInputTypeInfo(i).GetTensorTypeAndShapeInfo().GetShape());
-  }
-  for (size_t i = 0; i < session_ptr_->GetOutputCount(); i++) {
-    auto name_ptr = session_ptr_->GetOutputNameAllocated(i, allocator);
-    output_names_.push_back(name_ptr.get());
-    output_name_ptrs_.push_back(std::move(name_ptr));
-
-    output_shapes_.push_back(session_ptr_->GetOutputTypeInfo(i).GetTensorTypeAndShapeInfo().GetShape());
-  }
-
-  RCLCPP_INFO(node_lifecycle_->get_logger(), "ONNX model loaded successfully from: %s", policy_file_.c_str());
-
-  int64_t model_obs_size = input_shapes_[0].back(); 
-  if (model_obs_size != static_cast<int64_t>(observations_size_)) {
-    RCLCPP_ERROR(node_lifecycle_->get_logger(), 
-                 "Observation size mismatch! YAML: %zu, ONNX Model: %ld", 
-                 observations_size_, model_obs_size);
-    return false;
-  }
-  int64_t model_act_size = output_shapes_[0].back();
-  if (model_act_size != static_cast<int64_t>(actions_size_)) {
-    RCLCPP_ERROR(node_lifecycle_->get_logger(), 
-                 "Action size mismatch! YAML: %zu, ONNX Model: %ld", 
-                 actions_size_, model_act_size);
-    return false;
-  }
-  RCLCPP_INFO(node_lifecycle_->get_logger(), 
-              "ONNX Model validated: Obs=%ld, Actions=%ld", 
-              model_obs_size, model_act_size);
-
-  return true;
-}
-
-
-void QuadControllerRL::setupPolicyIO() {
-  actions_.resize(actions_size_);
-  observations_.resize(observations_size_);
-
-  std::vector<scalar_t> temp{
-      rl_robot_cfg_.init_state.LF_HAA_joint, rl_robot_cfg_.init_state.LF_HFE_joint, rl_robot_cfg_.init_state.LF_KFE_joint,
-      rl_robot_cfg_.init_state.LH_HAA_joint, rl_robot_cfg_.init_state.LH_HFE_joint, rl_robot_cfg_.init_state.LH_KFE_joint,
-      rl_robot_cfg_.init_state.RF_HAA_joint, rl_robot_cfg_.init_state.RF_HFE_joint, rl_robot_cfg_.init_state.RF_KFE_joint,
-      rl_robot_cfg_.init_state.RH_HAA_joint, rl_robot_cfg_.init_state.RH_HFE_joint, rl_robot_cfg_.init_state.RH_KFE_joint};
-  default_joint_angles_.resize(actions_size_);
-  for (size_t i = 0; i < actions_size_; i++) {
-    default_joint_angles_(i) = temp[i];
-  }
-}
-
-
-void QuadControllerRL::setupSub() {
-  cmd_subscriber_ = node_lifecycle_->create_subscription<geometry_msgs::msg::Twist>(
-    "cmd_vel", 10,
-    [this](const geometry_msgs::msg::Twist::SharedPtr msg) {
-      cmd_buffer_.writeFromNonRT(*msg);
-    });
-
-  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadControllerRL setupSub succeed.");
-}
-
-
-void QuadControllerRL::setupPub() {
-  observation_publisher_ = node_lifecycle_->create_publisher<ocs2_msgs::msg::MpcObservation>(
-      robot_name_ + "_mpc_observation", 
-      rclcpp::SystemDefaultsQoS());
-  
-  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadControllerRL setupPub succeed.");
-}
-
-
-void QuadControllerRL::setupVisualization() {
-  robot_visualizer_ = std::make_shared<LeggedRobotVisualizer>(
-      quad_interface_->getPinocchioInterface(), 
-      quad_interface_->getCentroidalModelInfo(),
-      *ee_kinematics_ptr_, node_base_);
-
-  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadControllerRL setupVisualization succeed.");
 }
 
 
@@ -682,9 +483,178 @@ void QuadControllerRL::printStateCommand(int period_ms) {
 }
 
 
+void QuadControllerRL::declarePolicyParams() {
+  std::string prefix = "QuadRobotCfg.init_state.default_joint_angle.";
+  node_lifecycle_->declare_parameter<double>(prefix + "LF_HAA_joint", 0.0);
+  node_lifecycle_->declare_parameter<double>(prefix + "LF_HFE_joint", 0.0);
+  node_lifecycle_->declare_parameter<double>(prefix + "LF_KFE_joint", 0.0);
+  //
+  node_lifecycle_->declare_parameter<double>(prefix + "LH_HAA_joint", 0.0);
+  node_lifecycle_->declare_parameter<double>(prefix + "LH_HFE_joint", 0.0);
+  node_lifecycle_->declare_parameter<double>(prefix + "LH_KFE_joint", 0.0);
+  //
+  node_lifecycle_->declare_parameter<double>(prefix + "RF_HAA_joint", 0.0);
+  node_lifecycle_->declare_parameter<double>(prefix + "RF_HFE_joint", 0.0);
+  node_lifecycle_->declare_parameter<double>(prefix + "RF_KFE_joint", 0.0);
+  //
+  node_lifecycle_->declare_parameter<double>(prefix + "RH_HAA_joint", 0.0);
+  node_lifecycle_->declare_parameter<double>(prefix + "RH_HFE_joint", 0.0);
+  node_lifecycle_->declare_parameter<double>(prefix + "RH_KFE_joint", 0.0);
+
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.control.stiffness", 0.0);
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.control.damping", 0.0);
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.control.action_scale", 0.0);
+  node_lifecycle_->declare_parameter<int>("QuadRobotCfg.control.decimation", 0);
+  
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.obs_scales.lin_vel", 0.0);
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.obs_scales.ang_vel", 0.0);
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.obs_scales.dof_pos", 0.0);
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.obs_scales.dof_vel", 0.0);
+
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.clip_scales.clip_actions", 0.0);
+  node_lifecycle_->declare_parameter<double>("QuadRobotCfg.normalization.clip_scales.clip_observations", 0.0);
+
+  node_lifecycle_->declare_parameter<int>("QuadRobotCfg.size.actions_size", 0);
+  node_lifecycle_->declare_parameter<int>("QuadRobotCfg.size.observations_size", 0);
+}
+
+
+bool QuadControllerRL::loadPolicyParams() {
+  auto get_param_double = [this](const std::string& name) -> scalar_t {
+    auto val = static_cast<scalar_t>(node_lifecycle_->get_parameter(name).as_double());
+    RCLCPP_INFO(node_lifecycle_->get_logger(), "Successfully loaded [Double] %s: %f", name.c_str(), val);
+    return val;
+  };
+
+  try {
+    RCLCPP_INFO(node_lifecycle_->get_logger(), "--- Starting to load Policy Parameters ---");
+
+    std::string prefix = "QuadRobotCfg.init_state.default_joint_angle.";
+    rl_robot_cfg_.init_state.LF_HAA_joint = get_param_double(prefix + "LF_HAA_joint");
+    rl_robot_cfg_.init_state.LF_HFE_joint = get_param_double(prefix + "LF_HFE_joint");
+    rl_robot_cfg_.init_state.LF_KFE_joint = get_param_double(prefix + "LF_KFE_joint");
+    rl_robot_cfg_.init_state.LH_HAA_joint = get_param_double(prefix + "LH_HAA_joint");
+    rl_robot_cfg_.init_state.LH_HFE_joint = get_param_double(prefix + "LH_HFE_joint");
+    rl_robot_cfg_.init_state.LH_KFE_joint = get_param_double(prefix + "LH_KFE_joint");
+    rl_robot_cfg_.init_state.RF_HAA_joint = get_param_double(prefix + "RF_HAA_joint");
+    rl_robot_cfg_.init_state.RF_HFE_joint = get_param_double(prefix + "RF_HFE_joint");
+    rl_robot_cfg_.init_state.RF_KFE_joint = get_param_double(prefix + "RF_KFE_joint");
+    rl_robot_cfg_.init_state.RH_HAA_joint = get_param_double(prefix + "RH_HAA_joint");
+    rl_robot_cfg_.init_state.RH_HFE_joint = get_param_double(prefix + "RH_HFE_joint");
+    rl_robot_cfg_.init_state.RH_KFE_joint = get_param_double(prefix + "RH_KFE_joint");
+
+    rl_robot_cfg_.control_cfg.stiffness    = get_param_double("QuadRobotCfg.control.stiffness");
+    rl_robot_cfg_.control_cfg.damping      = get_param_double("QuadRobotCfg.control.damping");
+    rl_robot_cfg_.control_cfg.action_scale = get_param_double("QuadRobotCfg.control.action_scale");
+    int decimation = node_lifecycle_->get_parameter("QuadRobotCfg.control.decimation").as_int();
+    rl_robot_cfg_.control_cfg.decimation = decimation;
+    RCLCPP_INFO(node_lifecycle_->get_logger(), "Successfully loaded [Int] QuadRobotCfg.control.decimation: %d", decimation);
+
+    rl_robot_cfg_.obs_scales.lin_vel = get_param_double("QuadRobotCfg.normalization.obs_scales.lin_vel");
+    rl_robot_cfg_.obs_scales.ang_vel = get_param_double("QuadRobotCfg.normalization.obs_scales.ang_vel");
+    rl_robot_cfg_.obs_scales.dof_pos = get_param_double("QuadRobotCfg.normalization.obs_scales.dof_pos");
+    rl_robot_cfg_.obs_scales.dof_vel = get_param_double("QuadRobotCfg.normalization.obs_scales.dof_vel");
+
+    rl_robot_cfg_.clip_actions      = get_param_double("QuadRobotCfg.normalization.clip_scales.clip_actions");
+    rl_robot_cfg_.clip_observations = get_param_double("QuadRobotCfg.normalization.clip_scales.clip_observations");
+
+    actions_size_      = static_cast<size_t>(node_lifecycle_->get_parameter("QuadRobotCfg.size.actions_size").as_int());
+    observations_size_ = static_cast<size_t>(node_lifecycle_->get_parameter("QuadRobotCfg.size.observations_size").as_int());
+    
+    RCLCPP_INFO(node_lifecycle_->get_logger(), "Successfully loaded Sizes: Act=%zu, Obs=%zu", actions_size_, observations_size_);
+    RCLCPP_INFO(node_lifecycle_->get_logger(), "--- All Policy Parameters Loaded Successfully ---");
+
+  } catch (const rclcpp::exceptions::ParameterNotDeclaredException& e) {
+    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Parameter not declared (Did you forget declare_parameter?): %s", e.what());
+    return false;
+  } catch (const rclcpp::exceptions::InvalidParameterTypeException& e) {
+    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Parameter type mismatch (Check if YAML has .0 for doubles): %s", e.what());
+    return false;
+  } catch (const std::exception& e) {
+    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Error loading parameters: %s", e.what());
+    return false;
+  }
+
+  return true;
+}
+
+
+bool QuadControllerRL::setupPolicy() {
+  onnx_env_ptr_ = std::make_shared<Ort::Env>(ORT_LOGGING_LEVEL_WARNING, "QuadControllerRLOnnx");
+  Ort::SessionOptions session_options;
+  session_options.SetInterOpNumThreads(1);
+  session_options.SetIntraOpNumThreads(1);
+  try {
+    session_ptr_ = std::make_unique<Ort::Session>(*onnx_env_ptr_, policy_file_.c_str(), session_options);
+  } catch (const std::exception& e) {
+    RCLCPP_ERROR(node_lifecycle_->get_logger(), "Failed to create ONNX session: %s", e.what());
+    return false;
+  }
+
+  input_names_.clear();
+  output_names_.clear();
+  input_shapes_.clear();
+  output_shapes_.clear();
+
+  Ort::AllocatorWithDefaultOptions allocator;
+  for (size_t i = 0; i < session_ptr_->GetInputCount(); i++) {
+    auto name_ptr = session_ptr_->GetInputNameAllocated(i, allocator);
+    input_names_.push_back(name_ptr.get());
+    input_name_ptrs_.push_back(std::move(name_ptr));
+
+    input_shapes_.push_back(session_ptr_->GetInputTypeInfo(i).GetTensorTypeAndShapeInfo().GetShape());
+  }
+  for (size_t i = 0; i < session_ptr_->GetOutputCount(); i++) {
+    auto name_ptr = session_ptr_->GetOutputNameAllocated(i, allocator);
+    output_names_.push_back(name_ptr.get());
+    output_name_ptrs_.push_back(std::move(name_ptr));
+
+    output_shapes_.push_back(session_ptr_->GetOutputTypeInfo(i).GetTensorTypeAndShapeInfo().GetShape());
+  }
+
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "ONNX model loaded successfully from: %s", policy_file_.c_str());
+
+  int64_t model_obs_size = input_shapes_[0].back(); 
+  if (model_obs_size != static_cast<int64_t>(observations_size_)) {
+    RCLCPP_ERROR(node_lifecycle_->get_logger(), 
+                 "Observation size mismatch! YAML: %zu, ONNX Model: %ld", 
+                 observations_size_, model_obs_size);
+    return false;
+  }
+  int64_t model_act_size = output_shapes_[0].back();
+  if (model_act_size != static_cast<int64_t>(actions_size_)) {
+    RCLCPP_ERROR(node_lifecycle_->get_logger(), 
+                 "Action size mismatch! YAML: %zu, ONNX Model: %ld", 
+                 actions_size_, model_act_size);
+    return false;
+  }
+  RCLCPP_INFO(node_lifecycle_->get_logger(), 
+              "ONNX Model validated: Obs=%ld, Actions=%ld", 
+              model_obs_size, model_act_size);
+
+  return true;
+}
+
+
+void QuadControllerRL::setupPolicyIO() {
+  actions_.resize(actions_size_);
+  observations_.resize(observations_size_);
+
+  std::vector<scalar_t> temp{
+      rl_robot_cfg_.init_state.LF_HAA_joint, rl_robot_cfg_.init_state.LF_HFE_joint, rl_robot_cfg_.init_state.LF_KFE_joint,
+      rl_robot_cfg_.init_state.LH_HAA_joint, rl_robot_cfg_.init_state.LH_HFE_joint, rl_robot_cfg_.init_state.LH_KFE_joint,
+      rl_robot_cfg_.init_state.RF_HAA_joint, rl_robot_cfg_.init_state.RF_HFE_joint, rl_robot_cfg_.init_state.RF_KFE_joint,
+      rl_robot_cfg_.init_state.RH_HAA_joint, rl_robot_cfg_.init_state.RH_HFE_joint, rl_robot_cfg_.init_state.RH_KFE_joint};
+  default_joint_angles_.resize(actions_size_);
+  for (size_t i = 0; i < actions_size_; i++) {
+    default_joint_angles_(i) = temp[i];
+  }
+}
+
+
 void QuadControllerRL::setupQuadInterface(const std::string& task_file, 
-                                        const std::string& urdf_file, 
-                                        const std::string& reference_file) {
+                                          const std::string& urdf_file, 
+                                          const std::string& reference_file) {
   quad_interface_ = std::make_shared<LeggedRobotInterface>(task_file, urdf_file, reference_file);
   
   pinocchio_mapping_ptr_ = std::make_shared<CentroidalModelPinocchioMapping>(
@@ -719,8 +689,38 @@ void QuadControllerRL::setupRbd() {
 }
 
 
+void QuadControllerRL::setupSub() {
+  cmd_subscriber_ = node_lifecycle_->create_subscription<geometry_msgs::msg::Twist>(
+    "cmd_vel", 10,
+    [this](const geometry_msgs::msg::Twist::SharedPtr msg) {
+      cmd_buffer_.writeFromNonRT(*msg);
+    });
+
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadControllerRL setupSub succeed.");
+}
+
+
+void QuadControllerRL::setupPub() {
+  observation_publisher_ = node_lifecycle_->create_publisher<ocs2_msgs::msg::MpcObservation>(
+      robot_name_ + "_mpc_observation", 
+      rclcpp::SystemDefaultsQoS());
+  
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadControllerRL setupPub succeed.");
+}
+
+
+void QuadControllerRL::setupVisualization() {
+  robot_visualizer_ = std::make_shared<LeggedRobotVisualizer>(
+      quad_interface_->getPinocchioInterface(), 
+      quad_interface_->getCentroidalModelInfo(),
+      *ee_kinematics_ptr_, node_base_);
+
+  RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadControllerRL setupVisualization succeed.");
+}
+
+
 void QuadControllerRL::updateStateEstimation(const rclcpp::Time& time, 
-                                           const rclcpp::Duration& period) {
+                                             const rclcpp::Duration& period) {
   vector_t joint_pos(joint_handles_.size()), joint_vel(joint_handles_.size());
   contact_flag_t contact_flag;
   Eigen::Quaternion<scalar_t> quat;
@@ -744,37 +744,6 @@ void QuadControllerRL::updateStateEstimation(const rclcpp::Time& time,
   current_observation_.state(9) = yaw_last + angles::shortest_angular_distance(yaw_last, current_observation_.state(9));
   current_observation_.mode = state_estimate_->getMode();
   current_observation_.time += period.seconds();
-}
-
-
-void QuadControllerRL::getState(
-    vector_t& joint_pos, vector_t& joint_vel, 
-    contact_flag_t& contact_flag, 
-    Eigen::Quaternion<scalar_t>& quat, 
-    vector3_t& angular_vel, vector3_t& linear_acc,
-    matrix3_t& ori_cov, 
-    matrix3_t& angular_vel_cov, matrix3_t& linear_acc_cov) {
-  //
-  for (size_t i = 0; i < joint_handles_.size(); ++i) {
-    joint_pos(i) = joint_handles_[i].position.get().get_optional().value();
-    joint_vel(i) = joint_handles_[i].velocity.get().get_optional().value();
-  }
-  for (size_t i = 0; i < ft_handles_.size(); ++i) {
-    contact_flag[i] = ft_handles_[i].incontact();
-  }
-  auto& ih = imu_handles_[0];
-  for (size_t i = 0; i < 4; ++i) {
-    quat.coeffs()(i) = ih.ori[i].get().get_optional().value();
-  }
-  for (size_t i = 0; i < 3; ++i) {
-    angular_vel(i) = ih.angular_vel[i].get().get_optional().value();
-    linear_acc(i) = ih.linear_acc[i].get().get_optional().value();
-  }
-  for (size_t i = 0; i < 9; ++i) {
-    ori_cov(i) = ih.ori_cov[i].get().get_optional().value();
-    angular_vel_cov(i) = ih.angular_vel_cov[i].get().get_optional().value();
-    linear_acc_cov(i) = ih.linear_acc_cov[i].get().get_optional().value();
-  }
 }
 
 
@@ -864,8 +833,39 @@ void QuadControllerRL::computeActions() {
 }
 
 
+void QuadControllerRL::getState(
+    vector_t& joint_pos, vector_t& joint_vel, 
+    contact_flag_t& contact_flag, 
+    Eigen::Quaternion<scalar_t>& quat, 
+    vector3_t& angular_vel, vector3_t& linear_acc,
+    matrix3_t& ori_cov, 
+    matrix3_t& angular_vel_cov, matrix3_t& linear_acc_cov) {
+  //
+  for (size_t i = 0; i < joint_handles_.size(); ++i) {
+    joint_pos(i) = joint_handles_[i].position.get().get_optional().value();
+    joint_vel(i) = joint_handles_[i].velocity.get().get_optional().value();
+  }
+  for (size_t i = 0; i < ft_handles_.size(); ++i) {
+    contact_flag[i] = ft_handles_[i].incontact();
+  }
+  auto& ih = imu_handles_[0];
+  for (size_t i = 0; i < 4; ++i) {
+    quat.coeffs()(i) = ih.ori[i].get().get_optional().value();
+  }
+  for (size_t i = 0; i < 3; ++i) {
+    angular_vel(i) = ih.angular_vel[i].get().get_optional().value();
+    linear_acc(i) = ih.linear_acc[i].get().get_optional().value();
+  }
+  for (size_t i = 0; i < 9; ++i) {
+    ori_cov(i) = ih.ori_cov[i].get().get_optional().value();
+    angular_vel_cov(i) = ih.angular_vel_cov[i].get().get_optional().value();
+    linear_acc_cov(i) = ih.linear_acc_cov[i].get().get_optional().value();
+  }
+}
+
+
 void QuadControllerRL::setCommand(const vector_t& ff, const vector_t& pos_des, const vector_t& vel_des,
-                                scalar_t kp, scalar_t kd) {
+                                  const scalar_t kp, const scalar_t kd) {
   for (size_t i = 0; i < quad_interface_->getCentroidalModelInfo().actuatedDofNum; ++i) {
     (void)joint_handles_[i].pos_des.get().set_value(pos_des(i));
     (void)joint_handles_[i].vel_des.get().set_value(vel_des(i));
@@ -878,9 +878,9 @@ void QuadControllerRL::setCommand(const vector_t& ff, const vector_t& pos_des, c
 
 void QuadCheaterControllerRL::setupStateEstimation() {
   state_estimate_ = std::make_shared<FromTopicStateEstimate>(node_lifecycle_,
-                                                            quad_interface_->getPinocchioInterface(),
-                                                            quad_interface_->getCentroidalModelInfo(), 
-                                                            *ee_kinematics_ptr_);
+                                                             quad_interface_->getPinocchioInterface(),
+                                                             quad_interface_->getCentroidalModelInfo(), 
+                                                             *ee_kinematics_ptr_);
   current_observation_.time = 0.0;
 
   RCLCPP_INFO(node_lifecycle_->get_logger(), "QuadCheaterControllerRL setupStateEstimation succeed.");
