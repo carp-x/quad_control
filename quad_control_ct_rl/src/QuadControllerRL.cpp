@@ -784,19 +784,22 @@ void QuadControllerRL::computeObservations() {
 }
 
 
-// void QuadControllerRL::computeActions() {
-//   Ort::MemoryInfo memoryInfo = Ort::MemoryInfo::CreateCpu(OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);
-//   std::vector<Ort::Value> inputValues;
-//   inputValues.push_back(Ort::Value::CreateTensor<tensor_element_t>(memoryInfo, observations_.data(), observations_.size(),
-//                                                                    inputShapes_[0].data(), inputShapes_[0].size()));
-//   // run inference
-//   Ort::RunOptions runOptions;
-//   std::vector<Ort::Value> outputValues = sessionPtr_->Run(runOptions, inputNames_.data(), inputValues.data(), 1, outputNames_.data(), 1);
+void QuadControllerRL::computeActions() {
+  Ort::MemoryInfo memory_info = Ort::MemoryInfo::CreateCpu(OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);
+  std::vector<Ort::Value> input_values;
+  input_values.push_back(Ort::Value::CreateTensor<tensor_element_t>(memory_info, 
+                                                                    observations_.data(), 
+                                                                    observations_.size(),
+                                                                    input_shapes_[0].data(), 
+                                                                    input_shapes_[0].size()));
 
-//   for (int i = 0; i < actionsSize_; i++) {
-//     actions_[i] = *(outputValues[0].GetTensorMutableData<tensor_element_t>() + i);
-//   }
-// }
+  Ort::RunOptions run_options;
+  std::vector<Ort::Value> output_values = sessionPtr_->Run(run_options, input_names_.data(), input_values.data(), 1, output_names_.data(), 1);
+
+  for (size_t i = 0; i < actions_size_; i++) {
+    actions_[i] = *(output_values[0].GetTensorMutableData<tensor_element_t>() + i);
+  }
+}
 
 
 void QuadControllerRL::setCommand(const vector_t& ff, const vector_t& pos_des, const vector_t& vel_des,
