@@ -172,18 +172,23 @@ controller_interface::return_type QuadControllerRL::update(const rclcpp::Time& t
     }
   }
 
+  vector_t pos_des = vector_t::Zero(actions_size_);
   if (delay_expired_) {
-    vector_t pos_des = vector_t::Zero(actions_size_);
     for (size_t i = 0; i < actions_size_; ++i) {
       pos_des(i) = actions_[i] *  rl_robot_cfg_.control_cfg.action_scale + default_joint_angles_(i);
     }
-
-    setCommand(vector_t::Zero(actions_size_),     // ff
-               pos_des,                             // pos_des   
-               vector_t::Zero(actions_size_),     // vel_des
-               rl_robot_cfg_.control_cfg.stiffness, // kp
-               rl_robot_cfg_.control_cfg.damping);  // kd
   }
+  else {
+    for (size_t i = 0; i < actions_size_; ++i) {
+      pos_des(i) = default_joint_angles_(i);
+    }
+  }
+  
+  setCommand(vector_t::Zero(actions_size_),        // ff
+              pos_des,                             // pos_des   
+              vector_t::Zero(actions_size_),       // vel_des
+              rl_robot_cfg_.control_cfg.stiffness, // kp
+              rl_robot_cfg_.control_cfg.damping);  // kd
   loop_cnt_++;
 
   auto observation_msg = ros_msg_conversions::createObservationMsg(current_observation_);
