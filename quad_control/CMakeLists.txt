@@ -9,6 +9,7 @@ install(DIRECTORY
   config
   model
   worlds
+  policy
   DESTINATION share/${PROJECT_NAME}
 )
 
