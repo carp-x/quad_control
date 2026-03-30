@@ -2,9 +2,15 @@
 
 A quadrupedal robot control framework which supports ROS 2 and Gazebo simulation.
 
-<p align="left">
-  <img src="https://github.com/user-attachments/assets/1201ddc4-4299-4c91-a457-5b08774ac8e9" width="600">
-</p>
+<figure align="left">
+  <figcaption align="left"><b>Figure 1:</b> Quadruped control with MPC and WBC</figcaption><br>
+  <img src="https://github.com/user-attachments/assets/1201ddc4-4299-4c91-a457-5b08774ac8e9" width="600"><br>
+</figure>
+
+<figure align="left">
+  <figcaption align="left"><b>Figure 2:</b> Quadruped control with Reinforcement Learning</figcaption><br>
+  <img src="https://github.com/user-attachments/assets/57eb852d-a7cf-45e6-b842-f83487c8bbc6" width="600"><br>
+</figure>
 
 ## Key Features
 * **Modern Stack**: Native support for **Ubuntu 24.04** & **ROS 2 Jazzy**.
