@@ -177,14 +177,6 @@ controller_interface::return_type QuadControllerRL::update(const rclcpp::Time& t
     updateCommand();
     computeObservations();
     computeActions();
-    scalar_t action_min = -rl_robot_cfg_.clip_actions;
-    scalar_t action_max = rl_robot_cfg_.clip_actions;
-    std::transform(actions_.begin(), actions_.end(), actions_.begin(),
-                   [action_min, action_max](scalar_t x) { return std::max(action_min, std::min(action_max, x)); });
-    
-    for (size_t i = 0; i < actions_size_; ++i) {
-        last_actions_(i) = static_cast<scalar_t>(actions_[i]);
-    }
   }
 
   vector_t pos_des = vector_t::Zero(actions_size_);
@@ -818,10 +810,10 @@ void QuadControllerRL::computeObservations() {
     observations_[i] = static_cast<tensor_element_t>(obs(i));
   }
 
-  scalar_t obs_min = -rl_robot_cfg_.clip_observations;
-  scalar_t obs_max = rl_robot_cfg_.clip_observations;
+  tensor_element_t obs_min = -rl_robot_cfg_.clip_observations;
+  tensor_element_t obs_max = rl_robot_cfg_.clip_observations;
   std::transform(observations_.begin(), observations_.end(), observations_.begin(),
-                 [obs_min, obs_max](scalar_t x) { return std::max(obs_min, std::min(obs_max, x)); });
+                 [obs_min, obs_max](tensor_element_t x) { return std::max(obs_min, std::min(obs_max, x)); });
 }
 
 
@@ -844,8 +836,16 @@ void QuadControllerRL::computeActions() {
   );
   policy_timer_.endTimer();
 
-  for (size_t i = 0; i < actions_size_; i++) {
+  for (size_t i = 0; i < actions_size_; ++i) {
     actions_[i] = *(output_values[0].GetTensorMutableData<tensor_element_t>() + i);
+  }
+
+  tensor_element_t action_min = -rl_robot_cfg_.clip_actions;
+  tensor_element_t action_max = rl_robot_cfg_.clip_actions;
+  std::transform(actions_.begin(), actions_.end(), actions_.begin(),
+                  [action_min, action_max](tensor_element_t x) { return std::max(action_min, std::min(action_max, x)); });
+  for (size_t i = 0; i < actions_size_; ++i) {
+      last_actions_(i) = static_cast<scalar_t>(actions_[i]);
   }
 }
 
