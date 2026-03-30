@@ -37,20 +37,35 @@ Most dependencies are managed automatically via `rosdep`. The following core lib
   * [OCS2 ROS 2 Installation Guide](https://github.com/leggedrobotics/ocs2/blob/ros2/installation.md)
 * **qpOASES**: Install from source from the official repository:
   * [qpOASES](https://github.com/coin-or/qpOASES)
+* **ONNX Runtime**: Install with the official release version:
+  * [ONNX Runtime](https://github.com/microsoft/onnxruntime/releases)
+  ```bash
+  tar -zxvf onnxruntime-linux-x64-1.24.4.tgz
+  cd onnxruntime-linux-x64-1.24.4
+  sudo mkdir -p /usr/local/include/onnxruntime
+  sudo cp -r include/* /usr/local/include/onnxruntime/
+  sudo mkdir -p /usr/local/lib64
+  sudo cp -d lib/libonnxruntime.so* /usr/local/lib64/
+  sudo mkdir -p /usr/local/lib/cmake/onnxruntime
+  sudo cp lib/cmake/onnxruntime/*.cmake /usr/local/lib/cmake/onnxruntime/
+  sudo mkdir -p /usr/local/lib/pkgconfig
+  sudo cp lib/pkgconfig/*.pc /usr/local/lib/pkgconfig/
+  sudo ldconfig
+  ```
 
 ## Build
-   ```bash
-   cd {your_ws}/src
-   git clone git@github.com:carp-x/quad_control.git
-   cd ..
-   colcon build --symlink-install
-   ```
+  ```bash
+  cd {your_ws}/src
+  git clone git@github.com:carp-x/quad_control.git
+  cd ..
+  colcon build --symlink-install
+  ```
 
 ## Run
-   ```bash
-   source install/setup.bash
-   ros2 launch quad_control quad_control.launch.py
-   ```
+  ```bash
+  source install/setup.bash
+  ros2 launch quad_control quad_control.launch.py
+  ```
 
 ## 🤝 Acknowledgments
 * **[legged_control](https://github.com/qiayuanliao/legged_control)**: The primary reference for this implementation.
