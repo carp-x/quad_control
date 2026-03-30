@@ -174,7 +174,7 @@ controller_interface::return_type QuadControllerRL::update(const rclcpp::Time& t
   updateStateEstimation(time, period);
 
   if (loop_cnt_ % rl_robot_cfg_.control_cfg.decimation == 0) {
-    updateCommand();
+    updateCmd();
     computeObservations();
     computeActions();
   }
@@ -750,7 +750,7 @@ void QuadControllerRL::updateStateEstimation(const rclcpp::Time& time,
 }
 
 
-void QuadControllerRL::updateCommand() {
+void QuadControllerRL::updateCmd() {
   const auto* msg = cmd_buffer_.readFromRT();
   if (msg) {
     cmd_vel_(0) = static_cast<scalar_t>(msg->linear.x);

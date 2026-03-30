@@ -143,7 +143,7 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
   virtual void setupVisualization();
   virtual void updateStateEstimation(const rclcpp::Time& time, 
                                      const rclcpp::Duration& period);
-  virtual void updateCommand();
+  virtual void updateCmd();
   virtual void computeObservations();
   virtual void computeActions();
   virtual void updatePosDes(vector_t& pos_des, bool by_default);
@@ -213,7 +213,7 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
 
   bool delay_expired_;
   rclcpp::Time start_time_;
-  const scalar_t delay_duration_ = 10.0;
+  const scalar_t delay_duration_ = 1.0;
   const int print_period_ms_ = 1000;
 
  private:
