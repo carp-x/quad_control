@@ -46,12 +46,10 @@ Most dependencies are managed automatically via `rosdep`. The following core lib
   cd onnxruntime-linux-x64-1.24.4
   sudo mkdir -p /usr/local/include/onnxruntime
   sudo cp -r include/* /usr/local/include/onnxruntime/
-  sudo mkdir -p /usr/local/lib64
-  sudo cp -d lib/libonnxruntime.so* /usr/local/lib64/
+  sudo mkdir -p /usr/local/lib
+  sudo cp -d lib/libonnxruntime.so* /usr/local/lib/
   sudo mkdir -p /usr/local/lib/cmake/onnxruntime
   sudo cp lib/cmake/onnxruntime/*.cmake /usr/local/lib/cmake/onnxruntime/
-  sudo mkdir -p /usr/local/lib/pkgconfig
-  sudo cp lib/pkgconfig/*.pc /usr/local/lib/pkgconfig/
   sudo ldconfig
   ```
 
