@@ -12,12 +12,14 @@ A quadrupedal robot control framework which supports ROS 2 and Gazebo simulation
 * **Simulation**: High-fidelity physics validation in **Gazebo Harmonic**.
 * **MPC**: High-performance optimal control based on **OCS2**.
 * **WBC**: Whole Body Control implementation ported from **[legged_control](https://github.com/qiayuanliao/legged_control)**.
+* **ONNX**: Support deployment of learning models in ONNX format (e.g., exported from **Isaac Lab**).
 
 ```text
 quad_control/
 ├── gait_panel_plugin      # rviz plugin for gait command
 ├── quad_control           # model, config and launch
-├── quad_control_ct        # controller interface
+├── quad_control_ct        # controller interface with mpc and wbc
+├── quad_control_ct_rl     # controller interface with rl onnx model
 ├── quad_control_gz        # simulated hardware via gazebo
 ├── quad_control_mpc       # ocs2 mpc interface
 ├── quad_control_ros       # ros node for gait and goal command
@@ -35,7 +37,7 @@ quad_control/
 Most dependencies are managed automatically via `rosdep`. The following core libraries require manual installation.
 * **OCS2 & Pinocchio**: Follow the official installation guide:
   * [OCS2 ROS 2 Installation Guide](https://github.com/leggedrobotics/ocs2/blob/ros2/installation.md)
-* **qpOASES**: Install from source from the official repository:
+* **qpOASES**: Install from source with the official repository:
   * [qpOASES](https://github.com/coin-or/qpOASES)
 * **ONNX Runtime**: Install with the official release version:
   * [ONNX Runtime](https://github.com/microsoft/onnxruntime/releases)
@@ -55,7 +57,7 @@ Most dependencies are managed automatically via `rosdep`. The following core lib
 
 ## Build
   ```bash
-  cd {your_ws}/src
+  cd ${your_ws}/src
   git clone git@github.com:carp-x/quad_control.git
   cd ..
   colcon build --symlink-install
@@ -64,8 +66,12 @@ Most dependencies are managed automatically via `rosdep`. The following core lib
 ## Run
   ```bash
   source install/setup.bash
-  ros2 launch quad_control quad_control.launch.py
+  ros2 launch quad_control quad_control.launch.py        # for control with mpc and wbc
+  ros2 launch quad_control quad_control_rl.launch.py     # for control with rl onnx model
   ```
+  Note: 
+  * For control with mpc and wbc: click one gait in rviz firstly, then set a goal with 2D Goal Pose in rviz.  
+  * For control with rl onnx model: send cmd_vel with rqt Robot Steering tool.
 
 ## 🤝 Acknowledgments
 * **[legged_control](https://github.com/qiayuanliao/legged_control)**: The primary reference for this implementation.
