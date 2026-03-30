@@ -79,6 +79,6 @@ Most dependencies are managed automatically via `rosdep`. The following core lib
 
 ## 🤝 Acknowledgments
 * **[legged_control](https://github.com/qiayuanliao/legged_control)**: The primary reference for this implementation.
-* **[OCS2](https://leggedrobotics.github.io/ocs2/)**: The core dependency for the control algorithms.
+* **[OCS2](https://github.com/leggedrobotics/ocs2/tree/ros2)**: The core dependency for the control algorithms.
 * **[ros2_control](https://control.ros.org/jazzy/index.html)**: The underlying architecture of this project.
 
