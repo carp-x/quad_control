@@ -146,6 +146,10 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
   virtual void updateCommand();
   virtual void computeObservations();
   virtual void computeActions();
+  virtual void updatePosDes(vector_t& pos_des, bool by_default);
+
+  vector_t jointMappingOriToOnnx(const Eigen::Ref<const vector_t>& joint_val);
+  vector_t jointMappingOnnxToOri(const Eigen::Ref<const vector_t>& joint_val);
 
   void getState(vector_t& joint_pos, vector_t& joint_vel, 
                 contact_flag_t& contact_flag, 
@@ -174,6 +178,16 @@ class QuadControllerRL : public controller_interface::ControllerInterface {
   std::vector<std::vector<int64_t>> output_shapes_;
   std::vector<tensor_element_t> actions_;
   std::vector<tensor_element_t> observations_;
+
+  /*
+  ori by row, onnx by col
+  LF_HAA, LF_HFE, LF_KFE,
+  LH_HAA, LH_HFE, LH_KFE,
+  RF_HAA, RF_HFE, RF_KFE,
+  RH_HAA, RH_HFE, RH_KFE  
+  */
+  const std::vector<int> joint_mapping_ori_to_onnx_{0, 4, 8, 1, 5, 9, 2, 6, 10, 3, 7, 11};
+  const std::vector<int> joint_mapping_onnx_to_ori_{0, 3, 6, 9, 1, 4, 7, 10, 2, 5, 8, 11};
 
   std::string task_file_, urdf_file_, reference_file_;
   std::shared_ptr<LeggedRobotInterface> quad_interface_;

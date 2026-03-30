@@ -180,16 +180,7 @@ controller_interface::return_type QuadControllerRL::update(const rclcpp::Time& t
   }
 
   vector_t pos_des = vector_t::Zero(actions_size_);
-  if (delay_expired_) {
-    for (size_t i = 0; i < actions_size_; ++i) {
-      pos_des(i) = actions_[i] * rl_robot_cfg_.control_cfg.action_scale + default_joint_angles_(i);
-    }
-  }
-  else {
-    for (size_t i = 0; i < actions_size_; ++i) {
-      pos_des(i) = default_joint_angles_(i);
-    }
-  }
+  updatePosDes(pos_des, !delay_expired_);
   
   setCommand(vector_t::Zero(actions_size_),        // ff
               pos_des,                             // pos_des   
@@ -648,10 +639,15 @@ void QuadControllerRL::setupPolicyIO() {
   observations_.resize(observations_size_);
 
   std::vector<scalar_t> temp{
-      rl_robot_cfg_.init_state.LF_HAA_joint, rl_robot_cfg_.init_state.LF_HFE_joint, rl_robot_cfg_.init_state.LF_KFE_joint,
-      rl_robot_cfg_.init_state.LH_HAA_joint, rl_robot_cfg_.init_state.LH_HFE_joint, rl_robot_cfg_.init_state.LH_KFE_joint,
-      rl_robot_cfg_.init_state.RF_HAA_joint, rl_robot_cfg_.init_state.RF_HFE_joint, rl_robot_cfg_.init_state.RF_KFE_joint,
-      rl_robot_cfg_.init_state.RH_HAA_joint, rl_robot_cfg_.init_state.RH_HFE_joint, rl_robot_cfg_.init_state.RH_KFE_joint};
+    // HAA
+    rl_robot_cfg_.init_state.LF_HAA_joint, rl_robot_cfg_.init_state.LH_HAA_joint, 
+    rl_robot_cfg_.init_state.RF_HAA_joint, rl_robot_cfg_.init_state.RH_HAA_joint,
+    // HFE
+    rl_robot_cfg_.init_state.LF_HFE_joint, rl_robot_cfg_.init_state.LH_HFE_joint, 
+    rl_robot_cfg_.init_state.RF_HFE_joint, rl_robot_cfg_.init_state.RH_HFE_joint,
+    // KFE
+    rl_robot_cfg_.init_state.LF_KFE_joint, rl_robot_cfg_.init_state.LH_KFE_joint, 
+    rl_robot_cfg_.init_state.RF_KFE_joint, rl_robot_cfg_.init_state.RH_KFE_joint};
   default_joint_angles_.resize(actions_size_);
   for (size_t i = 0; i < actions_size_; i++) {
     default_joint_angles_(i) = temp[i];
@@ -787,10 +783,8 @@ void QuadControllerRL::computeObservations() {
   // 9:11
   vector3_t cmd_vel = cmd_vel_;
   // 12:35
-  vector_t joint_pos(actions_size_);
-  vector_t joint_vel(actions_size_);
-  joint_pos = measured_rbd_state_.segment(6, info.actuatedDofNum);
-  joint_vel = measured_rbd_state_.segment(info.generalizedCoordinatesNum + 6, info.actuatedDofNum);
+  auto joint_pos = jointMappingOriToOnnx(measured_rbd_state_.segment(6, info.actuatedDofNum));
+  auto joint_vel = jointMappingOriToOnnx(measured_rbd_state_.segment(info.generalizedCoordinatesNum + 6, info.actuatedDofNum));
   // 36:47
   vector_t actions(last_actions_);
 
@@ -847,6 +841,37 @@ void QuadControllerRL::computeActions() {
   for (size_t i = 0; i < actions_size_; ++i) {
       last_actions_(i) = static_cast<scalar_t>(actions_[i]);
   }
+}
+
+
+void QuadControllerRL::updatePosDes(vector_t& pos_des, bool by_default) {
+  for (size_t i = 0; i < actions_size_; ++i) {
+    size_t onnx_i = joint_mapping_ori_to_onnx_[i];
+    if (by_default) {
+      pos_des(i) = default_joint_angles_(onnx_i);
+    }
+    else {
+      pos_des(i) = actions_[onnx_i] * rl_robot_cfg_.control_cfg.action_scale + default_joint_angles_(onnx_i);
+    }
+  }
+}
+
+
+vector_t QuadControllerRL::jointMappingOriToOnnx(const Eigen::Ref<const vector_t>& joint_val) {
+  vector_t onnx_val(joint_mapping_onnx_to_ori_.size());
+  for (size_t i = 0; i < joint_mapping_onnx_to_ori_.size(); ++i) {
+      onnx_val[i] = joint_val[joint_mapping_onnx_to_ori_[i]];
+  }
+  return onnx_val;
+}
+
+
+vector_t QuadControllerRL::jointMappingOnnxToOri(const Eigen::Ref<const vector_t>& joint_val) {
+  vector_t ori_val(joint_mapping_onnx_to_ori_.size());
+  for (size_t i = 0; i < joint_mapping_onnx_to_ori_.size(); ++i) {
+      ori_val[i] = joint_val[joint_mapping_onnx_to_ori_[i]];
+  }
+  return ori_val;
 }
 
 
