@@ -48,14 +48,24 @@ Most dependencies are managed automatically via `rosdep`. The following core lib
 * **ONNX Runtime**: Install with the official release version:
   * [ONNX Runtime](https://github.com/microsoft/onnxruntime/releases)
   ```bash
+  # prepare installation file
   tar -zxvf onnxruntime-linux-x64-1.24.4.tgz
   cd onnxruntime-linux-x64-1.24.4
+  # install include files
   sudo mkdir -p /usr/local/include/onnxruntime
   sudo cp -r include/* /usr/local/include/onnxruntime/
-  sudo mkdir -p /usr/local/lib
-  sudo cp -d lib/libonnxruntime.so* /usr/local/lib/
+  # install .so files
+  sudo mkdir -p /usr/local/lib64
+  sudo cp -d lib/libonnxruntime.so* /usr/local/lib64/
+  # install .cmake files
   sudo mkdir -p /usr/local/lib/cmake/onnxruntime
   sudo cp lib/cmake/onnxruntime/*.cmake /usr/local/lib/cmake/onnxruntime/
+  # since the lib folder is lib64 in .cmake, setup link in lib
+  cd /usr/local/lib
+  sudo ln -sfT /usr/local/lib64/libonnxruntime.so.1.24.4 libonnxruntime.so.1.24.4
+  sudo ln -sfT libonnxruntime.so.1.24.4 libonnxruntime.so.1
+  sudo ln -sfT libonnxruntime.so.1 libonnxruntime.so
+  # activate
   sudo ldconfig
   ```
 
